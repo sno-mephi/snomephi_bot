@@ -3,23 +3,20 @@ package ru.idfedorov09.telegram.bot.util
 import com.google.gson.Gson
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.Update
+import ru.idfedorov09.telegram.bot.config.BotContainer
 import ru.idfedorov09.telegram.bot.service.RedisService
-import ru.idfedorov09.telegram.bot.service.UserQueue
 import java.util.regex.Pattern
 
 @Component
-class UpdatesUtil {
-    @Autowired
-    private lateinit var gson: Gson
-
-    @Autowired
-    private lateinit var redisService: RedisService
-
+class UpdatesUtil(
+    private val gson: Gson,
+    private val redisService: RedisService,
+    private val botContainer: BotContainer,
+) {
     companion object {
-        private val log = LoggerFactory.getLogger(this.javaClass)
+        private val log = LoggerFactory.getLogger(UpdatesUtil::class.java)
     }
 
     fun getChatId(update: Update?): String? {
@@ -49,7 +46,7 @@ class UpdatesUtil {
 
     private fun removeKeyPrefix(prefix: String) {
         val keys = redisService.keys("$prefix*")
-        if (keys != null && keys.isNotEmpty()) {
+        if (!keys.isNullOrEmpty()) {
             redisService.del(keys)
         }
     }
@@ -58,7 +55,7 @@ class UpdatesUtil {
     fun clearAllQues() {
         log.info("Removing old ques data..")
         removeKeyPrefix("cht_num_")
-        removeKeyPrefix(UserQueue.QUEUE_PREFIX)
+        removeKeyPrefix(botContainer.messageQueuePrefix)
         log.info("Removed.")
     }
 }

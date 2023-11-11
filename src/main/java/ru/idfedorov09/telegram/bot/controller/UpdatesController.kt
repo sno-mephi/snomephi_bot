@@ -21,7 +21,7 @@ class UpdatesController : UpdatesSender(), UpdatesHandler {
     private lateinit var flowBuilder: FlowBuilder
 
     companion object {
-        private val log = LoggerFactory.getLogger(this.javaClass)
+        private val log = LoggerFactory.getLogger(UpdatesController::class.java)
     }
 
     // @Async("infinityThread") // if u need full async execution
