@@ -8,17 +8,17 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
 import org.telegram.telegrambots.meta.api.objects.Update
-import ru.idfedorov09.telegram.bot.config.BotContainer
+import ru.idfedorov09.telegram.bot.controller.UpdatesController
 import ru.idfedorov09.telegram.bot.service.RedisService
 import ru.idfedorov09.telegram.bot.service.UserQueue
 import java.util.concurrent.Executors
 
 @Component
 class OnReceiver(
-    private val botContainer: BotContainer,
     private val redisService: RedisService,
     private val updatesUtil: UpdatesUtil,
     private val userQueue: UserQueue,
+    private val updatesHandler: UpdatesController,
 ) {
 
     companion object {
@@ -28,13 +28,13 @@ class OnReceiver(
     private val updatingRequestDispatcher = Executors.newFixedThreadPool(Int.MAX_VALUE).asCoroutineDispatcher()
 
     /** Обрабатывает отдельное обновление **/
-    private fun execOne(update: Update, executor: TelegramLongPollingBot?) {
+    private fun execOne(update: Update, executor: TelegramLongPollingBot) {
         log.info("Update received: $update")
-        botContainer.updatesHandler.handle(executor, update)
+        updatesHandler.handle(executor, update)
     }
 
     /** Обрабатывает пришедшее обновление, затем обрабатывая все, что есть в очереди **/
-    private fun exec(update: Update, executor: TelegramLongPollingBot?) {
+    private fun exec(update: Update, executor: TelegramLongPollingBot) {
         val chatId = updatesUtil.getChatId(update)
 
         if (chatId == null) {
@@ -58,7 +58,7 @@ class OnReceiver(
 
     // TODO: убрать GlobalScope
     @OptIn(DelicateCoroutinesApi::class)
-    fun onReceive(update: Update, executor: TelegramLongPollingBot?) {
+    fun onReceive(update: Update, executor: TelegramLongPollingBot) {
         GlobalScope.launch(updatingRequestDispatcher) {
             exec(update, executor)
         }
