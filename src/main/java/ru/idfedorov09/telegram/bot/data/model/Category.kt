@@ -15,7 +15,7 @@ data class Category(
     val suffix: String? = null,
 
     /** название категории **/
-    @Column(name = "suffix")
+    @Column(name = "title")
     val title: String? = null,
 
     /** описание категории **/
