@@ -39,7 +39,9 @@ dependencies {
 	implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
 	implementation "org.jetbrains.kotlin:kotlin-reflect:1.9.10"
 
-	implementation 'com.github.sno-mephi:flow-library:2.0.0-stable'
+	implementation('com.github.sno-mephi:flow-library:2.0.0-stable') {
+		exclude group: 'org.slf4j', module: 'slf4j-simple'
+	}
 }
 
 jar {

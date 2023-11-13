@@ -1,5 +1,6 @@
 package ru.idfedorov09.telegram.bot.controller
 
+import kotlinx.coroutines.Dispatchers
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -33,6 +34,7 @@ class UpdatesController : UpdatesSender(), UpdatesHandler {
         // прогоняем граф с ожиданием
         flowBuilder.initAndRun(
             flowContext = flowContext,
+            dispatcher = Dispatchers.Default,
             ExpContainer(), // экспы
             telegramBot,
             update,

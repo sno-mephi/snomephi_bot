@@ -1,5 +1,6 @@
 package ru.idfedorov09.telegram.bot.controller
 
+import kotlinx.coroutines.Dispatchers
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.web.bind.annotation.GetMapping
@@ -24,7 +25,10 @@ class HealthStatusController {
         // контекст для флоу сбора статуса работы бота
         val flowContext = FlowContext()
 
-        flowBuilder.initAndRun(flowContext = flowContext)
+        flowBuilder.initAndRun(
+            flowContext = flowContext,
+            dispatcher = Dispatchers.Default,
+        )
 
         return flowContext.get<HealthStatus>()
             ?: throw NoSuchFieldException(HEALTH_FLOW_NOT_CONTAINS_STATUS)
