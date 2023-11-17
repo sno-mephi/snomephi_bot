@@ -16,4 +16,5 @@ data class UserActualizedInfo(
     val categories: MutableSet<Category> = mutableSetOf(),
     val roles: MutableSet<UserRole> = mutableSetOf(),
     val lastUserActionType: LastUserActionType? = null,
+    val questDialog: Quest?,
 )
