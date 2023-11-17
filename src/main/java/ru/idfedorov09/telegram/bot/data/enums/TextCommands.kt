@@ -12,12 +12,11 @@ enum class TextCommands(
 ) {
     TEST_COMMAND_1(
         "Тестовая команда 1",
-        listOf(UserRole.ROOT),
     ),
 
     TEST_COMMAND_2(
         "Тестовая команда 2",
-        listOf(UserRole.ROOT),
+        listOf(UserRole.CATEGORY_BUILDER),
     ),
 
     ;
