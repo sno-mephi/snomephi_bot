@@ -7,7 +7,8 @@ import ru.idfedorov09.telegram.bot.data.enums.UserRole
  * Хранит актуализированную информацию о пользователе
  */
 data class UserActualizedInfo(
-    val id: Long,
+    // null id - юзер не зарегистрирован
+    val id: Long? = null,
     val tui: String,
     val lastTgNick: String = "default-nick",
     val fullName: String? = null,
