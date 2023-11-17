@@ -59,7 +59,7 @@ class ActualizeUserInfoFetcher(
             lastTgNick = tgUser.userName,
             fullName = null,
             studyGroup = null,
-            categories = categoryRepository.findAll().filter { it.isSetupByDefault }.toMutableSet(),
+            categories = mutableSetOf(),
             roles = mutableSetOf(UserRole.USER),
             lastUserActionType = null,
         )
