@@ -30,7 +30,7 @@ data class User(
 
     /** id рассылок, на которые подписан юзер **/
     @Column(name = "categories")
-    val categories: MutableSet<Long>? = mutableSetOf(),
+    val categories: MutableSet<Long> = mutableSetOf(),
 
     /** роли **/
     @Enumerated(EnumType.STRING)

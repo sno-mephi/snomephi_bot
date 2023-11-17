@@ -2,9 +2,7 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.data.enums.BotStage
-import ru.idfedorov09.telegram.bot.executor.TelegramPollingBot
 import ru.idfedorov09.telegram.bot.flow.ExpContainer
 import ru.idfedorov09.telegram.bot.service.RedisService
 import ru.mephi.sno.libs.flow.belly.InjectData
