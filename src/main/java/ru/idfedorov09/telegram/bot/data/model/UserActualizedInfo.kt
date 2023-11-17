@@ -10,7 +10,7 @@ data class UserActualizedInfo(
     // null id - юзер не зарегистрирован
     val id: Long? = null,
     val tui: String,
-    val lastTgNick: String = "default-nick",
+    val lastTgNick: String,
     val fullName: String? = null,
     val studyGroup: String? = null,
     val categories: MutableSet<Category> = mutableSetOf(),
