@@ -41,4 +41,8 @@ data class User(
     @Enumerated(EnumType.STRING)
     @Column(name = "last_action_type")
     val lastUserActionType: LastUserActionType? = null,
+
+    /** айди диалога, который сейчас идет **/
+    @Column(name = "quest_dialog_id")
+    val questDialogId: Long? = null,
 )

@@ -21,5 +21,5 @@ data class QuestDialogMessage(
     val authorId: Long? = null,
 
     @Column(name = "message_text")
-    val messageText: Long? = null,
+    val messageText: String? = null,
 )
