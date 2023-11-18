@@ -1,4 +1,4 @@
-package ru.idfedorov09.telegram.bot.data.enums
+package ru.idfedorov09.telegram.bot.data.enums.stages
 
 /**
  * Перечисление с примерами возможного статуса занятности бота
