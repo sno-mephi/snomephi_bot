@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUALIFIER_FLOW_TG_BOT
 import ru.idfedorov09.telegram.bot.fetchers.bot.* // ktlint-disable no-wildcard-imports
+import ru.idfedorov09.telegram.bot.fetchers.bot.registrationFetcher.RegistrationFetcher
 import ru.mephi.sno.libs.flow.belly.FlowBuilder
 import ru.mephi.sno.libs.flow.belly.FlowContext
 
@@ -17,6 +18,9 @@ open class TelegramBotFlowConfiguration(
     private val updateDataFetcher: UpdateDataFetcher,
     private val questButtonHandlerFetcher: QuestButtonHandlerFetcher,
     private val dialogHandleFetcher: DialogHandleFetcher,
+    private val registrationFetcher: RegistrationFetcher
+
+    // TODO: вписать в граф
     private val roleDescriptionFetcher: RoleDescriptionFetcher,
     private val userInfoCommandFetcher: UserInfoCommandFetcher,
 ) {
@@ -35,6 +39,7 @@ open class TelegramBotFlowConfiguration(
         sequence {
             fetch(actualizeUserInfoFetcher)
             group(condition = { it.isByUser() }) {
+                fetch(registrationFetcher)
                 fetch(roleDescriptionFetcher)
                 fetch(userInfoCommandFetcher)
                 fetch(questStartFetcher)
