@@ -2,19 +2,23 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.Update
+import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository
+import ru.idfedorov09.telegram.bot.repo.QuestRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
+import kotlin.jvm.optionals.getOrNull
 
 @Component
 class ActualizeUserInfoFetcher(
     private val updatesUtil: UpdatesUtil,
     private val userRepository: UserRepository,
     private val categoryRepository: CategoryRepository,
+    private val questRepository: QuestRepository,
 ) : GeneralFetcher() {
 
     companion object {
@@ -34,6 +38,9 @@ class ActualizeUserInfoFetcher(
             ?: return notRegisteredUserInfo(tgUser)
 
         val categories = categoryRepository.findAllById(userDataFromDatabase.categories).toMutableSet()
+        val activeQuest = userDataFromDatabase.questDialogId
+            ?.let { questRepository.findById(it).getOrNull() }
+            ?.let { if (it.questionStatus == QuestionStatus.DIALOG) it else null }
 
         // обновляем ник в бдшке
         userRepository.save(userDataFromDatabase.copy(lastTgNick = tgUser.userName))
@@ -47,6 +54,7 @@ class ActualizeUserInfoFetcher(
             categories = categories,
             roles = userDataFromDatabase.roles,
             lastUserActionType = userDataFromDatabase.lastUserActionType,
+            activeQuest = activeQuest,
         )
     }
 
@@ -62,6 +70,7 @@ class ActualizeUserInfoFetcher(
             categories = mutableSetOf(),
             roles = mutableSetOf(UserRole.USER),
             lastUserActionType = null,
+            activeQuest = null,
         )
     }
 }

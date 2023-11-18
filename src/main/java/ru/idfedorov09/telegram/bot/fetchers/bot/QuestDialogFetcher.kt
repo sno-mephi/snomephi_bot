@@ -8,7 +8,6 @@ import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
-import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.model.Quest
 import ru.idfedorov09.telegram.bot.data.model.QuestDialogMessage
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
@@ -33,31 +32,36 @@ class QuestDialogFetcher(
     fun doFetch(
         update: Update,
         bot: Executor,
-        userActualizedInfo: UserActualizedInfo,
+        userActualizedInfo: UserActualizedInfo?,
     ) {
-        val text = update.message.text
-        if ((userActualizedInfo.questDialog == null) or TextCommands.isTextCommand(text)) {
-            return
-        }
+        if (!(update.hasMessage() && update.message.hasText())) return
+        userActualizedInfo ?: return
+
+        // если апдейт из беседы, то игнорим
+        if (update.message.chatId.toString() != userActualizedInfo.tui) return
+
+        val messageText = update.message.text
         val quest = Quest(
             authorId = update.message.chatId,
             questionStatus = QuestionStatus.WAIT,
-        )
-        val questDialogId = questRepository.save(quest).id
-        val questDialogMessage = QuestDialogMessage(
-            questId = questDialogId,
-            isByQuestionAuthor = true,
-            authorId = update.message.chatId,
-            messageText = text,
-        )
-        val questDialogMessageId = questDialogMessageRepository.save(questDialogMessage).id
-        userActualizedInfo.questDialog?.dialogHistory?.add(questDialogMessageId!!)
+        ).let { questRepository.save(it) }
 
+        val questDialogMessage = QuestDialogMessage(
+            questId = quest.id,
+            isByQuestionAuthor = true,
+            authorId = userActualizedInfo.id,
+            messageText = messageText,
+        ).let { questDialogMessageRepository.save(it) }
+
+        quest.dialogHistory.add(questDialogMessage.id!!)
+        questRepository.save(quest)
+
+        // TODO: обработать случай когда у юзера нет никнейма
         bot.execute(
             SendMessage().also {
                 it.chatId = RESPONDENT_CHAT_ID
-                it.text = "Получен вопрос № $questDialogId от ${userActualizedInfo.fullName} " +
-                    userActualizedInfo.lastTgNick
+                it.text =
+                    "Получен вопрос #${quest.id} от @${userActualizedInfo.lastTgNick} (${userActualizedInfo.fullName})"
             },
         )
         bot.execute(
@@ -70,19 +74,20 @@ class QuestDialogFetcher(
         bot.execute(
             SendMessage().also {
                 it.chatId = RESPONDENT_CHAT_ID
-                it.text = "Выберите действие"
-                it.replyMarkup = createChooseKeyboard()
+                it.text = "Выберите действие:"
+                it.replyMarkup = createChooseKeyboard(quest)
             },
         )
     }
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) =
         InlineKeyboardMarkup().also { it.keyboard = keyboard }
-    private fun createChooseKeyboard() = createKeyboard(
+
+    private fun createChooseKeyboard(quest: Quest) = createKeyboard(
         listOf(
-            mutableListOf(
-                InlineKeyboardButton("ответ ✅").also { it.callbackData = "start" },
-                InlineKeyboardButton("игнор ✅").also { it.callbackData = "ignore" },
-                InlineKeyboardButton("бан ❌").also { it.callbackData = "ban" },
+            listOf(InlineKeyboardButton("\uD83D\uDCAC Ответ").also { it.callbackData = "ans ${quest.id}" }),
+            listOf(
+                InlineKeyboardButton("\uD83D\uDD07 Игнор").also { it.callbackData = "ignore ${quest.id}" },
+                InlineKeyboardButton("\uD83D\uDEAF Бан").also { it.callbackData = "ban ${quest.id}" },
             ),
         ),
     )
