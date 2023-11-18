@@ -8,5 +8,8 @@ import ru.mephi.sno.libs.flow.belly.Mutable
  */
 @Mutable
 data class ExpContainer(
-    var botStage: BotStage = BotStage.OFFLINE
+    var botStage: BotStage = BotStage.OFFLINE,
+
+    /** флаг который говорит что апдейт пришел от пользователя **/
+    var byUser: Boolean = true,
 )
