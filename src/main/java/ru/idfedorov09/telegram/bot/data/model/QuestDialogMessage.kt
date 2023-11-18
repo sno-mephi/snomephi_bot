@@ -20,6 +20,6 @@ data class QuestDialogMessage(
     @Column(name = "author_id")
     val authorId: Long? = null,
 
-    @Column(name = "message_text")
+    @Column(name = "message_text", columnDefinition = "TEXT")
     val messageText: String? = null,
 )

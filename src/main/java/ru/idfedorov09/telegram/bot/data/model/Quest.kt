@@ -19,8 +19,8 @@ data class Quest(
     val responderId: Long? = null,
 
     /** айдишники элементов диалога/вопросов/ответов **/
-    @Column(name = "dialog_history", columnDefinition = "TEXT")
-    val dialogHistory: MutableList<Long>? = null,
+    @Column(name = "dialog_history")
+    val dialogHistory: MutableList<Long> = mutableListOf(),
 
     @Column(name = "question_status")
     val questionStatus: QuestionStatus = QuestionStatus.WAIT,
