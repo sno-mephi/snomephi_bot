@@ -13,7 +13,7 @@ data class User(
     val id: Long? = null,
 
     /** id юзера в телеграме **/
-    @Column(name = "tui")
+    @Column(name = "tui", unique = true)
     val tui: String? = null,
 
     /** последний сохраненный ник в телеге **/

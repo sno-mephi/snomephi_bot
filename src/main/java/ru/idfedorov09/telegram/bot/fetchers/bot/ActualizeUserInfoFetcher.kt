@@ -5,6 +5,7 @@ import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
+import ru.idfedorov09.telegram.bot.flow.ExpContainer
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository
 import ru.idfedorov09.telegram.bot.repo.QuestRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
@@ -28,9 +29,13 @@ class ActualizeUserInfoFetcher(
     @InjectData
     fun doFetch(
         update: Update,
+        expContainer: ExpContainer,
     ): UserActualizedInfo? {
         val tgUser = updatesUtil.getUser(update)
-        tgUser ?: return null
+        tgUser ?: run {
+            expContainer.byUser = false
+            return null
+        }
         val tui = tgUser.id.toString()
 
         // если не нашли в бд пользователя то сохраняем специального

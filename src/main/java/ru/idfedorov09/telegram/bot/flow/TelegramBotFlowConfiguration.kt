@@ -3,11 +3,7 @@ package ru.idfedorov09.telegram.bot.flow
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUALIFIER_FLOW_TG_BOT
-import ru.idfedorov09.telegram.bot.data.enums.BotStage
-import ru.idfedorov09.telegram.bot.fetchers.bot.ActualizeUserInfoFetcher
-import ru.idfedorov09.telegram.bot.fetchers.bot.QuestDialogFetcher
-import ru.idfedorov09.telegram.bot.fetchers.bot.TestFetcher
-import ru.idfedorov09.telegram.bot.fetchers.bot.ToggleStageFetcher
+import ru.idfedorov09.telegram.bot.fetchers.bot.*
 import ru.mephi.sno.libs.flow.belly.FlowBuilder
 
 /**
@@ -18,8 +14,10 @@ open class TelegramBotFlowConfiguration(
     // TODO: удалить лишние фетчеры
     private val testFetcher: TestFetcher,
     private val toggleStageFetcher: ToggleStageFetcher,
+
     private val actualizeUserInfoFetcher: ActualizeUserInfoFetcher,
     private val questDialogFetcher: QuestDialogFetcher,
+    private val updateDataFetcher: UpdateDataFetcher,
 ) {
 
     /**
@@ -35,11 +33,10 @@ open class TelegramBotFlowConfiguration(
     private fun FlowBuilder.buildFlow() {
         sequence {
             fetch(actualizeUserInfoFetcher)
-            group {
+            group(condition = { it.get<ExpContainer>()!!.byUser }) {
                 fetch(questDialogFetcher)
             }
-
-            // TODO: сохраняем юзера в бдшке
+            fetch(updateDataFetcher)
         }
     }
 }

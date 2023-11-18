@@ -32,10 +32,9 @@ class QuestDialogFetcher(
     fun doFetch(
         update: Update,
         bot: Executor,
-        userActualizedInfo: UserActualizedInfo?,
+        userActualizedInfo: UserActualizedInfo,
     ) {
         if (!(update.hasMessage() && update.message.hasText())) return
-        userActualizedInfo ?: return
 
         // если апдейт из беседы, то игнорим
         if (update.message.chatId.toString() != userActualizedInfo.tui) return
