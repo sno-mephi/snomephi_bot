@@ -16,7 +16,7 @@ open class TelegramBotFlowConfiguration(
     private val toggleStageFetcher: ToggleStageFetcher,
 
     private val actualizeUserInfoFetcher: ActualizeUserInfoFetcher,
-    private val questDialogFetcher: QuestDialogFetcher,
+    private val questStartFetcher: QuestStartFetcher,
     private val updateDataFetcher: UpdateDataFetcher,
 ) {
 
@@ -34,7 +34,7 @@ open class TelegramBotFlowConfiguration(
         sequence {
             fetch(actualizeUserInfoFetcher)
             group(condition = { it.get<ExpContainer>()!!.byUser }) {
-                fetch(questDialogFetcher)
+                fetch(questStartFetcher)
             }
             fetch(updateDataFetcher)
         }
