@@ -78,7 +78,7 @@ class QuestStartFetcher(
         )
 
         quest.copy(
-            hubMessageId = sentMessage.messageId.toString(),
+            consoleMessageId = sentMessage.messageId.toString(),
         ).also { questRepository.save(it) }
     }
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) =
