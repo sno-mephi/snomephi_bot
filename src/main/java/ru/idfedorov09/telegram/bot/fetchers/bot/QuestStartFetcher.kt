@@ -19,7 +19,7 @@ import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 
 @Component
-class QuestDialogFetcher(
+class QuestStartFetcher(
     private val updatesUtil: UpdatesUtil,
     private val questRepository: QuestRepository,
     private val questDialogMessageRepository: QuestDialogMessageRepository,
@@ -53,7 +53,6 @@ class QuestDialogFetcher(
         ).let { questDialogMessageRepository.save(it) }
 
         quest.dialogHistory.add(questDialogMessage.id!!)
-        questRepository.save(quest)
 
         // TODO: обработать случай когда у юзера нет никнейма
         bot.execute(
@@ -70,13 +69,17 @@ class QuestDialogFetcher(
                 it.messageId = update.message.messageId
             },
         )
-        bot.execute(
+        val sentMessage = bot.execute(
             SendMessage().also {
                 it.chatId = RESPONDENT_CHAT_ID
                 it.text = "Выберите действие:"
                 it.replyMarkup = createChooseKeyboard(quest)
             },
         )
+
+        quest.copy(
+            hubMessageId = sentMessage.messageId.toString(),
+        ).also { questRepository.save(it) }
     }
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) =
         InlineKeyboardMarkup().also { it.keyboard = keyboard }
