@@ -3,8 +3,10 @@ package ru.idfedorov09.telegram.bot.flow
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUALIFIER_FLOW_TG_BOT
+import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.fetchers.bot.*
 import ru.mephi.sno.libs.flow.belly.FlowBuilder
+import ru.mephi.sno.libs.flow.belly.FlowContext
 
 /**
  * Основной класс, в котором строится последовательность вычислений (граф) для бота
@@ -33,10 +35,12 @@ open class TelegramBotFlowConfiguration(
     private fun FlowBuilder.buildFlow() {
         sequence {
             fetch(actualizeUserInfoFetcher)
-            group(condition = { it.get<ExpContainer>()!!.byUser }) {
+            group(condition = { it.isByUser() }) {
                 fetch(questStartFetcher)
             }
             fetch(updateDataFetcher)
         }
     }
+
+    private fun FlowContext.isByUser() = get<ExpContainer>()?.byUser ?: false
 }
