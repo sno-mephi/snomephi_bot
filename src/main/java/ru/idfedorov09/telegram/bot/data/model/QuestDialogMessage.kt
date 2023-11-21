@@ -3,7 +3,7 @@ package ru.idfedorov09.telegram.bot.data.model
 import jakarta.persistence.*
 
 @Entity
-@Table(name = "questions_table")
+@Table(name = "question_dialog_messages_table")
 data class QuestDialogMessage(
 
     @Id

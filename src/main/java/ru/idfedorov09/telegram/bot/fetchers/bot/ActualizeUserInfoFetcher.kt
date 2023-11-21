@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
+import ru.idfedorov09.telegram.bot.data.model.User
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.flow.ExpContainer
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository
@@ -40,7 +41,11 @@ class ActualizeUserInfoFetcher(
 
         // если не нашли в бд пользователя то сохраняем специального
         val userDataFromDatabase = userRepository.findByTui(tui)
-            ?: return notRegisteredUserInfo(tgUser)
+            ?: User(
+                tui = tgUser.id.toString(),
+                lastTgNick = tgUser.userName,
+                roles = mutableSetOf(UserRole.USER),
+            ).let { userRepository.save(it) }
 
         val categories = categoryRepository.findAllById(userDataFromDatabase.categories).toMutableSet()
         val activeQuest = userDataFromDatabase.questDialogId
@@ -48,7 +53,9 @@ class ActualizeUserInfoFetcher(
             ?.let { if (it.questionStatus == QuestionStatus.DIALOG) it else null }
 
         // обновляем ник в бдшке
-        userRepository.save(userDataFromDatabase.copy(lastTgNick = tgUser.userName))
+        if (userDataFromDatabase.lastTgNick != tgUser.userName) {
+            userRepository.save(userDataFromDatabase.copy(lastTgNick = tgUser.userName))
+        }
 
         return UserActualizedInfo(
             id = userDataFromDatabase.id,
@@ -60,22 +67,6 @@ class ActualizeUserInfoFetcher(
             roles = userDataFromDatabase.roles,
             lastUserActionType = userDataFromDatabase.lastUserActionType,
             activeQuest = activeQuest,
-        )
-    }
-
-    private fun notRegisteredUserInfo(
-        tgUser: org.telegram.telegrambots.meta.api.objects.User,
-    ): UserActualizedInfo {
-        return UserActualizedInfo(
-            id = null,
-            tui = tgUser.id.toString(),
-            lastTgNick = tgUser.userName,
-            fullName = null,
-            studyGroup = null,
-            categories = mutableSetOf(),
-            roles = mutableSetOf(UserRole.USER),
-            lastUserActionType = null,
-            activeQuest = null,
         )
     }
 }

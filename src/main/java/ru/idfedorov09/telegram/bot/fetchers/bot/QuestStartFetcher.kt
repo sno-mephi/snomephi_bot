@@ -41,7 +41,7 @@ class QuestStartFetcher(
 
         val messageText = update.message.text
         val quest = Quest(
-            authorId = update.message.chatId,
+            authorId = userActualizedInfo.id,
             questionStatus = QuestionStatus.WAIT,
         ).let { questRepository.save(it) }
 
@@ -81,6 +81,7 @@ class QuestStartFetcher(
             consoleMessageId = sentMessage.messageId.toString(),
         ).also { questRepository.save(it) }
     }
+
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) =
         InlineKeyboardMarkup().also { it.keyboard = keyboard }
 
