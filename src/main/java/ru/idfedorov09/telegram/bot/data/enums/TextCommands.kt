@@ -5,7 +5,7 @@ import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 enum class TextCommands(
 
     /** текст команды **/
-    private val text: String,
+    val commandText: String,
 
     /** роли которым доступна эта команда **/
     private val allowedRoles: List<UserRole> = listOf(UserRole.USER),
@@ -19,11 +19,14 @@ enum class TextCommands(
         listOf(UserRole.CATEGORY_BUILDER),
     ),
 
+    QUEST_DIALOG_CLOSE(
+        "❌ Завершить диалог",
+    ),
     ;
 
     /** Проверяет, является ли текст командой **/
     companion object {
-        fun isTextCommand(text: String) = entries.map { it.text }.contains(text)
+        fun isTextCommand(text: String) = entries.map { it.commandText }.contains(text)
     }
 
     fun isAllowed(user: UserActualizedInfo): Boolean {

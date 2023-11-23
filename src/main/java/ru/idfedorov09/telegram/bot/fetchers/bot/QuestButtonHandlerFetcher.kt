@@ -7,7 +7,9 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUEST_RESPONDENT_CHAT_ID
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_ANSWER
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_BAN
@@ -15,6 +17,7 @@ import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_IGNORE
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_START_DIALOG
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
+import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.model.Quest
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
@@ -66,7 +69,7 @@ class QuestButtonHandlerFetcher(
 
         val quest = data.quest.copy(
             responderId = data.userActualizedInfo.id,
-            questionStatus = QuestionStatus.DIALOG
+            questionStatus = QuestionStatus.DIALOG,
         )
 
         val questionAuthor = userRepository.findById(data.quest.authorId!!).get()
@@ -85,12 +88,24 @@ class QuestButtonHandlerFetcher(
             },
         )
 
+        // клавиатура с командой завершения диалога
+        val closeDialogKeyboard = ReplyKeyboardMarkup().also {
+            it.keyboard = listOf(
+                KeyboardRow().also {
+                    it.add(TextCommands.QUEST_DIALOG_CLOSE.commandText)
+                }
+            )
+            it.oneTimeKeyboard = true
+            it.resizeKeyboard = true
+        }
+
         bot.execute(
             SendMessage().also {
                 it.chatId = data.userActualizedInfo.tui
                 it.text = "_Ты перешел в диалог с пользователем @${questionAuthor.lastTgNick}\\. " +
                     "Несмотря на твою анонимность, оставайся вежливым :\\)_"
                 it.parseMode = ParseMode.MARKDOWNV2
+                it.replyMarkup = closeDialogKeyboard
             },
         )
 
