@@ -60,6 +60,8 @@ class DialogHandleFetcher(
             return
         }
 
+        // далее - логика обмена сообщениями между автором вопроса и респондентом
+
         val questDialogMessage = QuestDialogMessage(
             questId = quest.id,
             isByQuestionAuthor = isByQuestionAuthor,
@@ -103,7 +105,7 @@ class DialogHandleFetcher(
         bot.execute(
             SendMessage().also {
                 it.chatId = params.responder.tui!!
-                it.text = "Спасибо за обратную связь\\! *Диалог завершен\\.*"
+                it.text = "\uD83D\uDDA4 Спасибо за обратную связь\\! *Диалог завершен\\.*"
                 it.parseMode = ParseMode.MARKDOWNV2
             },
         )

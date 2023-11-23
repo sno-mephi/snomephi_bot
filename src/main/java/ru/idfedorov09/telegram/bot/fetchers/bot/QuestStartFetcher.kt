@@ -11,6 +11,7 @@ import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUEST_RESPONDENT_CHAT_ID
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_ANSWER
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_BAN
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_IGNORE
+import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.model.Quest
 import ru.idfedorov09.telegram.bot.data.model.QuestDialogMessage
@@ -27,12 +28,12 @@ class QuestStartFetcher(
     private val updatesUtil: UpdatesUtil,
     private val questRepository: QuestRepository,
     private val questDialogMessageRepository: QuestDialogMessageRepository,
+    private val bot: Executor,
 ) : GeneralFetcher() {
 
     @InjectData
     fun doFetch(
         update: Update,
-        bot: Executor,
         userActualizedInfo: UserActualizedInfo,
     ) {
         if (!(update.hasMessage() && update.message.hasText())) return
@@ -43,6 +44,31 @@ class QuestStartFetcher(
         // если апдейт из беседы, то игнорим
         if (update.message.chatId.toString() != userActualizedInfo.tui) return
 
+        when {
+            // если была нажата кнопка на ожидание ответа, то значит следующим сообщением будет отправлен ответ
+            userActualizedInfo.lastUserActionType == LastUserActionType.QUEST_ANS_CLICK ->
+                giveAnswer(update, userActualizedInfo)
+            else -> ask(update, userActualizedInfo)
+        }
+    }
+
+    /**
+     * Метод обрабатывающий апдейт на выдачу ответа одним сообщением
+     */
+    private fun giveAnswer(
+        update: Update,
+        userActualizedInfo: UserActualizedInfo,
+    ) {
+        // TODO: собрать таблицу Actions и по ней определять, на какой вопрос собирается ответить челик
+    }
+
+    /**
+     * Метод, обрабатывающий апдейт на задавание вопроса
+     */
+    private fun ask(
+        update: Update,
+        userActualizedInfo: UserActualizedInfo,
+    ) {
         val messageText = update.message.text
         val quest = Quest(
             authorId = userActualizedInfo.id,
@@ -62,7 +88,7 @@ class QuestStartFetcher(
         bot.execute(
             SendMessage().also {
                 it.chatId = userActualizedInfo.tui
-                it.text = "Сформировано обращение #${quest.id}. Ожидайте ответа."
+                it.text = "✉\uFE0F Сформировано обращение #${quest.id}. Ожидайте ответа."
             },
         )
 
@@ -72,7 +98,7 @@ class QuestStartFetcher(
             SendMessage().also {
                 it.chatId = QUEST_RESPONDENT_CHAT_ID
                 it.text =
-                    "Получен вопрос #${quest.id} от @${userActualizedInfo.lastTgNick} (${userActualizedInfo.fullName})"
+                    "\uD83D\uDCE5 Получен вопрос #${quest.id} от @${userActualizedInfo.lastTgNick} (${userActualizedInfo.fullName})"
             },
         )
         bot.execute(

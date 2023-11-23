@@ -63,9 +63,9 @@ class QuestButtonHandlerFetcher(
         }
     }
 
-    // TODO: проверить что юзер начинающий диалог НЕ В ДИАЛОГЕ
     private fun clickStartDialog(data: RequestData): UserActualizedInfo {
         if (data.quest.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
+        if (data.userActualizedInfo.activeQuest != null) return data.userActualizedInfo
 
         val quest = data.quest.copy(
             responderId = data.userActualizedInfo.id,
@@ -93,7 +93,7 @@ class QuestButtonHandlerFetcher(
             it.keyboard = listOf(
                 KeyboardRow().also {
                     it.add(TextCommands.QUEST_DIALOG_CLOSE.commandText)
-                }
+                },
             )
             it.oneTimeKeyboard = true
             it.resizeKeyboard = true
