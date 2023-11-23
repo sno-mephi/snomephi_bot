@@ -3,7 +3,10 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import org.telegram.telegrambots.meta.api.objects.Update
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
+import ru.idfedorov09.telegram.bot.data.GlobalConstants
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.model.Quest
@@ -102,11 +105,24 @@ class DialogHandleFetcher(
             },
         )
 
+        val emptyKeyboard = ReplyKeyboardMarkup().also {
+            it.keyboard = listOf()
+        }
+
         bot.execute(
             SendMessage().also {
                 it.chatId = params.responder.tui!!
                 it.text = "\uD83D\uDDA4 Спасибо за обратную связь\\! *Диалог завершен\\.*"
                 it.parseMode = ParseMode.MARKDOWNV2
+                it.replyMarkup = emptyKeyboard
+            },
+        )
+
+        bot.execute(
+            EditMessageText().also {
+                it.chatId = GlobalConstants.QUEST_RESPONDENT_CHAT_ID
+                it.messageId = params.quest.consoleMessageId!!.toInt()
+                it.text = "✅ @${params.responder.lastTgNick} пообщался(-ась)"
             },
         )
     }
