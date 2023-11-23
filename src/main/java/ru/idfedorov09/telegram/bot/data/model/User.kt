@@ -42,7 +42,7 @@ data class User(
     @Column(name = "last_action_type")
     val lastUserActionType: LastUserActionType? = null,
 
-    /** айди диалога, который сейчас идет **/
+    /** айди диалога (quest), который сейчас идет **/
     @Column(name = "quest_dialog_id")
     val questDialogId: Long? = null,
 )

@@ -5,4 +5,7 @@ package ru.idfedorov09.telegram.bot.data.enums
  */
 enum class LastUserActionType {
     DEFAULT,
+
+    /** Нажата кнопка ОТВЕТ **/
+    QUEST_ANS_CLICK,
 }

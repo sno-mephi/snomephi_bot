@@ -2,12 +2,18 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.ForwardMessage
+import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUEST_RESPONDENT_CHAT_ID
+import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_ANSWER
+import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_BAN
+import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_IGNORE
+import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_START_DIALOG
+import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.model.Quest
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
@@ -35,44 +41,63 @@ class QuestButtonHandlerFetcher(
     fun doFetch(
         update: Update,
         userActualizedInfo: UserActualizedInfo,
-    ) {
-        if (!update.hasCallbackQuery()) return
+    ): UserActualizedInfo {
+        if (!update.hasCallbackQuery()) return userActualizedInfo
 
+        val callbackData = update.callbackQuery.data
         val requestData = RequestData(
-            getQuestByCallbackData(update.callbackQuery.data),
+            getQuestByCallbackData(callbackData),
             userActualizedInfo,
             update,
         )
 
-        with(update.callbackQuery.data) {
-            when {
-                startsWith("quest_ans") -> clickAnswer(requestData)
-                startsWith("quest_ignore") -> clickIgnore(requestData)
-                startsWith("quest_ban") -> clickBan(requestData)
-            }
+        return when {
+            QUEST_ANSWER.isMatch(callbackData) -> clickAnswer(requestData)
+            QUEST_IGNORE.isMatch(callbackData) -> clickIgnore(requestData)
+            QUEST_BAN.isMatch(callbackData) -> clickBan(requestData)
+            QUEST_START_DIALOG.isMatch(callbackData) -> clickStartDialog(requestData)
+            else -> userActualizedInfo
         }
     }
 
-    private fun getQuestByCallbackData(callbackData: String): Quest {
-        val questId = parseQuestId(callbackData)
-        return questRepository.findById(questId).get()
-    }
+    private fun clickStartDialog(data: RequestData): UserActualizedInfo {
+        if (data.quest.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
 
-    private fun parseQuestId(callbackData: String): Long {
-        val questId =
-            try {
-                callbackData.split(" ")[1].toLong()
-            } catch (e: NumberFormatException) {
-                throw NumberFormatException(
-                    "Error during parse callBackData in questButtonHandler fetcher. " +
-                        "Callback data: $callbackData) has incorrect format. Correct format: 'something {LONG}'",
-                )
-            }
-        return questId
-    }
+        val questionAuthor = userRepository.findById(data.quest.authorId!!).get()
+        questRepository.save(
+            data.quest.copy(
+                questionStatus = QuestionStatus.DIALOG,
+            ),
+        )
+        userRepository.save(
+            questionAuthor.copy(
+                questDialogId = data.quest.id,
+            ),
+        )
 
-    private fun clickIgnore(data: RequestData) {
-        if (data.quest.questionStatus == QuestionStatus.CLOSED) return
+        bot.execute(
+            SendMessage().also {
+                it.chatId = questionAuthor.tui!!
+                it.text = "_С вами общается оператор по поводу обращения \\#${data.quest.id}_"
+                it.parseMode = ParseMode.MARKDOWNV2
+            },
+        )
+
+        bot.execute(
+            SendMessage().also {
+                it.chatId = data.userActualizedInfo.tui
+                it.text = "_Ты перешел в диалог с пользователем @${questionAuthor.lastTgNick}\\. " +
+                    "Несмотря на твою анонимность, оставайся вежливым :\\)_"
+                it.parseMode = ParseMode.MARKDOWNV2
+            },
+        )
+
+        return data.userActualizedInfo.copy(
+            activeQuest = data.quest,
+        )
+    }
+    private fun clickIgnore(data: RequestData): UserActualizedInfo {
+        if (data.quest.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
 
         questRepository.save(
             data.quest.copy(
@@ -89,20 +114,19 @@ class QuestButtonHandlerFetcher(
                 it.text = newText
             },
         )
+        return data.userActualizedInfo
     }
 
-    private fun clickAnswer(data: RequestData) {
-        if (data.quest.questionStatus == QuestionStatus.CLOSED) return
-        val messageText = "Вы можете либо ответить одним сообщением, отправив его сейчас, " +
-                "либо начать анонимный диалог с пользователем."
+    private fun clickAnswer(data: RequestData): UserActualizedInfo {
+        if (data.quest.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
         val questionAuthor = userRepository.findById(data.quest.authorId!!).get()
         val firstMessage = dialogMessageRepository.findById(data.quest.dialogHistory.first()).get()
 
         bot.execute(
             SendMessage().also {
                 it.chatId = data.userActualizedInfo.tui
-                it.text = "Кажется, вы хотели ответить на следующее сообщение:"
-            }
+                it.text = "Кажется, ты хотел ответить на следующее сообщение:"
+            },
         )
         bot.execute(
             ForwardMessage().also {
@@ -114,25 +138,51 @@ class QuestButtonHandlerFetcher(
         bot.execute(
             SendMessage().also {
                 it.chatId = data.userActualizedInfo.tui
-                it.text = messageText
+                it.text = "Ты можешь либо ответить анонимно одним сообщением, отправив его сейчас, " +
+                    "либо начать анонимный диалог с пользователем."
                 it.replyMarkup = createChooseKeyboard(data.quest)
-            }
+            },
+        )
+
+        return data.userActualizedInfo.copy(
+            lastUserActionType = LastUserActionType.QUEST_ANS_CLICK,
         )
     }
 
-    private fun clickBan(data: RequestData) {
-        if (data.quest.questionStatus == QuestionStatus.CLOSED) return
+    private fun clickBan(data: RequestData): UserActualizedInfo {
+        if (data.quest.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
         TODO()
     }
 
     private fun createChooseKeyboard(quest: Quest) = createKeyboard(
         listOf(
-            listOf(InlineKeyboardButton("\uD83D\uDCAC Начать диалог").also { it.callbackData = "quest_start_dialog ${quest.id}" }),
+            listOf(
+                InlineKeyboardButton("\uD83D\uDCAC Начать диалог")
+                    .also { it.callbackData = QUEST_START_DIALOG.format(quest.id) },
+            ),
         ),
     )
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) =
         InlineKeyboardMarkup().also { it.keyboard = keyboard }
+
+    private fun getQuestByCallbackData(callbackData: String): Quest {
+        val questId = parseQuestId(callbackData)
+        return questRepository.findById(questId).get()
+    }
+
+    private fun parseQuestId(callbackData: String): Long {
+        val questId =
+            try {
+                callbackData.split("|")[1].toLong()
+            } catch (e: NumberFormatException) {
+                throw NumberFormatException(
+                    "Error during parse callBackData in questButtonHandler fetcher. " +
+                        "Callback data: '$callbackData' has incorrect format. Correct format: 'something {LONG}'",
+                )
+            }
+        return questId
+    }
 
     private data class RequestData(
         val quest: Quest,

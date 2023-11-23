@@ -2,10 +2,12 @@ package ru.idfedorov09.telegram.bot.data.model
 
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
+import ru.mephi.sno.libs.flow.belly.Mutable
 
 /**
  * Хранит актуализированную информацию о пользователе
  */
+@Mutable
 data class UserActualizedInfo(
     // null id - юзер не зарегистрирован
     val id: Long? = null,
