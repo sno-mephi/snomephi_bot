@@ -4,10 +4,12 @@ import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.ForwardMessage
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup.ReplyKeyboardMarkupBuilder
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUEST_RESPONDENT_CHAT_ID
@@ -18,6 +20,7 @@ import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_START_DIALO
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
+import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.data.model.Quest
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
@@ -109,6 +112,13 @@ class QuestButtonHandlerFetcher(
             },
         )
 
+        bot.execute(
+            EditMessageText().also {
+                it.chatId = QUEST_RESPONDENT_CHAT_ID
+                it.messageId = quest.consoleMessageId!!.toInt()
+                it.text = "✏\uFE0F ${data.userActualizedInfo.lastTgNick} ведет диалог"
+            },
+        )
         return data.userActualizedInfo.copy(
             activeQuest = data.quest,
         )
@@ -142,7 +152,7 @@ class QuestButtonHandlerFetcher(
         bot.execute(
             SendMessage().also {
                 it.chatId = data.userActualizedInfo.tui
-                it.text = "Кажется, ты хотел ответить на следующее сообщение:"
+                it.text = "Кажется, ты хотел(-а) ответить на следующее сообщение:"
             },
         )
         bot.execute(
@@ -168,7 +178,30 @@ class QuestButtonHandlerFetcher(
 
     private fun clickBan(data: RequestData): UserActualizedInfo {
         if (data.quest.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
-        TODO()
+        questRepository.save(
+            data.quest.copy(
+                questionStatus = QuestionStatus.CLOSED,
+            ),
+        )
+
+        // TODO: логика банов скоро изменится, тут тоже надо будет менять код
+        val authorInBan = userRepository.findById(data.quest.authorId!!).get().copy(
+            roles = mutableSetOf(UserRole.BANNED),
+        )
+        userRepository.save(authorInBan)
+
+        // TODO: а если у пользователя нет ника?
+        val newText = "\uD83D\uDD34 Автор забанен пользователем @${data.userActualizedInfo.lastTgNick}."
+        bot.execute(
+            EditMessageText().also {
+                it.chatId = QUEST_RESPONDENT_CHAT_ID
+                it.messageId = data.quest.consoleMessageId?.toInt()
+                it.text = newText
+                it.replyMarkup = createUnbanKeyboard(data.quest)
+            },
+        )
+
+        return data.userActualizedInfo
     }
 
     private fun createChooseKeyboard(quest: Quest) = createKeyboard(
@@ -176,6 +209,16 @@ class QuestButtonHandlerFetcher(
             listOf(
                 InlineKeyboardButton("\uD83D\uDCAC Начать диалог")
                     .also { it.callbackData = QUEST_START_DIALOG.format(quest.id) },
+            ),
+        ),
+    )
+
+    private fun createUnbanKeyboard(quest: Quest) = createKeyboard(
+        listOf(
+            listOf(
+                InlineKeyboardButton("Разбанить (not work)"),
+                // TODO("разбан еще не реализован")
+                // .also { it.callbackData = QUEST_START_DIALOG.format(quest.id) }
             ),
         ),
     )
