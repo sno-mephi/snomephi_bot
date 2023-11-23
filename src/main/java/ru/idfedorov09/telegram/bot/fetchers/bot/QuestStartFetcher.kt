@@ -8,6 +8,9 @@ import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUEST_RESPONDENT_CHAT_ID
+import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_ANSWER
+import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_BAN
+import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_IGNORE
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.model.Quest
 import ru.idfedorov09.telegram.bot.data.model.QuestDialogMessage
@@ -51,12 +54,20 @@ class QuestStartFetcher(
             isByQuestionAuthor = true,
             authorId = userActualizedInfo.id,
             messageText = messageText,
-            messageId = update.message.messageId
+            messageId = update.message.messageId,
         ).let { questDialogMessageRepository.save(it) }
 
         quest.dialogHistory.add(questDialogMessage.id!!)
 
+        bot.execute(
+            SendMessage().also {
+                it.chatId = userActualizedInfo.tui
+                it.text = "Сформировано обращение #${quest.id}. Ожидайте ответа."
+            }
+        )
+
         // TODO: обработать случай когда у юзера нет никнейма
+        // TODO: добавить время обращения
         bot.execute(
             SendMessage().also {
                 it.chatId = QUEST_RESPONDENT_CHAT_ID
@@ -89,10 +100,15 @@ class QuestStartFetcher(
 
     private fun createChooseKeyboard(quest: Quest) = createKeyboard(
         listOf(
-            listOf(InlineKeyboardButton("\uD83D\uDCAC Ответ").also { it.callbackData = "quest_ans ${quest.id}" }),
             listOf(
-                InlineKeyboardButton("\uD83D\uDD07 Игнор").also { it.callbackData = "quest_ignore ${quest.id}" },
-                InlineKeyboardButton("\uD83D\uDEAF Бан").also { it.callbackData = "quest_ban ${quest.id}" },
+                InlineKeyboardButton("\uD83D\uDCAC Ответ")
+                    .also { it.callbackData = QUEST_ANSWER.format(quest.id) },
+            ),
+            listOf(
+                InlineKeyboardButton("\uD83D\uDD07 Игнор")
+                    .also { it.callbackData = QUEST_IGNORE.format(quest.id) },
+                InlineKeyboardButton("\uD83D\uDEAF Бан")
+                    .also { it.callbackData = QUEST_BAN.format(quest.id) },
             ),
         ),
     )
