@@ -63,7 +63,7 @@ class QuestStartFetcher(
             SendMessage().also {
                 it.chatId = userActualizedInfo.tui
                 it.text = "Сформировано обращение #${quest.id}. Ожидайте ответа."
-            }
+            },
         )
 
         // TODO: обработать случай когда у юзера нет никнейма
