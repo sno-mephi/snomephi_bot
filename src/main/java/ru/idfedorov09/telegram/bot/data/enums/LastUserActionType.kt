@@ -7,5 +7,8 @@ enum class LastUserActionType {
     DEFAULT,
 
     /** Нажата кнопка ОТВЕТ **/
-    QUEST_ANS_CLICK,
+    ACT_QUEST_ANS_CLICK,
+
+    /** Завершил диалог **/
+    ACT_QUEST_DIALOG_CLOSE,
 }

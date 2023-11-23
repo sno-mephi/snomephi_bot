@@ -46,7 +46,7 @@ class QuestStartFetcher(
 
         when {
             // если была нажата кнопка на ожидание ответа, то значит следующим сообщением будет отправлен ответ
-            userActualizedInfo.lastUserActionType == LastUserActionType.QUEST_ANS_CLICK ->
+            userActualizedInfo.lastUserActionType == LastUserActionType.ACT_QUEST_ANS_CLICK ->
                 giveAnswer(update, userActualizedInfo)
             else -> ask(update, userActualizedInfo)
         }
