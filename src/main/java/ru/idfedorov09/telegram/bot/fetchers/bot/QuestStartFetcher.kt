@@ -7,6 +7,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
+import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUEST_RESPONDENT_CHAT_ID
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.model.Quest
 import ru.idfedorov09.telegram.bot.data.model.QuestDialogMessage
@@ -24,9 +25,6 @@ class QuestStartFetcher(
     private val questRepository: QuestRepository,
     private val questDialogMessageRepository: QuestDialogMessageRepository,
 ) : GeneralFetcher() {
-    companion object {
-        private const val RESPONDENT_CHAT_ID = "-1002057270905" // [ЛОГИ] чат долбаебов
-    }
 
     @InjectData
     fun doFetch(
@@ -35,6 +33,9 @@ class QuestStartFetcher(
         userActualizedInfo: UserActualizedInfo,
     ) {
         if (!(update.hasMessage() && update.message.hasText())) return
+
+        // создаем новый вопрос если пользователь сейчас не в активном диалоге
+        if (userActualizedInfo.activeQuest != null) return
 
         // если апдейт из беседы, то игнорим
         if (update.message.chatId.toString() != userActualizedInfo.tui) return
@@ -50,6 +51,7 @@ class QuestStartFetcher(
             isByQuestionAuthor = true,
             authorId = userActualizedInfo.id,
             messageText = messageText,
+            messageId = update.message.messageId
         ).let { questDialogMessageRepository.save(it) }
 
         quest.dialogHistory.add(questDialogMessage.id!!)
@@ -57,21 +59,21 @@ class QuestStartFetcher(
         // TODO: обработать случай когда у юзера нет никнейма
         bot.execute(
             SendMessage().also {
-                it.chatId = RESPONDENT_CHAT_ID
+                it.chatId = QUEST_RESPONDENT_CHAT_ID
                 it.text =
                     "Получен вопрос #${quest.id} от @${userActualizedInfo.lastTgNick} (${userActualizedInfo.fullName})"
             },
         )
         bot.execute(
             ForwardMessage().also {
-                it.chatId = RESPONDENT_CHAT_ID
+                it.chatId = QUEST_RESPONDENT_CHAT_ID
                 it.fromChatId = updatesUtil.getChatId(update).toString()
                 it.messageId = update.message.messageId
             },
         )
         val sentMessage = bot.execute(
             SendMessage().also {
-                it.chatId = RESPONDENT_CHAT_ID
+                it.chatId = QUEST_RESPONDENT_CHAT_ID
                 it.text = "Выберите действие:"
                 it.replyMarkup = createChooseKeyboard(quest)
             },
@@ -87,10 +89,10 @@ class QuestStartFetcher(
 
     private fun createChooseKeyboard(quest: Quest) = createKeyboard(
         listOf(
-            listOf(InlineKeyboardButton("\uD83D\uDCAC Ответ").also { it.callbackData = "ans ${quest.id}" }),
+            listOf(InlineKeyboardButton("\uD83D\uDCAC Ответ").also { it.callbackData = "quest_ans ${quest.id}" }),
             listOf(
-                InlineKeyboardButton("\uD83D\uDD07 Игнор").also { it.callbackData = "ignore ${quest.id}" },
-                InlineKeyboardButton("\uD83D\uDEAF Бан").also { it.callbackData = "ban ${quest.id}" },
+                InlineKeyboardButton("\uD83D\uDD07 Игнор").also { it.callbackData = "quest_ignore ${quest.id}" },
+                InlineKeyboardButton("\uD83D\uDEAF Бан").also { it.callbackData = "quest_ban ${quest.id}" },
             ),
         ),
     )

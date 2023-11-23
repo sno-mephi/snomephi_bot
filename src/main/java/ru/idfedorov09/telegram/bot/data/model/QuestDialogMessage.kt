@@ -22,4 +22,7 @@ data class QuestDialogMessage(
 
     @Column(name = "message_text", columnDefinition = "TEXT")
     val messageText: String? = null,
+
+    @Column(name = "message_id")
+    val messageId: Int? = null,
 )
