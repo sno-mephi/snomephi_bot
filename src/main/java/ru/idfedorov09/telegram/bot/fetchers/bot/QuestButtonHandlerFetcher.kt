@@ -60,15 +60,17 @@ class QuestButtonHandlerFetcher(
         }
     }
 
+    // TODO: проверить что юзер начинающий диалог НЕ В ДИАЛОГЕ
     private fun clickStartDialog(data: RequestData): UserActualizedInfo {
         if (data.quest.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
 
-        val questionAuthor = userRepository.findById(data.quest.authorId!!).get()
-        questRepository.save(
-            data.quest.copy(
-                questionStatus = QuestionStatus.DIALOG,
-            ),
+        val quest = data.quest.copy(
+            responderId = data.userActualizedInfo.id,
+            questionStatus = QuestionStatus.DIALOG
         )
+
+        val questionAuthor = userRepository.findById(data.quest.authorId!!).get()
+        questRepository.save(quest)
         userRepository.save(
             questionAuthor.copy(
                 questDialogId = data.quest.id,

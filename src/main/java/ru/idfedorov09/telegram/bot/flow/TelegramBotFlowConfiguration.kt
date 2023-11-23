@@ -20,6 +20,7 @@ open class TelegramBotFlowConfiguration(
     private val questStartFetcher: QuestStartFetcher,
     private val updateDataFetcher: UpdateDataFetcher,
     private val questButtonHandlerFetcher: QuestButtonHandlerFetcher,
+    private val dialogHandleFetcher: DialogHandleFetcher,
 ) {
 
     /**
@@ -38,6 +39,7 @@ open class TelegramBotFlowConfiguration(
             group(condition = { it.isByUser() }) {
                 fetch(questStartFetcher)
                 fetch(questButtonHandlerFetcher)
+                fetch(dialogHandleFetcher)
             }
             fetch(updateDataFetcher)
         }
