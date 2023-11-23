@@ -3,8 +3,7 @@ package ru.idfedorov09.telegram.bot.flow
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUALIFIER_FLOW_TG_BOT
-import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
-import ru.idfedorov09.telegram.bot.fetchers.bot.*
+import ru.idfedorov09.telegram.bot.fetchers.bot.* // ktlint-disable no-wildcard-imports
 import ru.mephi.sno.libs.flow.belly.FlowBuilder
 import ru.mephi.sno.libs.flow.belly.FlowContext
 
@@ -20,6 +19,7 @@ open class TelegramBotFlowConfiguration(
     private val actualizeUserInfoFetcher: ActualizeUserInfoFetcher,
     private val questStartFetcher: QuestStartFetcher,
     private val updateDataFetcher: UpdateDataFetcher,
+    private val questButtonHandlerFetcher: QuestButtonHandlerFetcher,
 ) {
 
     /**
@@ -37,6 +37,7 @@ open class TelegramBotFlowConfiguration(
             fetch(actualizeUserInfoFetcher)
             group(condition = { it.isByUser() }) {
                 fetch(questStartFetcher)
+                fetch(questButtonHandlerFetcher)
             }
             fetch(updateDataFetcher)
         }
