@@ -27,9 +27,11 @@ enum class CallbackCommands(
         return callbackData.startsWith(prefix)
     }
 
-    fun params(): List<String> {
-        return data.split('|').let {
-            it.subList(1, it.size)
+    companion object {
+        fun params(data: String): List<String> {
+            return data.split('|').let {
+                it.subList(1, it.size)
+            }
         }
     }
 }

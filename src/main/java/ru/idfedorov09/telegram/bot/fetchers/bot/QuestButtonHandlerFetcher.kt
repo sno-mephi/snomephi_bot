@@ -131,7 +131,7 @@ class QuestButtonHandlerFetcher(
         )
 
         // TODO: а если у пользователя нет ника?
-        val newText = "\uD83D\uDFE1 Ответ проигнорирован пользователем @${data.userActualizedInfo.lastTgNick}."
+        val newText = "\uD83D\uDFE1 Проигнорировано пользователем @${data.userActualizedInfo.lastTgNick}."
         bot.execute(
             EditMessageText().also {
                 it.chatId = QUEST_RESPONDENT_CHAT_ID
@@ -144,6 +144,8 @@ class QuestButtonHandlerFetcher(
 
     private fun clickAnswer(data: RequestData): UserActualizedInfo {
         if (data.quest.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
+        if (data.userActualizedInfo.activeQuest != null) return data.userActualizedInfo
+
         val questionAuthor = userRepository.findById(data.quest.authorId!!).get()
         val firstMessage = dialogMessageRepository.findById(data.quest.dialogHistory.first()).get()
 
