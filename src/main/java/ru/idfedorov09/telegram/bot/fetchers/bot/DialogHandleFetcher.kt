@@ -2,9 +2,11 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.ParseMode
+import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import org.telegram.telegrambots.meta.api.objects.Update
+import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove
 import ru.idfedorov09.telegram.bot.data.GlobalConstants
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
@@ -32,6 +34,7 @@ class DialogHandleFetcher(
     private val userRepository: UserRepository,
 ) : GeneralFetcher() {
 
+    // TODO: добавить поддержку картинок, файлов, HTML/MARKDOWN-разметки
     @InjectData
     fun doFetch(
         update: Update,
@@ -42,16 +45,6 @@ class DialogHandleFetcher(
 
         // если апдейт из беседы, то игнорим
         if (update.message.chatId.toString() != userActualizedInfo.tui) return
-
-        if (!(update.hasMessage() && update.message.hasText())) {
-            bot.execute(
-                SendMessage().also {
-                    it.chatId = userActualizedInfo.tui
-                    it.text = "⛔\uFE0F Сообщение данного типа не поддерживается."
-                },
-            )
-            return
-        }
 
         val messageText = update.message.text
         val quest = userActualizedInfo.activeQuest
@@ -64,15 +57,40 @@ class DialogHandleFetcher(
             quest = quest,
             author = author,
             responder = responder,
+            isByQuestionAuthor = isByQuestionAuthor,
+            userActualizedInfo = userActualizedInfo,
+            update = update,
         )
 
-        // если пришла команда - обрабатываем как команду, остальное скипаем
-        if (TextCommands.isTextCommand(messageText)) {
-            handleCommands(params)
-            return
+        when {
+            TextCommands.isTextCommand(params.messageText) -> handleCommands(params)
+            update.hasMessage() && update.message.hasText() -> handleMessageText(params)
+            update.hasMessage() && update.message.hasPhoto() -> handleMessagePhoto(params)
+            else -> nonSupportedUpdateType(params)
         }
+    }
 
-        // далее - логика обмена сообщениями между автором вопроса и респондентом
+    private fun nonSupportedUpdateType(params: Params) {
+        bot.execute(
+            SendMessage().also {
+                it.chatId = params.userActualizedInfo.tui
+                it.text = "⛔\uFE0F Сообщение данного типа не поддерживается."
+            },
+        )
+    }
+
+    private fun handleMessagePhoto(params: Params) {
+        nonSupportedUpdateType(params)
+        // TODO()
+    }
+    private fun handleMessageText(params: Params) {
+        val quest = params.quest
+        val isByQuestionAuthor = params.isByQuestionAuthor
+        val userActualizedInfo = params.userActualizedInfo
+        val messageText = params.messageText
+        val update = params.update
+        val responder = params.responder
+        val author = params.author
 
         val questDialogMessage = QuestDialogMessage(
             questId = quest.id,
@@ -84,15 +102,13 @@ class DialogHandleFetcher(
         quest.dialogHistory.add(questDialogMessage.id!!)
         questRepository.save(quest)
 
-        // TODO: добавить поддержку картинок, файлов, HTML/MARKDOWN-разметки
         bot.execute(
             SendMessage().also {
                 it.chatId = if (isByQuestionAuthor) responder.tui!! else author.tui!!
-                it.text = messageText
+                it.text = messageText!!
             },
         )
     }
-
     private fun handleCommands(params: Params) {
         when (params.messageText) {
             TextCommands.QUEST_DIALOG_CLOSE.commandText -> closeDialog(params)
@@ -144,9 +160,12 @@ class DialogHandleFetcher(
      * Вспомогательный класс для передачи параметров
      */
     private data class Params(
-        val messageText: String,
+        val messageText: String?,
         val quest: Quest,
         val author: User,
         val responder: User,
+        val isByQuestionAuthor: Boolean,
+        val update: Update,
+        val userActualizedInfo: UserActualizedInfo,
     )
 }
