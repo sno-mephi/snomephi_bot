@@ -214,9 +214,9 @@ class QuestButtonHandlerFetcher(
     private fun createUnbanKeyboard(quest: Quest) = createKeyboard(
         listOf(
             listOf(
-                InlineKeyboardButton("Разбанить (not work)"),
-                // TODO("разбан еще не реализован")
-                // .also { it.callbackData = QUEST_START_DIALOG.format(quest.id) }
+                InlineKeyboardButton("Разбанить (doesn't work)")
+                    // TODO("разбан еще не реализован")
+                    .also { it.callbackData = QUEST_BAN.format(quest.id) },
             ),
         ),
     )
