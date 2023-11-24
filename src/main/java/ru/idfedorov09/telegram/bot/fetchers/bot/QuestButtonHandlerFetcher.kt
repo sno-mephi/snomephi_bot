@@ -236,7 +236,7 @@ class QuestButtonHandlerFetcher(
             } catch (e: NumberFormatException) {
                 throw NumberFormatException(
                     "Error during parse callBackData in questButtonHandler fetcher. " +
-                        "Callback data: '$callbackData' has incorrect format. Correct format: 'something {LONG}'",
+                        "Callback data: '$callbackData' has incorrect format. Correct format: 'something|{LONG}'",
                 )
             }
         return questId

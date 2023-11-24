@@ -3,10 +3,9 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup.EditMessageReplyMarkupBuilder
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import org.telegram.telegrambots.meta.api.objects.Update
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove
 import ru.idfedorov09.telegram.bot.data.GlobalConstants
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
@@ -38,13 +37,21 @@ class DialogHandleFetcher(
         update: Update,
         userActualizedInfo: UserActualizedInfo,
     ) {
-        if (!(update.hasMessage() && update.message.hasText())) return
-
         // если пользователь не в активном диалоге то скипаем фетчер
         if (userActualizedInfo.activeQuest == null) return
 
         // если апдейт из беседы, то игнорим
         if (update.message.chatId.toString() != userActualizedInfo.tui) return
+
+        if (!(update.hasMessage() && update.message.hasText())) {
+            bot.execute(
+                SendMessage().also {
+                    it.chatId = userActualizedInfo.tui
+                    it.text = "⛔\uFE0F Сообщение данного типа не поддерживается."
+                },
+            )
+            return
+        }
 
         val messageText = update.message.text
         val quest = userActualizedInfo.activeQuest
@@ -101,8 +108,8 @@ class DialogHandleFetcher(
 
         userRepository.save(
             params.responder.copy(
-                lastUserActionType = LastUserActionType.ACT_QUEST_DIALOG_CLOSE
-            )
+                lastUserActionType = LastUserActionType.ACT_QUEST_DIALOG_CLOSE,
+            ),
         )
 
         bot.execute(
@@ -113,11 +120,13 @@ class DialogHandleFetcher(
             },
         )
 
-        // TODO: сбросить клавиатуру с кнопкой 'Завершить диалог'
         bot.execute(
             SendMessage().also {
                 it.chatId = params.responder.tui!!
                 it.text = "\uD83D\uDDA4 Спасибо за обратную связь\\! *Диалог завершен\\.*"
+                it.replyMarkup = ReplyKeyboardRemove().apply {
+                    removeKeyboard = true
+                }
                 it.parseMode = ParseMode.MARKDOWNV2
             },
         )
