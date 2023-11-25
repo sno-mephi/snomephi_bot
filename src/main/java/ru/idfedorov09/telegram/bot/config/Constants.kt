@@ -6,3 +6,4 @@ const val REGISTRATION_INVALID_GROUP = "Кажется такой группы �
 const val REGISTRATION_COMPLETE = "Спасибо, Вы зарегистрированы"
 const val REGISTRATION_WELCOME = "Здравствуйте"
 const val REGISTRATION_INVALID_FULL_NAME = "Кажется вы ввели ФИО неправильно"
+const val REGISTRATION_START = "Здравствуйте! Вы не зарегистрированы"
