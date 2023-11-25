@@ -2,30 +2,23 @@ package ru.idfedorov09.telegram.bot.fetchers.bot.registrationFetcher
 
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.config.*
-import ru.idfedorov09.telegram.bot.data.enums.stages.BotStage.*
-import ru.idfedorov09.telegram.bot.data.enums.stages.RegistrationStage.*
 import ru.idfedorov09.telegram.bot.data.model.User
-import ru.idfedorov09.telegram.bot.domain.use_cases.message.SendMessageUseCase
-import ru.idfedorov09.telegram.bot.domain.use_cases.user.CreateUserUseCase
-import ru.idfedorov09.telegram.bot.domain.use_cases.user.GetUserUseCase
-import ru.idfedorov09.telegram.bot.domain.use_cases.user.UpdateUserUseCase
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.flow.ExpContainer
+import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.idfedorov09.telegram.bot.util.isValidFullName
+import ru.idfedorov09.telegram.bot.util.isValidGroup
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
-import kotlin.system.exitProcess
 
 @Component
 class RegistrationFetcher(
     private val updatesUtil: UpdatesUtil,
-    private val sendMessageUseCase: SendMessageUseCase,
-    private val getUserUseCase: GetUserUseCase,
-    private val createUserUseCase: CreateUserUseCase,
-    private val updateUserUseCase: UpdateUserUseCase
+    private val userRepository: UserRepository,
 ) : GeneralFetcher() {
     companion object {
         private val log = LoggerFactory.getLogger(RegistrationFetcher::class.java)
@@ -35,43 +28,82 @@ class RegistrationFetcher(
     fun doFetch(
         update: Update,
         bot: Executor,
-        exp: ExpContainer
+        exp: ExpContainer,
     ) {
         val chatId = updatesUtil.getChatId(update) ?: return
         val messageText = update.message.text
 
-        val user = getUserUseCase(chatId) ?: createUserUseCase()
+        // если пользователя нет в бд, то создаем пустого
+        val user = userRepository.findByTui(chatId) ?: run {
+            bot.execute(
+                SendMessage(
+                    chatId,
+                    REGISTRATION_START,
+                ),
+            )
+            userRepository.save(User())
+        }
 
+        exp.byUser = false
         when (null) {
             user.tui -> {
-                updateUserUseCase(user.copy(tui = chatId))
-                sendMessageUseCase(bot, REGISTRATION_FULL_NAME_REQUEST, chatId)
+                userRepository.save(user.copy(tui = chatId))
+                bot.execute(
+                    SendMessage(
+                        chatId,
+                        REGISTRATION_FULL_NAME_REQUEST,
+                    ),
+                )
             }
 
             user.fullName -> {
                 if (messageText.isValidFullName()) {
-                    updateUserUseCase(user.copy(fullName = messageText))
-                    sendMessageUseCase(bot, REGISTRATION_GROUP_REQUEST, chatId)
+                    userRepository.save(user.copy(fullName = messageText))
+                    bot.execute(
+                        SendMessage(
+                            chatId,
+                            REGISTRATION_GROUP_REQUEST,
+                        ),
+                    )
                 } else {
-                    sendMessageUseCase(bot, REGISTRATION_INVALID_FULL_NAME, chatId)
+                    bot.execute(
+                        SendMessage(
+                            chatId,
+                            REGISTRATION_INVALID_FULL_NAME,
+                        ),
+                    )
                 }
             }
 
             user.studyGroup -> {
-                if (messageText.isValidFullName()) {
-                    updateUserUseCase(user.copy(studyGroup = messageText))
-                    sendMessageUseCase(bot, REGISTRATION_WELCOME + " ${user.fullName} из группы $messageText", chatId)
+                if (messageText.isValidGroup()) {
+                    userRepository.save(user.copy(studyGroup = messageText))
+                    bot.execute(
+                        SendMessage(
+                            chatId,
+                            REGISTRATION_WELCOME + ", ${user.fullName} из группы $messageText",
+                        ),
+                    )
                 } else {
-                    sendMessageUseCase(bot, REGISTRATION_INVALID_GROUP, chatId)
+                    bot.execute(
+                        SendMessage(
+                            chatId,
+                            REGISTRATION_INVALID_GROUP,
+                        ),
+                    )
                 }
             }
 
             else -> {
-                sendMessageUseCase(bot, REGISTRATION_WELCOME + " ${user.fullName} из группы ${user.studyGroup}", chatId)
-                exp.registrationStage = COMPLETED
+                bot.execute(
+                    SendMessage(
+                        chatId,
+                        REGISTRATION_WELCOME + " ${user.fullName} из группы ${user.studyGroup}",
+                    ),
+                )
+                exp.byUser = true
                 return
             }
         }
     }
-
 }
