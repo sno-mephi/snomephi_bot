@@ -12,27 +12,27 @@ enum class UserRole(
     val roleDescription: String,
 ) {
     ROOT(
-        "бог",
+        "ROOT",
         "полный доступ",
     ),
 
     USER(
-        "пользователь",
+        "USER",
         "обычный доступ, выдается после регистрации",
     ),
 
     BANNED(
-        "бан",
+        "BANNED",
         "бан",
     ),
 
     MAILER(
-        "почтальон",
+        "MAILER",
         "возможность делать рассылку",
     ),
 
     CATEGORY_BUILDER(
-        "категоричный",
+        "CATEGORY_BUILDER",
         "возможность добавлять новые категории рассылки",
     ),
 }
