@@ -43,6 +43,8 @@ class DialogHandleFetcher(
         // если пользователь не в активном диалоге то скипаем фетчер
         if (userActualizedInfo.activeQuest == null) return
 
+        if (!update.hasMessage()) return
+
         // если апдейт из беседы, то игнорим
         if (update.message.chatId.toString() != userActualizedInfo.tui) return
 
