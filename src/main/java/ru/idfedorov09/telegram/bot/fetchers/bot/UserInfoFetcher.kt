@@ -105,18 +105,9 @@ class UserInfoFetcher(
 
         val msg = SendMessage()
         msg.chatId = params.chatId
-        msg.text = String.format(
-            "\uD83D\uDC64ФИО: %s\n\uD83D\uDCDAгруппа: %s\n\n\uD83D\uDD11роли:%s\n\n\uD83D\uDCF1последний ник в tg: " +
-                "%s\n\n\uD83D\uDDD2категории:%s\n\ntui: %s\nid: %s\n\nпоследнее действие: %s",
-            fullName,
-            studyGroup,
-            userRoles,
-            lastTgNick,
-            userCategories,
-            tui,
-            id,
-            lastUserActionType,
-        )
+        msg.text = "\uD83D\uDC64ФИО: $fullName\n\uD83D\uDCDAгруппа: $studyGroup\n\n\uD83D\uDD11роли:$userRoles\n\n" +
+            "\uD83D\uDCF1последний ник в tg: $lastTgNick\n\n\uD83D\uDDD2категории:$userCategories\n\ntui: $tui\n" +
+            "id: $id\n\nпоследнее действие: $lastUserActionType"
         params.bot.execute(msg)
     }
 
