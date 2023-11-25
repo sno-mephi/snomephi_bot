@@ -11,7 +11,7 @@ enum class TextCommands(
     private val allowedRoles: List<UserRole> = listOf(UserRole.USER),
 ) {
     TEST_COMMAND_1(
-        "Тестовая команда 1",
+        "Тестовая команда 2",
     ),
 
     TEST_COMMAND_2(
@@ -21,6 +21,16 @@ enum class TextCommands(
 
     QUEST_DIALOG_CLOSE(
         "❌ Завершить диалог",
+    ),
+
+    USER_INFO(
+        "/userInfo",
+        listOf(UserRole.ROOT),
+    ),
+
+    ROLE_DESCRIPTION(
+        "/role",
+        listOf(UserRole.ROOT),
     ),
     ;
 
