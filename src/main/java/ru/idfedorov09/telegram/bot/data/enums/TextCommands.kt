@@ -24,31 +24,7 @@ enum class TextCommands(
     ),
 
     CATEGORY_CHOOSE_ACTION(
-        "Редактор категорий",
-        listOf(
-            UserRole.CATEGORY_BUILDER,
-            UserRole.ROOT,
-        ),
-    ),
-
-    CATEGORY_ADD(
-        "Добавить категорию",
-        listOf(
-            UserRole.CATEGORY_BUILDER,
-            UserRole.ROOT,
-        ),
-    ),
-
-    CATEGORY_EDIT(
-        "Изменить категорию",
-        listOf(
-            UserRole.CATEGORY_BUILDER,
-            UserRole.ROOT,
-        ),
-    ),
-
-    CATEGORY_DELETE(
-        "Удалить категорию",
+        "/category",
         listOf(
             UserRole.CATEGORY_BUILDER,
             UserRole.ROOT,
