@@ -1,10 +1,10 @@
-package ru.idfedorov09.telegram.bot.fetchers.bot.registrationFetcher
+package ru.idfedorov09.telegram.bot.fetchers.bot.user_fetchers
 
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
-import ru.idfedorov09.telegram.bot.config.*
+import ru.idfedorov09.telegram.bot.data.enums.UserStrings
 import ru.idfedorov09.telegram.bot.data.model.User
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.flow.ExpContainer
@@ -18,7 +18,7 @@ import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 @Component
 class RegistrationFetcher(
     private val updatesUtil: UpdatesUtil,
-    private val userRepository: UserRepository,
+    private val userRepository: UserRepository
 ) : GeneralFetcher() {
     companion object {
         private val log = LoggerFactory.getLogger(RegistrationFetcher::class.java)
@@ -30,15 +30,17 @@ class RegistrationFetcher(
         bot: Executor,
         exp: ExpContainer,
     ) {
+
         val chatId = updatesUtil.getChatId(update) ?: return
-        val messageText = update.message.text
+        val tgUser = updatesUtil.getUser(update) ?: return
+        val message = update.message.takeIf { update.hasMessage() } ?: return
 
         // если пользователя нет в бд, то создаем пустого
         val user = userRepository.findByTui(chatId) ?: run {
             bot.execute(
                 SendMessage(
                     chatId,
-                    REGISTRATION_START,
+                    UserStrings.RegistrationStart(),
                 ),
             )
             userRepository.save(User())
@@ -47,48 +49,63 @@ class RegistrationFetcher(
         exp.byUser = false
         when (null) {
             user.tui -> {
-                userRepository.save(user.copy(tui = chatId))
+                userRepository.save(
+                    user.copy(
+                        tui = tgUser.id.toString(),
+                        lastTgNick = tgUser.userName
+                    )
+                )
                 bot.execute(
                     SendMessage(
                         chatId,
-                        REGISTRATION_FULL_NAME_REQUEST,
+                        UserStrings.FullNameRequest(),
                     ),
                 )
             }
 
             user.fullName -> {
-                if (messageText.isValidFullName()) {
-                    userRepository.save(user.copy(fullName = messageText))
+                if (message.text.isValidFullName()) {
+                    userRepository.save(user.copy(fullName = message.text))
                     bot.execute(
                         SendMessage(
                             chatId,
-                            REGISTRATION_GROUP_REQUEST,
+                            UserStrings.GroupRequest(),
                         ),
                     )
                 } else {
                     bot.execute(
                         SendMessage(
                             chatId,
-                            REGISTRATION_INVALID_FULL_NAME,
+                            UserStrings.InvalidFullName(),
                         ),
                     )
                 }
             }
 
             user.studyGroup -> {
-                if (messageText.isValidGroup()) {
-                    userRepository.save(user.copy(studyGroup = messageText))
+                userRepository.findByFullNameAndStudyGroup(user.fullName, message.text)?.run {
                     bot.execute(
                         SendMessage(
                             chatId,
-                            REGISTRATION_WELCOME + ", ${user.fullName} из группы $messageText",
+                            UserStrings.AlreadyExists("под юзернеймом @${user.lastTgNick}")
+                        )
+                    )
+                    return
+                }
+
+                if (message.text.isValidGroup()) {
+                    userRepository.save(user.copy(studyGroup = message.text))
+                    bot.execute(
+                        SendMessage(
+                            chatId,
+                            UserStrings.RegistrationComplete(),
                         ),
                     )
                 } else {
                     bot.execute(
                         SendMessage(
                             chatId,
-                            REGISTRATION_INVALID_GROUP,
+                            UserStrings.InvalidGroup(),
                         ),
                     )
                 }
@@ -98,7 +115,7 @@ class RegistrationFetcher(
                 bot.execute(
                     SendMessage(
                         chatId,
-                        REGISTRATION_WELCOME + " ${user.fullName} из группы ${user.studyGroup}",
+                        UserStrings.Welcome( ", ${user.fullName}"),
                     ),
                 )
                 exp.byUser = true
