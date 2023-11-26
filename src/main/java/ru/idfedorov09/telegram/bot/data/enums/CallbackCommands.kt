@@ -13,6 +13,10 @@ enum class CallbackCommands(
     QUEST_BAN("quest_ban|%d"),
     QUEST_START_DIALOG("quest_start_dialog|%d"),
 
+    CATEGORY_EDIT("category_edit"),
+    CATEGORY_ADD("category_add"),
+    CATEGORY_DELETE("category_delete"),
+    
     USER_EDIT("user_edit"),
     USER_DELETE("user_delete"),
     USER_CONFIRM("user_confirm|%s"),
@@ -25,10 +29,6 @@ enum class CallbackCommands(
     }
 
     fun isMatch(callbackData: String): Boolean {
-        var index = data.indexOf("%")
-        if (index < 0) {
-            index = data.length
-        }
         val prefix = data.substring(
             0,
             index,
