@@ -33,18 +33,17 @@ class RoleDescriptionFetcher(
         val chatId = updatesUtil.getChatId(update) ?: return
         val messageText = updatesUtil.getText(update) ?: return
 
-        if (TextCommands.isTextCommand(messageText)) {
-            if (!messageText.contains(TextCommands.ROLE_DESCRIPTION.commandText)) return
+        if (!TextCommands.isTextCommand(messageText)) return
+        if (!messageText.contains(TextCommands.ROLE_DESCRIPTION.commandText)) return
 
-            if (TextCommands.ROLE_DESCRIPTION.isAllowed(userActualizedInfo)) {
-                var text = ""
-                for (s in UserRole.values()) {
-                    text += "-" + s + "\n\t" + s.description + "\n\n"
-                }
-                bot.execute(SendMessage(chatId, text))
-            } else {
-                bot.execute(SendMessage(chatId, "Нет прав"))
-            }
+        if (!TextCommands.ROLE_DESCRIPTION.isAllowed(userActualizedInfo)) {
+            bot.execute(SendMessage(chatId, "Нет прав"))
+            return
         }
+
+        val text = UserRole.values().joinToString("\n\n") {
+            "- ${it}\n\t${it.description}"
+        }
+        bot.execute(SendMessage(chatId, text))
     }
 }
