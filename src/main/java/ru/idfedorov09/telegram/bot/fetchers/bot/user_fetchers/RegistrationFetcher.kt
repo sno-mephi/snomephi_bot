@@ -3,7 +3,11 @@ package ru.idfedorov09.telegram.bot.fetchers.bot.user_fetchers
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
+import org.telegram.telegrambots.meta.api.objects.MessageId
 import org.telegram.telegrambots.meta.api.objects.Update
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
+import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.UserStrings
 import ru.idfedorov09.telegram.bot.data.model.User
 import ru.idfedorov09.telegram.bot.executor.Executor
@@ -47,8 +51,8 @@ class RegistrationFetcher(
         }
 
         exp.byUser = false
-        when (null) {
-            user.tui -> {
+        when {
+            user.tui == null -> {
                 userRepository.save(
                     user.copy(
                         tui = tgUser.id.toString(),
@@ -63,14 +67,15 @@ class RegistrationFetcher(
                 )
             }
 
-            user.fullName -> {
+            user.fullName == null -> {
                 if (message.text.isValidFullName()) {
                     userRepository.save(user.copy(fullName = message.text))
                     bot.execute(
-                        SendMessage(
-                            chatId,
-                            UserStrings.GroupRequest(),
-                        ),
+                        SendMessage().apply {
+                            this.chatId = chatId
+                            this.text = UserStrings.FullNameConfirmation.format(message.text)
+                            this.replyMarkup = createActionsKeyboard("fullName")
+                        },
                     )
                 } else {
                     bot.execute(
@@ -82,12 +87,12 @@ class RegistrationFetcher(
                 }
             }
 
-            user.studyGroup -> {
+            user.studyGroup == null -> {
                 userRepository.findByFullNameAndStudyGroup(user.fullName, message.text)?.run {
                     bot.execute(
                         SendMessage(
                             chatId,
-                            UserStrings.AlreadyExists("под юзернеймом @${user.lastTgNick}")
+                            UserStrings.AlreadyExists.format(user.lastTgNick?:"")
                         )
                     )
                     return
@@ -96,10 +101,11 @@ class RegistrationFetcher(
                 if (message.text.isValidGroup()) {
                     userRepository.save(user.copy(studyGroup = message.text))
                     bot.execute(
-                        SendMessage(
-                            chatId,
-                            UserStrings.RegistrationComplete(),
-                        ),
+                        SendMessage().apply {
+                            this.chatId = chatId
+                            this.text = UserStrings.GroupConfirmation.format(message.text)
+                            this.replyMarkup = createActionsKeyboard("studyGroup")
+                        },
                     )
                 } else {
                     bot.execute(
@@ -115,7 +121,7 @@ class RegistrationFetcher(
                 bot.execute(
                     SendMessage(
                         chatId,
-                        UserStrings.Welcome( ", ${user.fullName}"),
+                        UserStrings.Welcome.format(user.fullName),
                     ),
                 )
                 exp.byUser = true
@@ -123,4 +129,19 @@ class RegistrationFetcher(
             }
         }
     }
+
+    private fun createActionsKeyboard(
+        parameter: String
+    ) = InlineKeyboardMarkup(
+        listOf(
+            listOf(
+                InlineKeyboardButton("✅ Подтвердить").also {
+                    it.callbackData = CallbackCommands.USER_CONFIRM.data.format(parameter)
+                },
+                InlineKeyboardButton("❌ Отменить").also {
+                    it.callbackData = CallbackCommands.USER_DECLINE.data.format(parameter)
+                }
+            ),
+        )
+    )
 }
