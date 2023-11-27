@@ -13,6 +13,10 @@ enum class CallbackCommands(
     QUEST_BAN("quest_ban|%d"),
     QUEST_START_DIALOG("quest_start_dialog|%d"),
 
+    USER_EDIT("user_edit"),
+    USER_DELETE("user_delete"),
+    USER_CONFIRM("user_confirm|%s"),
+    USER_DECLINE("user_decline|%s")
     ;
 
     fun format(vararg args: Any?): String {
