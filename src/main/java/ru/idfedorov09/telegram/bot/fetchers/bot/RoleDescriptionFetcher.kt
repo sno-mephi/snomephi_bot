@@ -12,6 +12,10 @@ import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 
+/**
+ * Фетчер, обрабатывающий команду /role
+ * присылает список ролей
+ */
 @Component
 class RoleDescriptionFetcher(
     private val updatesUtil: UpdatesUtil,
@@ -35,7 +39,7 @@ class RoleDescriptionFetcher(
             if (TextCommands.ROLE_DESCRIPTION.isAllowed(userActualizedInfo)) {
                 var text = ""
                 for (s in UserRole.values()) {
-                    text += "-" + s.roleName + "\n\t" + s.roleDescription + "\n\n"
+                    text += "-" + s + "\n\t" + s.description + "\n\n"
                 }
                 bot.execute(SendMessage(chatId, text))
             } else {
