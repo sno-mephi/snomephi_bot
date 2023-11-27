@@ -1,13 +1,10 @@
 package ru.idfedorov09.telegram.bot.fetchers.bot.user_fetchers
 
-import io.lettuce.core.dynamic.support.StandardReflectionParameterNameDiscoverer
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
-import org.telegram.telegrambots.meta.api.objects.CallbackQuery
 import org.telegram.telegrambots.meta.api.objects.Message
-import org.telegram.telegrambots.meta.api.objects.MessageId
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.UserStrings
@@ -32,6 +29,7 @@ class UserActionHandlerFetcher(
     fun doFetch(
         update: Update,
         bot: Executor,
+        exp: ExpContainer
     ) {
         val callbackData =
             runCatching { update.callbackQuery!! }
@@ -48,7 +46,8 @@ class UserActionHandlerFetcher(
                 callbackMessage,
                 chatId,
                 bot,
-                parameters
+                parameters,
+                exp
             )
             CallbackCommands.USER_DECLINE.isMatch(callbackData) -> onUserDecline(
                 callbackMessage,
@@ -107,7 +106,8 @@ class UserActionHandlerFetcher(
         message: Message,
         chatId: String,
         bot: Executor,
-        parameter: String?
+        parameter: String?,
+        exp: ExpContainer
     ) {
         parameter?.let {
             when (it) {
@@ -127,6 +127,7 @@ class UserActionHandlerFetcher(
                             UserStrings.RegistrationComplete(),
                         ),
                     )
+                    exp.byUser = true
                 }
 
                 else -> {}
