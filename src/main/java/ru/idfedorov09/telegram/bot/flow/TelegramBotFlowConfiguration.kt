@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUALIFIER_FLOW_TG_BOT
 import ru.idfedorov09.telegram.bot.fetchers.bot.*
 import ru.idfedorov09.telegram.bot.fetchers.bot.user_fetchers.RegistrationFetcher
+import ru.idfedorov09.telegram.bot.fetchers.bot.user_fetchers.UserActionHandlerFetcher
 import ru.mephi.sno.libs.flow.belly.FlowBuilder
 import ru.mephi.sno.libs.flow.belly.FlowContext
 
@@ -21,6 +22,7 @@ open class TelegramBotFlowConfiguration(
     private val questButtonHandlerFetcher: QuestButtonHandlerFetcher,
     private val dialogHandleFetcher: DialogHandleFetcher,
     private val registrationFetcher: RegistrationFetcher,
+    private val userActionHandlerFetcher: UserActionHandlerFetcher
 ) {
 
     /**
@@ -35,7 +37,11 @@ open class TelegramBotFlowConfiguration(
 
     private fun FlowBuilder.buildFlow() {
         sequence {
-            fetch(registrationFetcher)
+            // registration block
+            group {
+                fetch(userActionHandlerFetcher)
+                fetch(registrationFetcher)
+            }
             fetch(actualizeUserInfoFetcher)
 //            group(condition = { it.isByUser() }) {
 //                fetch(questStartFetcher)
