@@ -12,30 +12,33 @@ import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 
+/**
+ * Фетчер, обрабатывающий команду /userInfo
+ * присылает полную информацию о пользователе
+ */
 @Component
-class UserInfoFetcher(
+class UserInfoCommandFetcher(
     private val updatesUtil: UpdatesUtil,
     private val userRepository: UserRepository,
+    private val bot: Executor,
 ) : GeneralFetcher() {
     companion object {
-        private val log = LoggerFactory.getLogger(UserInfoFetcher::class.java)
+        private val log = LoggerFactory.getLogger(UserInfoCommandFetcher::class.java)
     }
 
     @InjectData
     fun doFetch(
         update: Update,
-        bot: Executor,
         userActualizedInfo: UserActualizedInfo,
     ) {
         val chatId = updatesUtil.getChatId(update) ?: return
         val messageText = updatesUtil.getText(update) ?: return
 
-        val params = UserInfoFetcher.Params(
+        val params = UserInfoCommandFetcher.Params(
             messageText = messageText,
             userActualizedInfo = userActualizedInfo,
             update = update,
             chatId = chatId,
-            bot = bot,
         )
 
         if (messageText.contains(TextCommands.USER_INFO.commandText)) {
@@ -43,27 +46,26 @@ class UserInfoFetcher(
         }
     }
 
-    private fun handleCommands(params: UserInfoFetcher.Params) {
+    private fun handleCommands(params: UserInfoCommandFetcher.Params) {
         if (!params.messageText.contains(TextCommands.USER_INFO.commandText)) return
 
-        if (TextCommands.USER_INFO.commandText in params.messageText) {
-            if (TextCommands.USER_INFO.isAllowed(params.userActualizedInfo)) {
-                val messageSplit = params.messageText.split(" ", "\n", "\t")
-                when (messageSplit.size) {
-                    1 -> params.bot.execute(
-                        SendMessage(
-                            params.chatId,
-                            "отправьте команду формата" +
-                                " \"/userinfo tui\"",
-                        ),
-                    )
-                    else -> {
-                        val tui = messageSplit[1]
-                        sendUserInfo(params, tui)
-                    }
-                }
-            } else {
-                params.bot.execute(SendMessage(params.chatId, "Нет прав"))
+        if (!TextCommands.USER_INFO.isAllowed(params.userActualizedInfo)) {
+            bot.execute(SendMessage(params.chatId, "Нет прав"))
+            return
+        }
+
+        val messageSplit = params.messageText.split(" ", "\n", "\t")
+        when (messageSplit.size) {
+            1 -> bot.execute(
+                SendMessage(
+                    params.chatId,
+                    "отправьте команду формата" +
+                        " \"/userinfo tui\"",
+                ),
+            )
+            else -> {
+                val tui = messageSplit[1]
+                sendUserInfo(params, tui)
             }
         }
     }
@@ -71,7 +73,7 @@ class UserInfoFetcher(
     private fun sendUserInfo(params: Params, tui: String) {
         val user = userRepository.findByTui(tui)
         if (user == null) {
-            params.bot.execute(SendMessage(params.chatId, "Пользователь не найден"))
+            bot.execute(SendMessage(params.chatId, "Пользователь не найден"))
             return
         }
 
@@ -79,11 +81,7 @@ class UserInfoFetcher(
         val studyGroup = user.studyGroup ?: "-"
         val lastTgNick = user.lastTgNick ?: "-"
         val id = user.id ?: "-"
-        // записать в нормальной форме
-        val lastUserActionType = when (user.lastUserActionType) {
-            null -> "-"
-            else -> user.lastUserActionType.actionDescription
-        }
+        val lastUserActionType = user.lastUserActionType ?: "-"
 
         var userCategories = ""
         if (user.categories.isNotEmpty()) {
@@ -97,7 +95,7 @@ class UserInfoFetcher(
         var userRoles = ""
         if (user.roles.isNotEmpty()) {
             for (s in user.roles) {
-                userRoles += String.format("\n-%s", s.roleName)
+                userRoles += String.format("\n-%s", s)
             }
         } else {
             userRoles = "\nпусто"
@@ -108,7 +106,7 @@ class UserInfoFetcher(
         msg.text = "\uD83D\uDC64ФИО: $fullName\n\uD83D\uDCDAгруппа: $studyGroup\n\n\uD83D\uDD11роли:$userRoles\n\n" +
             "\uD83D\uDCF1последний ник в tg: $lastTgNick\n\n\uD83D\uDDD2категории:$userCategories\n\ntui: $tui\n" +
             "id: $id\n\nпоследнее действие: $lastUserActionType"
-        params.bot.execute(msg)
+        bot.execute(msg)
     }
 
     private data class Params(
@@ -116,6 +114,5 @@ class UserInfoFetcher(
         val update: Update,
         val userActualizedInfo: UserActualizedInfo,
         val chatId: String,
-        val bot: Executor,
     )
 }
