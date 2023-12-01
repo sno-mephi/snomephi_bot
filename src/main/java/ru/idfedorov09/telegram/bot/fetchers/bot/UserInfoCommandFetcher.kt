@@ -54,20 +54,20 @@ class UserInfoCommandFetcher(
             return
         }
 
-        val messageSplit = params.messageText.split(" ", "\n", "\t")
-        when (messageSplit.size) {
-            1 -> bot.execute(
+        val tui: String? = Regex("""${TextCommands.USER_INFO.commandText}\s+\d+""")
+            .find(params.messageText)?.value?.let { Regex("""\d+""").find(it)?.value }
+
+        if (tui == null) {
+            bot.execute(
                 SendMessage(
                     params.chatId,
-                    "отправьте команду формата" +
-                        " \"/userinfo tui\"",
+                    "отправьте команду формата\n\"/userInfo tui\"",
                 ),
             )
-            else -> {
-                val tui = messageSplit[1]
-                sendUserInfo(params, tui)
-            }
+            return
         }
+
+        sendUserInfo(params, tui)
     }
 
     private fun sendUserInfo(params: Params, tui: String) {
