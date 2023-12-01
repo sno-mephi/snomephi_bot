@@ -10,6 +10,9 @@ import ru.mephi.sno.libs.flow.belly.Mutable
 data class ExpContainer(
     var botStage: BotStage = BotStage.OFFLINE,
 
-    /** флаг который говорит что апдейт пришел от пользователя **/
+    /** флаг, который говорит, что апдейт пришел от пользователя **/
     var byUser: Boolean = true,
+
+    /** флаг, который говорит, что зарегистрирован ли пользователь **/
+    var isUserRegistered: Boolean = false
 )
