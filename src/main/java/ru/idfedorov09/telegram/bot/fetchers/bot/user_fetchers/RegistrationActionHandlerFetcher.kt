@@ -21,6 +21,7 @@ class RegistrationActionHandlerFetcher(
     private val updatesUtil: UpdatesUtil,
     private val userRepository: UserRepository
 ) : GeneralFetcher() {
+
     companion object {
         private val log = LoggerFactory.getLogger(RegistrationFetcher::class.java)
     }
@@ -28,8 +29,7 @@ class RegistrationActionHandlerFetcher(
     @InjectData
     fun doFetch(
         update: Update,
-        bot: Executor,
-        exp: ExpContainer
+        bot: Executor
     ) {
         if (!update.hasCallbackQuery()) return
         val callbackData = update.callbackQuery.data
@@ -44,8 +44,7 @@ class RegistrationActionHandlerFetcher(
                 callbackMessage,
                 chatId,
                 bot,
-                parameters,
-                exp
+                parameters
             )
             CallbackCommands.USER_DECLINE.isMatch(callbackData) -> onUserDecline(
                 callbackMessage,
@@ -104,8 +103,7 @@ class RegistrationActionHandlerFetcher(
         message: Message,
         chatId: String,
         bot: Executor,
-        parameter: String?,
-        exp: ExpContainer
+        parameter: String?
     ) {
         parameter?.let {
             when (it) {
@@ -125,7 +123,6 @@ class RegistrationActionHandlerFetcher(
                             UserStrings.RegistrationComplete(),
                         ),
                     )
-                    exp.isUserRegistered = true
                 }
 
                 else -> {}
