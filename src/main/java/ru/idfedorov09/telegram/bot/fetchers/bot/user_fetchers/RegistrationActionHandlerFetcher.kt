@@ -17,7 +17,7 @@ import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 
 @Component
-class UserActionHandlerFetcher(
+class RegistrationActionHandlerFetcher(
     private val updatesUtil: UpdatesUtil,
     private val userRepository: UserRepository
 ) : GeneralFetcher() {
@@ -31,10 +31,8 @@ class UserActionHandlerFetcher(
         bot: Executor,
         exp: ExpContainer
     ) {
-        val callbackData =
-            runCatching { update.callbackQuery!! }
-                .getOrElse { return }
-                .data
+        if (!update.hasCallbackQuery()) return
+        val callbackData = update.callbackQuery.data
 
         val callbackMessage = update.callbackQuery.message
         val user: User = userRepository.findByTui(updatesUtil.getUserId(update) ?: "") ?: return
@@ -62,7 +60,7 @@ class UserActionHandlerFetcher(
 
     private fun onUserDecline(
         message: Message,
-        chatId: String,
+        chat: String,
         bot: Executor,
         user: User,
         parameter: String?
@@ -93,10 +91,10 @@ class UserActionHandlerFetcher(
             }
             bot.execute(
                 EditMessageText().apply {
-                    this.replyMarkup = null
-                    this.chatId = chatId
-                    this.messageId = message.messageId
-                    this.text = message.text
+                    replyMarkup = null
+                    chatId = chat
+                    messageId = message.messageId
+                    text = message.text
                 }
             )
         }
@@ -127,7 +125,7 @@ class UserActionHandlerFetcher(
                             UserStrings.RegistrationComplete(),
                         ),
                     )
-                    exp.byUser = true
+                    exp.isUserRegistered = true
                 }
 
                 else -> {}
