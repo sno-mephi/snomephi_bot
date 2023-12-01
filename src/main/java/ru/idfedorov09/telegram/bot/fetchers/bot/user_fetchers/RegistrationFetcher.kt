@@ -13,10 +13,9 @@ import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.flow.ExpContainer
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
-import ru.idfedorov09.telegram.bot.util.isValidFullName
-import ru.idfedorov09.telegram.bot.util.isValidGroup
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
+import java.lang.Thread.sleep
 
 @Component
 class RegistrationFetcher(
@@ -39,24 +38,17 @@ class RegistrationFetcher(
         val message = update.message.takeIf { update.hasMessage() } ?: return
 
         // если пользователя нет в бд, то создаем пустого
-        val user = userRepository.findByTui(chatId) ?: run {
-            bot.execute(
-                SendMessage(
-                    chatId,
-                    UserStrings.RegistrationStart(),
-                ),
-            )
+        val user = userRepository.findByTui(tgUser.id.toString()) ?: run {
             userRepository.save(User())
         }
-
-        exp.byUser = false
         when {
-            user.tui == null -> {
-                userRepository.save(
-                    user.copy(
-                        tui = tgUser.id.toString(),
-                        lastTgNick = tgUser.userName
-                    )
+            user.fullName == null -> {
+                userRepository.save(user.copy(fullName = "n/a"))
+                bot.execute(
+                    SendMessage(
+                        chatId,
+                        UserStrings.RegistrationStart(),
+                    ),
                 )
                 bot.execute(
                     SendMessage(
@@ -66,7 +58,7 @@ class RegistrationFetcher(
                 )
             }
 
-            user.fullName == null -> {
+            user.fullName == "n/a" -> {
                 if (message.text.isValidFullName()) {
                     userRepository.save(user.copy(fullName = message.text))
                     bot.execute(
@@ -123,8 +115,7 @@ class RegistrationFetcher(
                         UserStrings.Welcome.format(user.fullName),
                     ),
                 )
-                exp.byUser = true
-                return
+                exp.isUserRegistered = true
             }
         }
     }
@@ -143,4 +134,13 @@ class RegistrationFetcher(
             ),
         )
     )
+
+    private fun String?.isValidFullName() = this?.let {
+        it.isNotEmpty() && it.length < 128
+    } ?: false
+
+    private fun String?.isValidGroup() = this?.let {
+        it.isNotEmpty() && "([АМСБамсб]{1})([0-9]{2})-([0-9]{3})".toRegex().matches(it)
+    } ?: false
+
 }
