@@ -11,4 +11,17 @@ enum class LastUserActionType {
 
     /** Завершил диалог **/
     ACT_QUEST_DIALOG_CLOSE,
+
+
+    /** действия при регистраци **/
+    REGISTRATION_START,
+
+    REGISTRATION_ENTER_FULL_NAME,
+
+    REGISTRATION_ENTER_GROUP,
+
+    REGISTRATION_CONFIRM_FULL_NAME,
+
+    REGISTRATION_CONFIRM_GROUP
+
 }
