@@ -10,6 +10,14 @@ enum class TextCommands(
     /** роли которым доступна эта команда **/
     private val allowedRoles: List<UserRole> = listOf(UserRole.USER),
 ) {
+    BAN_COMMAND(
+        "Забанить пользователя",
+    ),
+
+    UNBAN_COMMAND(
+      "Разбанить пользователя"
+    ),
+
     TEST_COMMAND_1(
         "Тестовая команда 1",
     ),

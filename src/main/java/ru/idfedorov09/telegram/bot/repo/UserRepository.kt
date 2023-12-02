@@ -5,4 +5,5 @@ import ru.idfedorov09.telegram.bot.data.model.User
 
 interface UserRepository : JpaRepository<User, Long> {
     fun findByTui(tui: String): User?
+    fun findByLastTgNick(lastTgNick: String): User?
 }
