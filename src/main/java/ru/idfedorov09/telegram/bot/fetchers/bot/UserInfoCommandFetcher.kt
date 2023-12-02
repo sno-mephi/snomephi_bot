@@ -47,8 +47,6 @@ class UserInfoCommandFetcher(
     }
 
     private fun handleCommands(params: UserInfoCommandFetcher.Params) {
-        if (!params.messageText.contains(TextCommands.USER_INFO.commandText)) return
-
         if (!TextCommands.USER_INFO.isAllowed(params.userActualizedInfo)) {
             bot.execute(SendMessage(params.chatId, "Нет прав"))
             return
