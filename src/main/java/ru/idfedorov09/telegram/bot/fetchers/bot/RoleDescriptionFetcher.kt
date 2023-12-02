@@ -33,8 +33,7 @@ class RoleDescriptionFetcher(
         val chatId = updatesUtil.getChatId(update) ?: return
         val messageText = updatesUtil.getText(update) ?: return
 
-        if (!TextCommands.isTextCommand(messageText)) return
-        if (!messageText.contains(TextCommands.ROLE_DESCRIPTION.commandText)) return
+        if (!TextCommands.ROLE_DESCRIPTION.commandText.equals(messageText)) return
 
         if (!TextCommands.ROLE_DESCRIPTION.isAllowed(userActualizedInfo)) {
             bot.execute(SendMessage(chatId, "Нет прав"))
