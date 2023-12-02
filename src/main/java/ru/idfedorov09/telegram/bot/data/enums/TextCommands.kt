@@ -32,6 +32,16 @@ enum class TextCommands(
     QUEST_DIALOG_CLOSE(
         "❌ Завершить диалог",
     ),
+
+    USER_INFO(
+        "/userInfo",
+        listOf(UserRole.ROOT),
+    ),
+
+    ROLE_DESCRIPTION(
+        "/role",
+        listOf(UserRole.ROOT),
+    ),
     ;
 
     /** Проверяет, является ли текст командой **/
