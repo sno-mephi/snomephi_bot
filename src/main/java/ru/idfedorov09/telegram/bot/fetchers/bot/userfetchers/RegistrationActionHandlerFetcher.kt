@@ -1,4 +1,4 @@
-package ru.idfedorov09.telegram.bot.fetchers.bot.user_fetchers
+package ru.idfedorov09.telegram.bot.fetchers.bot.userfetchers
 
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -7,19 +7,17 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
+import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.UserStrings
-import ru.idfedorov09.telegram.bot.data.model.User
+import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
-import ru.idfedorov09.telegram.bot.flow.ExpContainer
-import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 
 @Component
 class RegistrationActionHandlerFetcher(
-    private val updatesUtil: UpdatesUtil,
-    private val userRepository: UserRepository
+    private val updatesUtil: UpdatesUtil
 ) : GeneralFetcher() {
 
     companion object {
@@ -29,30 +27,34 @@ class RegistrationActionHandlerFetcher(
     @InjectData
     fun doFetch(
         update: Update,
-        bot: Executor
-    ) {
-        if (!update.hasCallbackQuery()) return
+        bot: Executor,
+        userInfo: UserActualizedInfo
+    ): UserActualizedInfo {
+        if (!update.hasCallbackQuery()) return userInfo
+        val chatId: String = updatesUtil.getChatId(update) ?: return userInfo
         val callbackData = update.callbackQuery.data
 
         val callbackMessage = update.callbackQuery.message
-        val user: User = userRepository.findByTui(updatesUtil.getUserId(update) ?: "") ?: return
-        val chatId: String = updatesUtil.getChatId(update) ?: return
         val parameters = CallbackCommands.params(callbackData).firstOrNull()
 
-        when {
+        return when {
             CallbackCommands.USER_CONFIRM.isMatch(callbackData) -> onUserConfirm(
                 callbackMessage,
                 chatId,
                 bot,
-                parameters
+                parameters,
+                userInfo
             )
+
             CallbackCommands.USER_DECLINE.isMatch(callbackData) -> onUserDecline(
                 callbackMessage,
                 chatId,
                 bot,
-                user,
+                userInfo,
                 parameters
             )
+
+            else -> userInfo
         }
 
     }
@@ -61,28 +63,34 @@ class RegistrationActionHandlerFetcher(
         message: Message,
         chat: String,
         bot: Executor,
-        user: User,
+        userInfo: UserActualizedInfo,
         parameter: String?
-    ) {
+    ): UserActualizedInfo {
+        var user = userInfo
+
         parameter?.let {
             when (it) {
                 "fullName" -> {
-                    userRepository.save(user.copy(fullName = null))
                     bot.execute(
-                        SendMessage().apply {
-                            this.chatId = chatId
-                            this.text = UserStrings.FullNameRequest(" заново")
-                        }
+                        SendMessage(
+                            chat,
+                            UserStrings.FullNameRequest(" заново")
+                        )
+                    )
+                    user = user.copy(
+                        lastUserActionType = LastUserActionType.REGISTRATION_ENTER_FULL_NAME
                     )
                 }
 
                 "studyGroup" -> {
-                    userRepository.save(user.copy(studyGroup = null))
                     bot.execute(
-                        SendMessage().apply {
-                            this.chatId = chatId
-                            this.text = UserStrings.GroupRequest(" заново")
-                        }
+                        SendMessage(
+                            chat,
+                            UserStrings.GroupRequest(" заново")
+                        )
+                    )
+                    user = user.copy(
+                        lastUserActionType = LastUserActionType.REGISTRATION_ENTER_GROUP
                     )
                 }
 
@@ -97,31 +105,42 @@ class RegistrationActionHandlerFetcher(
                 }
             )
         }
+        return user
     }
 
     private fun onUserConfirm(
         message: Message,
-        chatId: String,
+        chat: String,
         bot: Executor,
-        parameter: String?
-    ) {
+        parameter: String?,
+        userInfo: UserActualizedInfo
+    ): UserActualizedInfo {
+
+        var user = userInfo
+
         parameter?.let {
             when (it) {
                 "fullName" -> {
                     bot.execute(
-                        SendMessage().apply {
-                            this.chatId = chatId
-                            this.text = UserStrings.GroupRequest()
-                        }
+                        SendMessage(
+                            chat,
+                            UserStrings.GroupRequest()
+                        )
+                    )
+                    user = user.copy(
+                        lastUserActionType = LastUserActionType.REGISTRATION_ENTER_GROUP
                     )
                 }
 
                 "studyGroup" -> {
                     bot.execute(
                         SendMessage(
-                            chatId,
+                            chat,
                             UserStrings.RegistrationComplete(),
                         ),
+                    )
+                    user = user.copy(
+                        lastUserActionType = LastUserActionType.DEFAULT
                     )
                 }
 
@@ -129,12 +148,13 @@ class RegistrationActionHandlerFetcher(
             }
             bot.execute(
                 EditMessageText().apply {
-                    this.replyMarkup = null
-                    this.chatId = chatId
-                    this.messageId = message.messageId
-                    this.text = message.text
+                    replyMarkup = null
+                    chatId = chat
+                    messageId = message.messageId
+                    text = message.text
                 }
             )
         }
+        return user
     }
 }
