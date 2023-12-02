@@ -21,6 +21,8 @@ open class TelegramBotFlowConfiguration(
     private val updateDataFetcher: UpdateDataFetcher,
     private val questButtonHandlerFetcher: QuestButtonHandlerFetcher,
     private val dialogHandleFetcher: DialogHandleFetcher,
+    private val banUserFetcher: BanUserFetcher,
+    private val unbanUserFetcher: UnbanUserFetcher,
 ) {
 
     /**
@@ -40,6 +42,8 @@ open class TelegramBotFlowConfiguration(
                 fetch(questStartFetcher)
                 fetch(questButtonHandlerFetcher)
                 fetch(dialogHandleFetcher)
+                fetch(banUserFetcher)
+                fetch(unbanUserFetcher)
             }
             fetch(updateDataFetcher)
         }

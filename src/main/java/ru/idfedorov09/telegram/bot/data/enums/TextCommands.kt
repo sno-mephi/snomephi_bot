@@ -11,11 +11,13 @@ enum class TextCommands(
     private val allowedRoles: List<UserRole> = listOf(UserRole.USER),
 ) {
     BAN_COMMAND(
-        "Забанить пользователя",
+        "/ban",
+        listOf(UserRole.ROOT),
     ),
 
     UNBAN_COMMAND(
-      "Разбанить пользователя"
+        "/unban",
+        listOf(UserRole.ROOT),
     ),
 
     TEST_COMMAND_1(
