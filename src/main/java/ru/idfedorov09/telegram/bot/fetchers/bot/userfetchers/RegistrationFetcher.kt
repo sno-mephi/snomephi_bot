@@ -1,4 +1,4 @@
-package ru.idfedorov09.telegram.bot.fetchers.bot.user_fetchers
+package ru.idfedorov09.telegram.bot.fetchers.bot.userfetchers
 
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -7,15 +7,15 @@ import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
+import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.UserStrings
-import ru.idfedorov09.telegram.bot.data.model.User
+import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.flow.ExpContainer
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
-import java.lang.Thread.sleep
 
 @Component
 class RegistrationFetcher(
@@ -31,42 +31,48 @@ class RegistrationFetcher(
         update: Update,
         bot: Executor,
         exp: ExpContainer,
-    ) {
+        userActualizedInfo: UserActualizedInfo,
+    ): UserActualizedInfo {
 
-        val chatId = updatesUtil.getChatId(update) ?: return
-        val tgUser = updatesUtil.getUser(update) ?: return
-        val message = update.message.takeIf { update.hasMessage() } ?: return
+        val chatId = updatesUtil.getChatId(update) ?: return userActualizedInfo
+        val message = update.message.takeIf { update.hasMessage() } ?: return userActualizedInfo
 
-        // если пользователя нет в бд, то создаем пустого
-        val user = userRepository.findByTui(tgUser.id.toString()) ?: run {
-            userRepository.save(User())
+        val action = userActualizedInfo.lastUserActionType ?: run {
+            bot.execute(
+                SendMessage(
+                    chatId,
+                    UserStrings.RegistrationStart(),
+                ),
+            )
+            LastUserActionType.REGISTRATION_START
         }
-        when {
-            user.fullName == null -> {
-                userRepository.save(user.copy(fullName = "n/a"))
-                bot.execute(
-                    SendMessage(
-                        chatId,
-                        UserStrings.RegistrationStart(),
-                    ),
-                )
+
+        var userInfo = userActualizedInfo
+
+        when (action) {
+            LastUserActionType.REGISTRATION_START -> {
                 bot.execute(
                     SendMessage(
                         chatId,
                         UserStrings.FullNameRequest(),
                     ),
                 )
+                userInfo = userInfo.copy(
+                    lastUserActionType = LastUserActionType.REGISTRATION_ENTER_FULL_NAME
+                )
             }
 
-            user.fullName == "n/a" -> {
+            LastUserActionType.REGISTRATION_ENTER_FULL_NAME -> {
                 if (message.text.isValidFullName()) {
-                    userRepository.save(user.copy(fullName = message.text))
                     bot.execute(
                         SendMessage().apply {
                             this.chatId = chatId
                             this.text = UserStrings.FullNameConfirmation.format(message.text)
                             this.replyMarkup = createActionsKeyboard("fullName")
                         },
+                    )
+                    userInfo = userInfo.copy(
+                        lastUserActionType = LastUserActionType.REGISTRATION_CONFIRM_FULL_NAME
                     )
                 } else {
                     bot.execute(
@@ -78,19 +84,17 @@ class RegistrationFetcher(
                 }
             }
 
-            user.studyGroup == null -> {
-                userRepository.findByFullNameAndStudyGroup(user.fullName, message.text)?.run {
+            LastUserActionType.REGISTRATION_ENTER_GROUP -> {
+                userRepository.findByFullNameAndStudyGroup(userInfo.fullName ?: "", message.text)?.run {
                     bot.execute(
                         SendMessage(
                             chatId,
-                            UserStrings.AlreadyExists.format(user.lastTgNick?:"")
+                            UserStrings.AlreadyExists.format(userInfo.lastTgNick ?: "")
                         )
                     )
-                    return
+                    return userInfo
                 }
-
                 if (message.text.isValidGroup()) {
-                    userRepository.save(user.copy(studyGroup = message.text))
                     bot.execute(
                         SendMessage().apply {
                             this.chatId = chatId
@@ -98,6 +102,7 @@ class RegistrationFetcher(
                             this.replyMarkup = createActionsKeyboard("studyGroup")
                         },
                     )
+                    userInfo = userInfo.copy(lastUserActionType = LastUserActionType.REGISTRATION_CONFIRM_GROUP)
                 } else {
                     bot.execute(
                         SendMessage(
@@ -109,15 +114,14 @@ class RegistrationFetcher(
             }
 
             else -> {
-                bot.execute(
-                    SendMessage(
-                        chatId,
-                        UserStrings.Welcome.format(user.fullName),
-                    ),
-                )
-                exp.isUserRegistered = true
+                if (action != LastUserActionType.REGISTRATION_CONFIRM_GROUP &&
+                    action != LastUserActionType.REGISTRATION_CONFIRM_FULL_NAME) {
+                    exp.isUserRegistered = true
+                }
             }
         }
+
+        return userInfo
     }
 
     private fun createActionsKeyboard(
