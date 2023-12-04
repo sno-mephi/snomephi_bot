@@ -21,9 +21,10 @@ open class TelegramBotFlowConfiguration(
     private val updateDataFetcher: UpdateDataFetcher,
     private val questButtonHandlerFetcher: QuestButtonHandlerFetcher,
     private val dialogHandleFetcher: DialogHandleFetcher,
-    private val roleDescriptionFetcher: RoleDescriptionFetcher,
 
-    private val userInfoFetcher: UserInfoFetcher,
+    // TODO: вписать в граф
+    private val roleDescriptionFetcher: RoleDescriptionFetcher,
+    private val userInfoCommandFetcher: UserInfoCommandFetcher,
 ) {
 
     /**
