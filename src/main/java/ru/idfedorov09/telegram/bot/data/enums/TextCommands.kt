@@ -30,8 +30,27 @@ enum class TextCommands(
             UserRole.ROOT,
         ),
     ),
-
-
+    CATEGORY_EDIT(
+        "/category_edit",
+        listOf(
+            UserRole.CATEGORY_BUILDER,
+            UserRole.ROOT,
+        ),
+    ),
+    CATEGORY_ADD(
+        "/category_add",
+        listOf(
+            UserRole.CATEGORY_BUILDER,
+            UserRole.ROOT,
+        ),
+    ),
+    CATEGORY_DELETE(
+        "/category_delete",
+        listOf(
+            UserRole.CATEGORY_BUILDER,
+            UserRole.ROOT,
+        ),
+    ),
     USER_INFO(
         "/userInfo",
         listOf(UserRole.ROOT),
