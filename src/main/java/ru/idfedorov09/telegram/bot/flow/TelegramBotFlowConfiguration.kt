@@ -15,14 +15,17 @@ import ru.mephi.sno.libs.flow.belly.FlowContext
  */
 @Configuration
 open class TelegramBotFlowConfiguration(
+    // TODO: удалить лишние фетчеры
+    private val testFetcher: TestFetcher,
+    private val toggleStageFetcher: ToggleStageFetcher,
+
     private val actualizeUserInfoFetcher: ActualizeUserInfoFetcher,
     private val questStartFetcher: QuestStartFetcher,
     private val updateDataFetcher: UpdateDataFetcher,
     private val questButtonHandlerFetcher: QuestButtonHandlerFetcher,
     private val dialogHandleFetcher: DialogHandleFetcher,
-    private val categoryStartFetcher: CategoryStartFetcher,
     private val categoryButtonHandlerFetcher: CategoryButtonHandlerFetcher,
-    private val categoryFetcher: CategoryFetcher,
+    private val categoryCommandFetcher: CategoryCommandFetcher,
     private val registrationFetcher: RegistrationFetcher,
     private val userActionHandlerFetcher: RegistrationActionHandlerFetcher,
     private val roleDescriptionFetcher: RoleDescriptionFetcher,
@@ -42,7 +45,7 @@ open class TelegramBotFlowConfiguration(
     private fun FlowBuilder.buildFlow() {
         sequence {
             fetch(actualizeUserInfoFetcher)
-
+            
             // registration block
             group(condition = { it.isByUser() && !it.isUserRegistered() }) {
                 fetch(userActionHandlerFetcher)
@@ -50,7 +53,7 @@ open class TelegramBotFlowConfiguration(
             }
 
             group(condition = { it.isByUser() && it.isUserRegistered() }) {
-                fetch(categoryStartFetcher)
+                fetch(categoryCommandFetcher)
                 fetch(categoryButtonHandlerFetcher)
                 
                 fetch(roleDescriptionFetcher)

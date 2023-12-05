@@ -7,6 +7,7 @@ package ru.idfedorov09.telegram.bot.data.enums
 enum class CallbackCommands(
     val data: String,
 ) {
+    VOID("void"),
     /** Нажата кнопка Ответ **/
     QUEST_ANSWER("quest_ans|%d"),
     QUEST_IGNORE("quest_ignore|%d"),
@@ -16,6 +17,8 @@ enum class CallbackCommands(
     CATEGORY_EDIT("category_edit"),
     CATEGORY_ADD("category_add"),
     CATEGORY_DELETE("category_delete"),
+    CATEGORY_PAGE("category_page|%d"),
+    CATEGORY_CHOOSE("category_choose|%d"),
     
     USER_EDIT("user_edit"),
     USER_DELETE("user_delete"),
@@ -29,6 +32,10 @@ enum class CallbackCommands(
     }
 
     fun isMatch(callbackData: String): Boolean {
+        var index = data.indexOf("%")
+        if(index < 0){
+            index = data.length
+        }
         val prefix = data.substring(
             0,
             index,
