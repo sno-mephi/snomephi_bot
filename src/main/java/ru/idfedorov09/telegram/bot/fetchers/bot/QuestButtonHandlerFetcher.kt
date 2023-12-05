@@ -1,6 +1,7 @@
 package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
 import org.telegram.telegrambots.meta.api.methods.ForwardMessage
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
@@ -55,7 +56,7 @@ class QuestButtonHandlerFetcher(
             userActualizedInfo,
             update,
         )
-
+        bot.execute(AnswerCallbackQuery(update.callbackQuery.id))
         return when {
             QUEST_ANSWER.isMatch(callbackData) -> clickAnswer(requestData)
             QUEST_IGNORE.isMatch(callbackData) -> clickIgnore(requestData)
