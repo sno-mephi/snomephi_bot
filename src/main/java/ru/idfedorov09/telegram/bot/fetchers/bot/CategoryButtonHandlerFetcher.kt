@@ -2,6 +2,7 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import kotlinx.coroutines.flow.callbackFlow
 import org.springframework.stereotype.Component
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
@@ -30,6 +31,7 @@ class CategoryButtonHandlerFetcher (
     private val categoryRepository: CategoryRepository,
 ) : GeneralFetcher() {
     var lastSentMessage: Message? = null
+    val pageSize: Long = 6
     private data class RequestData(
         val chatId: String,
         val update: Update,
@@ -51,6 +53,7 @@ class CategoryButtonHandlerFetcher (
             expContainer,
             userActualizedInfo,
         )
+        bot.execute(AnswerCallbackQuery(update.callbackQuery.id))
         return when {
             CallbackCommands.CATEGORY_EDIT.isMatch(callbackData) ->
                 clickEdit(requestData)
@@ -86,16 +89,36 @@ class CategoryButtonHandlerFetcher (
         return InlineKeyboardMarkup(body)
     }
     private fun createChoosingKeyboardBody(page: Long): MutableList<MutableList<InlineKeyboardButton>>{
+        val categoriesList = categoryRepository.findCategoriesByPage(page,pageSize).toMutableList()
+        var keyboard = mutableListOf(mutableListOf(InlineKeyboardButton()))
+        for(i in 0 until categoriesList.size){
+            keyboard.add(
+                mutableListOf(
+                    InlineKeyboardButton("${categoriesList[i].title} [${categoriesList[i].suffix}]").also{
+                        it.callbackData = CallbackCommands.CATEGORY_CHOOSE.format(categoriesList[i].id)
+                    }
+                )
+            )
+        }
+        for(i in categoriesList.size until pageSize){
+            keyboard.add(
+                mutableListOf(
+                    InlineKeyboardButton("----").also{
+                        it.callbackData = CallbackCommands.VOID.data
+                    }
+                )
+            )
+        }
         return mutableListOf(mutableListOf())
     }
     private fun createChoosingKeyboardNav(page: Long): MutableList<MutableList<InlineKeyboardButton>>{
-        val count=categoryRepository.count()/6+1
+        val count=categoryRepository.count()/pageSize+1
         return mutableListOf(
             mutableListOf(
                 InlineKeyboardButton("⬅️ Назад").also {
                     it.callbackData = CallbackCommands.CATEGORY_PAGE.format(realMod(page-1,count))
                 },
-                InlineKeyboardButton("$page|$count").also {
+                InlineKeyboardButton("$page/$count").also {
                     it.callbackData = CallbackCommands.VOID.data
                 },
                 InlineKeyboardButton("Вперёд ➡️").also {
@@ -105,16 +128,13 @@ class CategoryButtonHandlerFetcher (
         )
     }
     private fun realMod(a: Long, b: Long): Long{
-        if(a in 1..b){
-            return a
+        return if(a in 1..b){
+            a
+        }else if(a<=0){
+            (a-1).mod(b)+1
+        }else{
+            a%b
         }
-        if(a<=0){
-            return (a-1)%b+1
-        }
-        if(a>b){
-            return a%b
-        }
-        return 0
     }
     private fun sendMessage(data: RequestData, text: String){
         lastSentMessage=bot.execute(SendMessage(data.chatId,text))
