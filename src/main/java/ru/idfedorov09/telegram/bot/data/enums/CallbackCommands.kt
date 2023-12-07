@@ -14,6 +14,7 @@ enum class CallbackCommands(
     QUEST_BAN("quest_ban|%d"),
     QUEST_START_DIALOG("quest_start_dialog|%d"),
 
+    CATEGORY_ACTION_MENU("category_action_menu"),
     CATEGORY_EDIT("category_edit"),
     CATEGORY_ADD("category_add"),
     CATEGORY_DELETE("category_delete"),
