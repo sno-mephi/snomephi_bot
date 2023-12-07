@@ -12,6 +12,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.CategoryStage
+import ru.idfedorov09.telegram.bot.data.keyboards.CategoryKeyboards
+import ru.idfedorov09.telegram.bot.data.model.Category
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.flow.ExpContainer
@@ -68,7 +70,11 @@ class CategoryButtonHandlerFetcher (
     }
     private fun clickEdit(data: RequestData){
         data.exp.categoryStage = CategoryStage.EDITING
-        sendMessage(data,"✏️ Выберите категорию для изменения",createChoosingKeyboard(1L))
+        sendMessage(data,"✏️ Выберите категорию для изменения",
+            CategoryKeyboards.choosingCategory(
+                0L,pageSize,categoryRepository
+            )
+        )
     }
     private fun clickAdd(data: RequestData){
         data.exp.categoryStage = CategoryStage.ADDING
@@ -76,71 +82,25 @@ class CategoryButtonHandlerFetcher (
     }
     private fun clickDelete(data: RequestData){
         data.exp.categoryStage = CategoryStage.DELETING
-        sendMessage(data,"❌ Выберите категорию для удаления",createChoosingKeyboard(1L))
-    }
-    private fun clickPage(data: RequestData, params: List<String>){
-        val msg = lastSentMessage ?: return
-        editMessage(msg,data,createChoosingKeyboard(params[0].toLong()))
-    }
-    private fun createChoosingKeyboard(page: Long): InlineKeyboardMarkup{
-        val body=createChoosingKeyboardBody(page)
-        val nav=createChoosingKeyboardNav(page)
-        body.addAll(nav)
-        return InlineKeyboardMarkup(body)
-    }
-    private fun createChoosingKeyboardBody(page: Long): MutableList<MutableList<InlineKeyboardButton>>{
-        val categoriesList = categoryRepository.findCategoriesByPage(page,pageSize).toMutableList()
-        var keyboard = mutableListOf(mutableListOf(InlineKeyboardButton()))
-        for(i in 0 until categoriesList.size){
-            keyboard.add(
-                mutableListOf(
-                    InlineKeyboardButton("${categoriesList[i].title} [${categoriesList[i].suffix}]").also{
-                        it.callbackData = CallbackCommands.CATEGORY_CHOOSE.format(categoriesList[i].id)
-                    }
-                )
-            )
-        }
-        for(i in categoriesList.size until pageSize){
-            keyboard.add(
-                mutableListOf(
-                    InlineKeyboardButton("----").also{
-                        it.callbackData = CallbackCommands.VOID.data
-                    }
-                )
-            )
-        }
-        return mutableListOf(mutableListOf())
-    }
-    private fun createChoosingKeyboardNav(page: Long): MutableList<MutableList<InlineKeyboardButton>>{
-        val count=categoryRepository.count()/pageSize+1
-        return mutableListOf(
-            mutableListOf(
-                InlineKeyboardButton("⬅️ Назад").also {
-                    it.callbackData = CallbackCommands.CATEGORY_PAGE.format(realMod(page-1,count))
-                },
-                InlineKeyboardButton("$page/$count").also {
-                    it.callbackData = CallbackCommands.VOID.data
-                },
-                InlineKeyboardButton("Вперёд ➡️").also {
-                    it.callbackData = CallbackCommands.CATEGORY_PAGE.format(realMod(page+1,count))
-                },
+        sendMessage(data,"❌ Выберите категорию для удаления",
+            CategoryKeyboards.choosingCategory(
+                0L,pageSize,categoryRepository
             )
         )
     }
-    private fun realMod(a: Long, b: Long): Long{
-        return if(a in 1..b){
-            a
-        }else if(a<=0){
-            (a-1).mod(b)+1
-        }else{
-            a%b
-        }
+    private fun clickPage(data: RequestData, params: List<String>){
+        val msg = lastSentMessage ?: return
+        editMessage(msg,data,
+            CategoryKeyboards.choosingCategory(
+                params[0].toLong(),pageSize,categoryRepository
+            )
+        )
     }
     private fun sendMessage(data: RequestData, text: String){
         lastSentMessage=bot.execute(SendMessage(data.chatId,text))
     }
     private fun sendMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup){
-        var msg = SendMessage(data.chatId,text)
+        val msg = SendMessage(data.chatId,text)
         msg.replyMarkup=keyboard
         lastSentMessage=bot.execute(msg)
     }

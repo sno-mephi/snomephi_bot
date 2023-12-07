@@ -7,7 +7,7 @@ import org.springframework.data.repository.query.Param
 import ru.idfedorov09.telegram.bot.data.model.Category
 
 interface CategoryRepository : JpaRepository<Category, Long>{
-    @Query(value = "SELECT u FROM category_table u LIMIT u.pageSize OFFSET u.page",
+    @Query(value = "SELECT * FROM category_table LIMIT :pageSize OFFSET :page*6",
         nativeQuery = true)
     fun findCategoriesByPage(@Param("page")page: Long, @Param("pageSize")pageSize: Long): List<Category>
 }

@@ -12,6 +12,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.CategoryStage
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
+import ru.idfedorov09.telegram.bot.data.keyboards.CategoryKeyboards
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.flow.ExpContainer
@@ -60,28 +61,13 @@ class CategoryCommandFetcher (
     private fun commandChoseAction(data: RequestData){
         if(TextCommands.CATEGORY_CHOOSE_ACTION.isAllowed(data.userInfo)){
             data.exp.categoryStage = CategoryStage.ACTION_CHOOSING
-            sendMessage(data,"⬇️ Выберите действие",createChoosingActionKeyboard())
+            sendMessage(data,"⬇️ Выберите действие",
+                CategoryKeyboards.choosingAction()
+            )
         }else {
             data.exp.categoryStage = CategoryStage.WAITING
             sendMessage(data,"🔒 Действие недоступно для вас")
         }
-    }
-    private fun createChoosingActionKeyboard(): InlineKeyboardMarkup{
-        return InlineKeyboardMarkup(
-            mutableListOf(
-                mutableListOf(
-                    InlineKeyboardButton("✏️ Изменить").also {
-                        it.callbackData = CallbackCommands.CATEGORY_EDIT.data
-                    },
-                    InlineKeyboardButton("✅ Добавить").also {
-                        it.callbackData = CallbackCommands.CATEGORY_ADD.data
-                    },
-                    InlineKeyboardButton("❌ Удалить").also {
-                        it.callbackData = CallbackCommands.CATEGORY_DELETE.data
-                    },
-                ),
-            )
-        )
     }
     private fun sendMessage(data: RequestData, text: String){
         lastSentMessage=bot.execute(SendMessage(data.chatId,text))
