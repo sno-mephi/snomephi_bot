@@ -20,6 +20,7 @@ enum class CallbackCommands(
     CATEGORY_DELETE("category_delete"),
     CATEGORY_PAGE("category_page|%d"),
     CATEGORY_CHOOSE("category_choose|%d"),
+    CATEGORY_CONFIRM("category_confirm|%d"),
     
     USER_EDIT("user_edit"),
     USER_DELETE("user_delete"),
