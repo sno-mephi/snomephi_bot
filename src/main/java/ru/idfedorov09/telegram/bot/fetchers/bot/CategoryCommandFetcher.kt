@@ -74,62 +74,52 @@ class CategoryCommandFetcher (
         }
     }
     private fun sendMessage(data: RequestData, text: String){
-        //TODO: =bot.execute(SendMessage(data.chatId,text)).messageId
+        bot.execute(SendMessage(data.chatId,text)).messageId
     }
     private fun sendMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup){
         val msg = SendMessage(data.chatId,text)
         msg.replyMarkup=keyboard
-        //TODO: =bot.execute(msg).messageId
+        bot.execute(msg).messageId
     }
     private fun editMessage(data: RequestData, text: String){
-        val msgId = TODO()
-        if(msgId!=null) {
-            bot.execute(
-                EditMessageText(
-                    data.chatId,
-                    msgId,
-                    null,
-                    text,
-                    null,
-                    null,
-                    null,
-                    null,
-                )
+        val msgId = data.update.callbackQuery.message.messageId
+        bot.execute(
+            EditMessageText(
+                data.chatId,
+                msgId,
+                null,
+                text,
+                null,
+                null,
+                null,
+                null,
             )
-        }else{
-            sendMessage(data,text)
-        }
+        )
     }
     private fun editMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup){
-        val msgId = TODO()
-        if(msgId!=null){
-            bot.execute(
-                EditMessageText(
-                    data.chatId,
-                    msgId,
-                    null,
-                    text,
-                    null,
-                    null,
-                    keyboard,
-                    null,
-                )
+        val msgId = data.update.callbackQuery.message.messageId
+        bot.execute(
+            EditMessageText(
+                data.chatId,
+                msgId,
+                null,
+                text,
+                null,
+                null,
+                keyboard,
+                null,
             )
-        }else{
-            sendMessage(data,text,keyboard)
-        }
+        )
     }
     private fun editMessage(data: RequestData, keyboard: InlineKeyboardMarkup){
-        val msgId = TODO()
-        if(msgId!=null){
-            bot.execute(
-                EditMessageReplyMarkup(
-                    data.chatId,
-                    msgId,
-                    null,
-                    keyboard,
-                )
+        val msgId = data.update.callbackQuery.message.messageId
+        bot.execute(
+            EditMessageReplyMarkup(
+                data.chatId,
+                msgId,
+                null,
+                keyboard,
             )
-        }
+        )
     }
 }
