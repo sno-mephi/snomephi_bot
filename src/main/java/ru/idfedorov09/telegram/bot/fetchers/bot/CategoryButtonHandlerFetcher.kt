@@ -32,8 +32,6 @@ class CategoryButtonHandlerFetcher (
     private val updatesUtil: UpdatesUtil,
     private val categoryRepository: CategoryRepository,
 ) : GeneralFetcher() {
-    var lastSentMessage: Message? = null
-    val pageSize: Long = 6
     private data class RequestData(
         val chatId: String,
         val update: Update,
@@ -57,6 +55,8 @@ class CategoryButtonHandlerFetcher (
         )
         bot.execute(AnswerCallbackQuery(update.callbackQuery.id))
         return when {
+            CallbackCommands.CATEGORY_ACTION_MENU.isMatch(callbackData) ->
+                clickActionMenu(requestData)
             CallbackCommands.CATEGORY_EDIT.isMatch(callbackData) ->
                 clickEdit(requestData)
             CallbackCommands.CATEGORY_ADD.isMatch(callbackData) ->
@@ -68,11 +68,21 @@ class CategoryButtonHandlerFetcher (
             else -> return
         }
     }
+    private fun clickActionMenu(data: RequestData){
+        data.exp.categoryStage = CategoryStage.ACTION_CHOOSING
+        editMessage(
+            data,
+            "⬇️ Выберите действие",
+            CategoryKeyboards.choosingAction()
+        )
+    }
     private fun clickEdit(data: RequestData){
         data.exp.categoryStage = CategoryStage.EDITING
-        sendMessage(data,"✏️ Выберите категорию для изменения",
+        editMessage(
+            data,
+            "✏️ Выберите категорию для изменения",
             CategoryKeyboards.choosingCategory(
-                0L,pageSize,categoryRepository
+                0L,6,categoryRepository
             )
         )
     }
@@ -82,51 +92,79 @@ class CategoryButtonHandlerFetcher (
     }
     private fun clickDelete(data: RequestData){
         data.exp.categoryStage = CategoryStage.DELETING
-        sendMessage(data,"❌ Выберите категорию для удаления",
+        editMessage(
+            data,
+            "❌ Выберите категорию для удаления",
             CategoryKeyboards.choosingCategory(
-                0L,pageSize,categoryRepository
+                0L,6,categoryRepository
             )
         )
     }
     private fun clickPage(data: RequestData, params: List<String>){
-        val msg = lastSentMessage ?: return
-        editMessage(msg,data,
+        editMessage(
+            data,
             CategoryKeyboards.choosingCategory(
-                params[0].toLong(),pageSize,categoryRepository
+                params[0].toLong(),6,categoryRepository
             )
         )
     }
     private fun sendMessage(data: RequestData, text: String){
-        lastSentMessage=bot.execute(SendMessage(data.chatId,text))
+        // TODO:  =bot.execute(SendMessage(data.chatId,text)).messageId
     }
     private fun sendMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup){
         val msg = SendMessage(data.chatId,text)
         msg.replyMarkup=keyboard
-        lastSentMessage=bot.execute(msg)
+        // TODO:  =bot.execute(msg).messageId
     }
-    private fun editMessage(msg: Message, data: RequestData, text: String){
-        bot.execute(
-            EditMessageText(
-            data.chatId,
-            msg.messageId,
-            null,
-            text,
-            null,
-            null,
-            null,
-            null,
-        )
-        )
+    private fun editMessage(data: RequestData, text: String){
+        val msgId = TODO()
+        if(msgId!=null) {
+            bot.execute(
+                EditMessageText(
+                    data.chatId,
+                    msgId,
+                    null,
+                    text,
+                    null,
+                    null,
+                    null,
+                    null,
+                )
+            )
+        }else{
+            sendMessage(data,text)
+        }
     }
-    private fun editMessage(msg: Message, data: RequestData, keyboard: InlineKeyboardMarkup){
-        bot.execute(
-            EditMessageReplyMarkup(
-            data.chatId,
-            msg.messageId,
-            null,
-            keyboard,
-        )
-        )
+    private fun editMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup){
+        val msgId = TODO()
+        if(msgId!=null){
+            bot.execute(
+                EditMessageText(
+                    data.chatId,
+                    msgId,
+                    null,
+                    text,
+                    null,
+                    null,
+                    keyboard,
+                    null,
+                )
+            )
+        }else{
+            sendMessage(data,text,keyboard)
+        }
     }
-
+    private fun editMessage(data: RequestData, keyboard: InlineKeyboardMarkup){
+        val msgId = TODO()
+        if(msgId!=null){
+            bot.execute(
+                EditMessageReplyMarkup(
+                    data.chatId,
+                    msgId,
+                    null,
+                    keyboard,
+                )
+            )
+        }
+    }
 }
