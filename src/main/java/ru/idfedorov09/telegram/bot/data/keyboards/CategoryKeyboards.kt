@@ -36,7 +36,7 @@ class CategoryKeyboards {
             for(i in categoriesList.indices){
                 keyboard.add(
                     mutableListOf(
-                        InlineKeyboardButton("${categoriesList[i].title} [${categoriesList[i].suffix}]").also{
+                        InlineKeyboardButton("${categoriesList[i].title} #${categoriesList[i].suffix}").also{
                             it.callbackData = CallbackCommands.CATEGORY_CHOOSE.format(categoriesList[i].id)
                         }
                     )
@@ -71,6 +71,31 @@ class CategoryKeyboards {
                     InlineKeyboardButton("В меню ↩️").also {
                         it.callbackData = CallbackCommands.CATEGORY_ACTION_MENU.data
                     },
+                )
+            )
+        }
+        fun confirmationAction(catId: Long): InlineKeyboardMarkup{
+            return InlineKeyboardMarkup(
+                mutableListOf(
+                    mutableListOf(
+                        InlineKeyboardButton("✅ Да").also {
+                            it.callbackData = CallbackCommands.CATEGORY_CONFIRM.format(catId)
+                        },
+                        InlineKeyboardButton("Нет ❌").also {
+                            it.callbackData = CallbackCommands.CATEGORY_CHOOSE.data
+                        },
+                    ),
+                )
+            )
+        }
+        fun confirmationDone(): InlineKeyboardMarkup{
+            return InlineKeyboardMarkup(
+                mutableListOf(
+                    mutableListOf(
+                        InlineKeyboardButton("В меню ↩️").also {
+                            it.callbackData = CallbackCommands.CATEGORY_ACTION_MENU.data
+                        },
+                    )
                 )
             )
         }

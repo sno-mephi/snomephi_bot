@@ -1,8 +1,6 @@
 package ru.idfedorov09.telegram.bot.flow
 
-import org.telegram.telegrambots.meta.api.objects.Message
 import ru.idfedorov09.telegram.bot.data.enums.BotStage
-import ru.idfedorov09.telegram.bot.data.enums.CategoryStage
 import ru.mephi.sno.libs.flow.belly.Mutable
 
 /**
