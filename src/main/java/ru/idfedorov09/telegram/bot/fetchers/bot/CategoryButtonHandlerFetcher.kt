@@ -1,22 +1,17 @@
 package ru.idfedorov09.telegram.bot.fetchers.bot
 
-import kotlinx.coroutines.flow.callbackFlow
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
-import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
-import ru.idfedorov09.telegram.bot.data.enums.CategoryStage
+import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.keyboards.CategoryKeyboards
-import ru.idfedorov09.telegram.bot.data.model.Category
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
-import ru.idfedorov09.telegram.bot.flow.ExpContainer
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
@@ -35,26 +30,23 @@ class CategoryButtonHandlerFetcher (
     private data class RequestData(
         val chatId: String,
         val update: Update,
-        val exp: ExpContainer,
-        val userInfo: UserActualizedInfo,
+        var userInfo: UserActualizedInfo,
     )
     @InjectData
     fun doFetch(
         update: Update,
-        expContainer: ExpContainer,
         userActualizedInfo: UserActualizedInfo,
-    ){
-        if (update.callbackQuery==null) return
+    ): UserActualizedInfo{
+        if (update.callbackQuery==null) return userActualizedInfo
         val callbackData = update.callbackQuery.data
-        val chatId = updatesUtil.getChatId(update) ?: return
+        val chatId = updatesUtil.getChatId(update) ?: return userActualizedInfo
         val requestData = RequestData(
             chatId,
             update,
-            expContainer,
             userActualizedInfo,
         )
         bot.execute(AnswerCallbackQuery(update.callbackQuery.id))
-        return when {
+        when {
             CallbackCommands.CATEGORY_ACTION_MENU.isMatch(callbackData) ->
                 clickActionMenu(requestData)
             CallbackCommands.CATEGORY_EDIT.isMatch(callbackData) ->
@@ -65,11 +57,17 @@ class CategoryButtonHandlerFetcher (
                 clickDelete(requestData)
             CallbackCommands.CATEGORY_PAGE.isMatch(callbackData) ->
                 clickPage(requestData,CallbackCommands.params(callbackData))
-            else -> return
+            CallbackCommands.CATEGORY_CHOOSE.isMatch(callbackData) ->
+                clickChoose(requestData,CallbackCommands.params(callbackData))
+            CallbackCommands.CATEGORY_CONFIRM.isMatch(callbackData) ->
+                clickConfirm(requestData,CallbackCommands.params(callbackData))
         }
+        return requestData.userInfo
     }
     private fun clickActionMenu(data: RequestData){
-        data.exp.categoryStage = CategoryStage.ACTION_CHOOSING
+        data.userInfo = data.userInfo.copy(
+            lastUserActionType = LastUserActionType.CATEGORY_ACTION_CHOOSING
+        )
         editMessage(
             data,
             "⬇️ Выберите действие",
@@ -77,7 +75,9 @@ class CategoryButtonHandlerFetcher (
         )
     }
     private fun clickEdit(data: RequestData){
-        data.exp.categoryStage = CategoryStage.EDITING
+        data.userInfo = data.userInfo.copy(
+            lastUserActionType = LastUserActionType.CATEGORY_EDITING
+        )
         editMessage(
             data,
             "✏️ Выберите категорию для изменения",
@@ -87,11 +87,15 @@ class CategoryButtonHandlerFetcher (
         )
     }
     private fun clickAdd(data: RequestData){
-        data.exp.categoryStage = CategoryStage.ADDING
+        data.userInfo = data.userInfo.copy(
+            lastUserActionType = LastUserActionType.CATEGORY_ADDING
+        )
         //TODO: Реализовать добавление
     }
     private fun clickDelete(data: RequestData){
-        data.exp.categoryStage = CategoryStage.DELETING
+        data.userInfo = data.userInfo.copy(
+            lastUserActionType = LastUserActionType.CATEGORY_DELETING
+        )
         editMessage(
             data,
             "❌ Выберите категорию для удаления",
@@ -107,6 +111,48 @@ class CategoryButtonHandlerFetcher (
                 params[0].toLong(),6,categoryRepository
             )
         )
+    }
+    private fun clickChoose(data: RequestData, params: List<String>){
+        val catId = params[0].toLong()
+        val category = categoryRepository.findById(catId)
+        when(data.userInfo.lastUserActionType){
+            LastUserActionType.CATEGORY_DELETING ->
+                editMessage(
+                    data,
+                    "❓ Вы действительно хотите удалить категорию с названием:\n" +
+                            "${category.get().title}\n" +
+                            "тэгом: ${category.get().suffix}\n" +
+                            "описанием: ${category.get().description}\n",
+                    CategoryKeyboards.confirmationAction(catId)
+                )
+            LastUserActionType.CATEGORY_EDITING ->
+                editMessage(
+                    data,
+                    "❓ Вы действительно хотите изменить категорию с названием:\n" +
+                            "${category.get().title}\n" +
+                            "тэгом: ${category.get().suffix}\n" +
+                            "описанием: ${category.get().description}\n",
+                    CategoryKeyboards.confirmationAction(catId)
+                )
+            else -> return
+        }
+    }
+    private fun clickConfirm(data: RequestData, params: List<String>){
+        val catId = params[0].toLong()
+        val category = categoryRepository.findById(catId)
+        when(data.userInfo.lastUserActionType){
+            LastUserActionType.CATEGORY_DELETING -> {
+                categoryRepository.deleteById(catId)
+                editMessage(
+                    data,
+                    "✅ Категория #${category.get().suffix} успешно удалена",
+                    CategoryKeyboards.confirmationDone()
+                )
+            }
+            LastUserActionType.CATEGORY_EDITING -> return
+            else -> return
+        }
+
     }
     private fun sendMessage(data: RequestData, text: String){
         bot.execute(SendMessage(data.chatId,text)).messageId

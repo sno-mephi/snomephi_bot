@@ -2,21 +2,17 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
-import org.telegram.telegrambots.meta.api.methods.send.SendPhoto
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
-import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
-import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
-import ru.idfedorov09.telegram.bot.data.enums.CategoryStage
+import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.keyboards.CategoryKeyboards
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
-import ru.idfedorov09.telegram.bot.flow.ExpContainer
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository
+import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
@@ -33,40 +29,41 @@ class CategoryCommandFetcher (
     private data class RequestData(
         val chatId: String,
         val update: Update,
-        val exp: ExpContainer,
-        val userInfo: UserActualizedInfo,
+        var userInfo: UserActualizedInfo,
     )
     @InjectData
     fun doFetch(
         update: Update,
-        expContainer: ExpContainer,
         userActualizedInfo: UserActualizedInfo,
-    ){
-        if(update.message == null || !update.message.hasText())return
-        val chatId = updatesUtil.getChatId(update) ?: return
+    ): UserActualizedInfo{
+        if(update.message == null || !update.message.hasText())return userActualizedInfo
+        val messageText = update.message.text
+        val chatId = updatesUtil.getChatId(update) ?: return userActualizedInfo
         val requestData = RequestData(
             chatId,
             update,
-            expContainer,
             userActualizedInfo,
         )
-        val messageText = update.message.text
-        return when {
+        when {
             messageText==TextCommands.CATEGORY_CHOOSE_ACTION.commandText ->
                 commandChoseAction(requestData)
-            else -> return
         }
+        return requestData.userInfo
     }
     private fun commandChoseAction(data: RequestData){
         if(TextCommands.CATEGORY_CHOOSE_ACTION.isAllowed(data.userInfo)){
-            data.exp.categoryStage = CategoryStage.ACTION_CHOOSING
+            data.userInfo = data.userInfo.copy(
+                lastUserActionType = LastUserActionType.CATEGORY_ACTION_CHOOSING
+            )
             sendMessage(
                 data,
                 "⬇️ Выберите действие",
                 CategoryKeyboards.choosingAction()
             )
         }else {
-            data.exp.categoryStage = CategoryStage.WAITING
+            data.userInfo = data.userInfo.copy(
+                lastUserActionType = LastUserActionType.CATEGORY_WAITING
+            )
             sendMessage(
                 data,
                 "🔒 Действие недоступно для вас"
