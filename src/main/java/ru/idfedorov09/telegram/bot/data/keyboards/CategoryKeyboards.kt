@@ -66,6 +66,11 @@ class CategoryKeyboards {
                     InlineKeyboardButton("Вперёд ➡️").also {
                         it.callbackData = CallbackCommands.CATEGORY_PAGE.format((page+1).mod(pageCount))
                     },
+                ),
+                mutableListOf(
+                    InlineKeyboardButton("В меню ↩️").also {
+                        it.callbackData = CallbackCommands.CATEGORY_ACTION_MENU.data
+                    },
                 )
             )
         }

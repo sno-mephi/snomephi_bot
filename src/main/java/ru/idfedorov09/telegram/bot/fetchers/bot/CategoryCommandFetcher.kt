@@ -30,7 +30,6 @@ class CategoryCommandFetcher (
     private val updatesUtil: UpdatesUtil,
     private val categoryRepository: CategoryRepository,
 ) : GeneralFetcher() {
-    var lastSentMessage: Message? = null
     private data class RequestData(
         val chatId: String,
         val update: Update,
@@ -61,44 +60,76 @@ class CategoryCommandFetcher (
     private fun commandChoseAction(data: RequestData){
         if(TextCommands.CATEGORY_CHOOSE_ACTION.isAllowed(data.userInfo)){
             data.exp.categoryStage = CategoryStage.ACTION_CHOOSING
-            sendMessage(data,"⬇️ Выберите действие",
+            sendMessage(
+                data,
+                "⬇️ Выберите действие",
                 CategoryKeyboards.choosingAction()
             )
         }else {
             data.exp.categoryStage = CategoryStage.WAITING
-            sendMessage(data,"🔒 Действие недоступно для вас")
+            sendMessage(
+                data,
+                "🔒 Действие недоступно для вас"
+            )
         }
     }
     private fun sendMessage(data: RequestData, text: String){
-        lastSentMessage=bot.execute(SendMessage(data.chatId,text))
+        //TODO: =bot.execute(SendMessage(data.chatId,text)).messageId
     }
     private fun sendMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup){
         val msg = SendMessage(data.chatId,text)
         msg.replyMarkup=keyboard
-        lastSentMessage=bot.execute(msg)
+        //TODO: =bot.execute(msg).messageId
     }
-    private fun editMessage(msg: Message, data: RequestData, text: String){
-        bot.execute(
-            EditMessageText(
-                data.chatId,
-                msg.messageId,
-                null,
-                text,
-                null,
-                null,
-                null,
-                null,
+    private fun editMessage(data: RequestData, text: String){
+        val msgId = TODO()
+        if(msgId!=null) {
+            bot.execute(
+                EditMessageText(
+                    data.chatId,
+                    msgId,
+                    null,
+                    text,
+                    null,
+                    null,
+                    null,
+                    null,
+                )
             )
-        )
+        }else{
+            sendMessage(data,text)
+        }
     }
-    private fun editMessage(msg: Message, data: RequestData, keyboard: InlineKeyboardMarkup){
-        bot.execute(
-            EditMessageReplyMarkup(
-                data.chatId,
-                msg.messageId,
-                null,
-                keyboard,
+    private fun editMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup){
+        val msgId = TODO()
+        if(msgId!=null){
+            bot.execute(
+                EditMessageText(
+                    data.chatId,
+                    msgId,
+                    null,
+                    text,
+                    null,
+                    null,
+                    keyboard,
+                    null,
+                )
             )
-        )
+        }else{
+            sendMessage(data,text,keyboard)
+        }
+    }
+    private fun editMessage(data: RequestData, keyboard: InlineKeyboardMarkup){
+        val msgId = TODO()
+        if(msgId!=null){
+            bot.execute(
+                EditMessageReplyMarkup(
+                    data.chatId,
+                    msgId,
+                    null,
+                    keyboard,
+                )
+            )
+        }
     }
 }
