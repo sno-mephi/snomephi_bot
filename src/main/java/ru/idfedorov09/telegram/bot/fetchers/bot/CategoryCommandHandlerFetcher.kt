@@ -92,7 +92,7 @@ class CategoryCommandHandlerFetcher (
             )
         )
     }
-    private fun editMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup){
+    private fun editMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup?){
         val msgId = data.update.callbackQuery.message.messageId
         bot.execute(
             EditMessageText(
@@ -107,7 +107,7 @@ class CategoryCommandHandlerFetcher (
             )
         )
     }
-    private fun editMessage(data: RequestData, keyboard: InlineKeyboardMarkup){
+    private fun editMessage(data: RequestData, keyboard: InlineKeyboardMarkup?){
         val msgId = data.update.callbackQuery.message.messageId
         bot.execute(
             EditMessageReplyMarkup(
