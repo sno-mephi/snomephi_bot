@@ -106,7 +106,7 @@ class CategoryKeyboards {
                 mutableListOf(
                     mutableListOf(
                         InlineKeyboardButton("❌ Отмена").also {
-                            it.callbackData = CallbackCommands.CATEGORY_ACTION_MENU.data
+                            it.callbackData = CallbackCommands.CATEGORY_INPUT_CANCEL.data
                         },
                     )
                 )
