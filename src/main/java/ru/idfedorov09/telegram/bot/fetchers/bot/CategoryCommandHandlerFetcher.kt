@@ -12,16 +12,15 @@ import ru.idfedorov09.telegram.bot.data.keyboards.CategoryKeyboards
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository
-import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 
 /**
- * Фетчер, отправляющий inline клавиатуру выбора действия с категориями
+ * Фетчер, обрабатывающий комманды категорий
  */
 @Component
-class CategoryCommandFetcher (
+class CategoryCommandHandlerFetcher (
     private val bot: Executor,
     private val updatesUtil: UpdatesUtil,
     private val categoryRepository: CategoryRepository,
@@ -44,8 +43,8 @@ class CategoryCommandFetcher (
             update,
             userActualizedInfo,
         )
-        when {
-            messageText==TextCommands.CATEGORY_CHOOSE_ACTION.commandText ->
+        when(messageText){
+            TextCommands.CATEGORY_CHOOSE_ACTION.commandText ->
                 commandChooseAction(requestData)
         }
         return requestData.userInfo
