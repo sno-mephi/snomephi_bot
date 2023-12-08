@@ -56,6 +56,14 @@ class CategoryActionTypeHandlerFetcher (
     private fun actionAddTitle(data: RequestData){
         if(data.update.message == null || !data.update.message.hasText())return
         val messageText = data.update.message.text
+        if(messageText.length>255){
+            sendMessage(
+                data,
+                "❗Слишком длинное сообщение",
+                CategoryKeyboards.inputCancel()
+            )
+            return
+        }
         val category = categoryRepository.findByChangingByTui(data.userInfo.tui) ?: return
         categoryRepository.save(
             Category(
@@ -79,6 +87,14 @@ class CategoryActionTypeHandlerFetcher (
         if(data.update.message == null || !data.update.message.hasText())return
         val messageText = data.update.message.text.lowercase().replace(' ','_')
         val category = categoryRepository.findByChangingByTui(data.userInfo.tui) ?: return
+        if(messageText.length>255){
+            sendMessage(
+                data,
+                "❗Слишком длинное сообщение",
+                CategoryKeyboards.inputCancel()
+            )
+            return
+        }
         if(categoryRepository.findAllBySuffix(messageText).isNotEmpty()){
             sendMessage(
                 data,
@@ -117,6 +133,14 @@ class CategoryActionTypeHandlerFetcher (
         if(data.update.message == null || !data.update.message.hasText())return
         val messageText = data.update.message.text
         val category = categoryRepository.findByChangingByTui(data.userInfo.tui) ?: return
+        if(messageText.length>255){
+            sendMessage(
+                data,
+                "❗Слишком длинное сообщение",
+                CategoryKeyboards.inputCancel()
+            )
+            return
+        }
         categoryRepository.save(
             Category(
                 id = category.id,
@@ -158,7 +182,7 @@ class CategoryActionTypeHandlerFetcher (
             )
         )
     }
-    private fun editMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup){
+    private fun editMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup?){
         val msgId = data.update.callbackQuery.message.messageId
         bot.execute(
             EditMessageText(
@@ -173,7 +197,7 @@ class CategoryActionTypeHandlerFetcher (
             )
         )
     }
-    private fun editMessage(data: RequestData, keyboard: InlineKeyboardMarkup){
+    private fun editMessage(data: RequestData, keyboard: InlineKeyboardMarkup?){
         val msgId = data.update.callbackQuery.message.messageId
         bot.execute(
             EditMessageReplyMarkup(

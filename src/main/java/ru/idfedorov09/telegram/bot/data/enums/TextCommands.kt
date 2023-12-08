@@ -10,19 +10,11 @@ enum class TextCommands(
     /** роли которым доступна эта команда **/
     private val allowedRoles: List<UserRole> = listOf(UserRole.USER),
 ) {
-    TEST_COMMAND_1(
-        "Тестовая команда 1",
-    ),
-
-    TEST_COMMAND_2(
-        "Тестовая команда 2",
-        listOf(UserRole.CATEGORY_BUILDER),
-    ),
 
     QUEST_DIALOG_CLOSE(
         "❌ Завершить диалог",
     ),
-
+    /** Открыть меню категорий **/
     CATEGORY_CHOOSE_ACTION(
         "/category",
         listOf(
@@ -30,27 +22,7 @@ enum class TextCommands(
             UserRole.ROOT,
         ),
     ),
-    CATEGORY_EDIT(
-        "/category_edit",
-        listOf(
-            UserRole.CATEGORY_BUILDER,
-            UserRole.ROOT,
-        ),
-    ),
-    CATEGORY_ADD(
-        "/category_add",
-        listOf(
-            UserRole.CATEGORY_BUILDER,
-            UserRole.ROOT,
-        ),
-    ),
-    CATEGORY_DELETE(
-        "/category_delete",
-        listOf(
-            UserRole.CATEGORY_BUILDER,
-            UserRole.ROOT,
-        ),
-    ),
+
     USER_INFO(
         "/userInfo",
         listOf(UserRole.ROOT),
