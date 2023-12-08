@@ -46,11 +46,11 @@ class CategoryCommandFetcher (
         )
         when {
             messageText==TextCommands.CATEGORY_CHOOSE_ACTION.commandText ->
-                commandChoseAction(requestData)
+                commandChooseAction(requestData)
         }
         return requestData.userInfo
     }
-    private fun commandChoseAction(data: RequestData){
+    private fun commandChooseAction(data: RequestData){
         if(TextCommands.CATEGORY_CHOOSE_ACTION.isAllowed(data.userInfo)){
             data.userInfo = data.userInfo.copy(
                 lastUserActionType = LastUserActionType.CATEGORY_ACTION_CHOOSING
