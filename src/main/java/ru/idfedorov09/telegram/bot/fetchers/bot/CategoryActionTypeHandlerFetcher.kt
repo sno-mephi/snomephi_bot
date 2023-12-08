@@ -52,6 +52,9 @@ class CategoryActionTypeHandlerFetcher(
             LastUserActionType.CATEGORY_INPUT_SUFFIX ->
                 actionAddDescription(requestData)
 
+            LastUserActionType.CATEGORY_INPUT_DESCRIPTION ->
+                actionAddIsMutable(requestData)
+
             else ->
                 return userActualizedInfo
         }
@@ -76,6 +79,7 @@ class CategoryActionTypeHandlerFetcher(
                 title = messageText,
                 suffix = category.suffix,
                 description = category.description,
+                isUnremovable = category.isUnremovable,
                 changingByTui = category.changingByTui,
             ),
         )
@@ -123,6 +127,7 @@ class CategoryActionTypeHandlerFetcher(
                 title = category.title,
                 suffix = messageText,
                 description = category.description,
+                isUnremovable = category.isUnremovable,
                 changingByTui = category.changingByTui,
             ),
         )
@@ -154,6 +159,47 @@ class CategoryActionTypeHandlerFetcher(
                 title = category.title,
                 suffix = category.suffix,
                 description = messageText,
+                isUnremovable = category.isUnremovable,
+                changingByTui = category.changingByTui,
+            ),
+        )
+        sendMessage(
+            data,
+            "Введите 1, если пользователь не может отписаться от категории, иначе введите 0:",
+            CategoryKeyboards.inputCancel(),
+        )
+        data.userInfo = data.userInfo.copy(
+            lastUserActionType = LastUserActionType.CATEGORY_INPUT_DESCRIPTION,
+        )
+    }
+
+    private fun actionAddIsMutable(data: RequestData) {
+        if (data.update.message == null || !data.update.message.hasText()) return
+        val messageText = data.update.message.text
+        val category = categoryRepository.findByChangingByTui(data.userInfo.tui) ?: return
+        if (messageText.length > 255) {
+            sendMessage(
+                data,
+                "❗Слишком длинное сообщение",
+                CategoryKeyboards.inputCancel(),
+            )
+            return
+        }
+        if (!messageText.matches(Regex("^[0-1]$"))) {
+            sendMessage(
+                data,
+                "❗Допустимы только символы 0 или 1",
+                CategoryKeyboards.inputCancel(),
+            )
+            return
+        }
+        categoryRepository.save(
+            Category(
+                id = category.id,
+                title = category.title,
+                suffix = category.suffix,
+                description = category.description,
+                isUnremovable = if (messageText.toInt() == 1) true else false,
                 changingByTui = null,
             ),
         )
