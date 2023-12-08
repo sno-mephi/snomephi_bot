@@ -26,6 +26,10 @@ data class Category(
     @Column(name = "changing_by_tui")
     val changingByTui: String? = null,
 
+    /** описание категории **/
+    @Column(name = "is_unremovable")
+    val isUnremovable: Boolean? = null,
+
     /** установлена ли у пользователей по умолчанию **/
     @Column(name = "is_setup_by_default")
     val isSetupByDefault: Boolean = true,

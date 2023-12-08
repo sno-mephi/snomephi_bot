@@ -32,6 +32,7 @@ enum class LastUserActionType {
 
     /**Введен тэг категории**/
     CATEGORY_INPUT_SUFFIX,
+    
     /**Введено описание категории**/
     CATEGORY_INPUT_DESCRIPTION,
     

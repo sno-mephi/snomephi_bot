@@ -186,7 +186,8 @@ class CategoryButtonHandlerFetcher(
                         "названием:\t" +
                         "${category.get().title}\n" +
                         "тэгом:\t${category.get().suffix}\n" +
-                        "описанием:\t${category.get().description}\n",
+                        "описанием:\t${category.get().description}\n" +
+                        "неснимаемая:\t${category.get().isUnremovable}\n",
                     CategoryKeyboards.confirmationAction(catId, prevPage),
                 )
 
@@ -197,7 +198,8 @@ class CategoryButtonHandlerFetcher(
                         "названием:\t" +
                         "${category.get().title}\n" +
                         "тэгом:\t${category.get().suffix}\n" +
-                        "описанием:\t${category.get().description}\n",
+                        "описанием:\t${category.get().description}\n" +
+                        "неснимаемая:\t${category.get().isUnremovable}\n",
                     CategoryKeyboards.confirmationAction(catId, prevPage),
                 )
 
