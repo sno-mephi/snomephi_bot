@@ -55,7 +55,7 @@ class CategoryKeyboards {
         }
         fun choosingCategoryNav(page: Long, pageSize: Long, catRep: CategoryRepository): MutableList<MutableList<InlineKeyboardButton>>{
             val catCount=catRep.count()
-            val pageCount = if(catCount%6==0L){
+            val pageCount = if(catCount%pageSize==0L){
                 catCount/pageSize
             }else{
                 catCount/pageSize+1
@@ -82,7 +82,7 @@ class CategoryKeyboards {
                 ),
                 mutableListOf(
                     InlineKeyboardButton("В меню ↩️").also {
-                        it.callbackData = CallbackCommands.CATEGORY_ACTION_MENU.data
+                        it.callbackData = CallbackCommands.CATEGORY_ACTION_MENU.format(0)
                     },
                 )
             )
@@ -117,7 +117,7 @@ class CategoryKeyboards {
                 mutableListOf(
                     mutableListOf(
                         InlineKeyboardButton("В меню ↩️").also {
-                            it.callbackData = CallbackCommands.CATEGORY_ACTION_MENU.data
+                            it.callbackData = CallbackCommands.CATEGORY_ACTION_MENU.format(1)
                         },
                     )
                 )
