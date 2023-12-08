@@ -20,7 +20,7 @@ import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
  * Фетчер, обрабатывающий комманды категорий
  */
 @Component
-class CategoryCommandHandlerFetcher (
+class CategoryCommandHandlerFetcher(
     private val bot: Executor,
     private val updatesUtil: UpdatesUtil,
     private val categoryRepository: CategoryRepository,
@@ -30,12 +30,13 @@ class CategoryCommandHandlerFetcher (
         val update: Update,
         var userInfo: UserActualizedInfo,
     )
+
     @InjectData
     fun doFetch(
         update: Update,
         userActualizedInfo: UserActualizedInfo,
-    ): UserActualizedInfo{
-        if(update.message == null || !update.message.hasText())return userActualizedInfo
+    ): UserActualizedInfo {
+        if (update.message == null || !update.message.hasText()) return userActualizedInfo
         val messageText = update.message.text
         val chatId = updatesUtil.getChatId(update) ?: return userActualizedInfo
         val requestData = RequestData(
@@ -43,41 +44,45 @@ class CategoryCommandHandlerFetcher (
             update,
             userActualizedInfo,
         )
-        when(messageText){
+        when (messageText) {
             TextCommands.CATEGORY_CHOOSE_ACTION.commandText ->
                 commandChooseAction(requestData)
         }
         return requestData.userInfo
     }
-    private fun commandChooseAction(data: RequestData){
-        if(TextCommands.CATEGORY_CHOOSE_ACTION.isAllowed(data.userInfo)){
+
+    private fun commandChooseAction(data: RequestData) {
+        if (TextCommands.CATEGORY_CHOOSE_ACTION.isAllowed(data.userInfo)) {
             data.userInfo = data.userInfo.copy(
-                lastUserActionType = LastUserActionType.CATEGORY_ACTION_CHOOSING
+                lastUserActionType = LastUserActionType.CATEGORY_ACTION_CHOOSING,
             )
             sendMessage(
                 data,
                 "⬇️ Выберите действие",
-                CategoryKeyboards.choosingAction()
+                CategoryKeyboards.choosingAction(),
             )
-        }else {
+        } else {
             data.userInfo = data.userInfo.copy(
-                lastUserActionType = LastUserActionType.DEFAULT
+                lastUserActionType = LastUserActionType.DEFAULT,
             )
             sendMessage(
                 data,
-                "🔒 Действие недоступно для вас"
+                "🔒 Действие недоступно для вас",
             )
         }
     }
-    private fun sendMessage(data: RequestData, text: String){
-        bot.execute(SendMessage(data.chatId,text)).messageId
+
+    private fun sendMessage(data: RequestData, text: String) {
+        bot.execute(SendMessage(data.chatId, text)).messageId
     }
-    private fun sendMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup){
-        val msg = SendMessage(data.chatId,text)
-        msg.replyMarkup=keyboard
+
+    private fun sendMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup) {
+        val msg = SendMessage(data.chatId, text)
+        msg.replyMarkup = keyboard
         bot.execute(msg).messageId
     }
-    private fun editMessage(data: RequestData, text: String){
+
+    private fun editMessage(data: RequestData, text: String) {
         val msgId = data.update.callbackQuery.message.messageId
         bot.execute(
             EditMessageText(
@@ -89,10 +94,11 @@ class CategoryCommandHandlerFetcher (
                 null,
                 null,
                 null,
-            )
+            ),
         )
     }
-    private fun editMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup?){
+
+    private fun editMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup?) {
         val msgId = data.update.callbackQuery.message.messageId
         bot.execute(
             EditMessageText(
@@ -104,10 +110,11 @@ class CategoryCommandHandlerFetcher (
                 null,
                 keyboard,
                 null,
-            )
+            ),
         )
     }
-    private fun editMessage(data: RequestData, keyboard: InlineKeyboardMarkup?){
+
+    private fun editMessage(data: RequestData, keyboard: InlineKeyboardMarkup?) {
         val msgId = data.update.callbackQuery.message.messageId
         bot.execute(
             EditMessageReplyMarkup(
@@ -115,7 +122,7 @@ class CategoryCommandHandlerFetcher (
                 msgId,
                 null,
                 keyboard,
-            )
+            ),
         )
     }
 }

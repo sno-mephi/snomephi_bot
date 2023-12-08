@@ -123,6 +123,7 @@ class QuestButtonHandlerFetcher(
             activeQuest = data.quest,
         )
     }
+
     private fun clickIgnore(data: RequestData): UserActualizedInfo {
         if (data.quest.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
 
