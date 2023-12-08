@@ -32,6 +32,7 @@ class CategoryButtonHandlerFetcher (
         val update: Update,
         var userInfo: UserActualizedInfo,
     )
+        val pageSize: Long = 6
     @InjectData
     fun doFetch(
         update: Update,
@@ -49,6 +50,8 @@ class CategoryButtonHandlerFetcher (
         when {
             CallbackCommands.CATEGORY_ACTION_MENU.isMatch(callbackData) ->
                 clickActionMenu(requestData)
+            CallbackCommands.CATEGORY_CHOOSE_MENU.isMatch(callbackData) ->
+                clickChooseMenu(requestData,CallbackCommands.params(callbackData))
             CallbackCommands.CATEGORY_EDIT.isMatch(callbackData) ->
                 clickEdit(requestData)
             CallbackCommands.CATEGORY_ADD.isMatch(callbackData) ->
@@ -74,6 +77,23 @@ class CategoryButtonHandlerFetcher (
             CategoryKeyboards.choosingAction()
         )
     }
+    private fun clickChooseMenu(data: RequestData, params: List<String>){
+        val page = params[0].toLong()
+        val msgText = when(data.userInfo.lastUserActionType){
+            LastUserActionType.CATEGORY_EDITING ->
+                "✏️ Выберите категорию для изменения"
+            LastUserActionType.CATEGORY_DELETING ->
+                "❌ Выберите категорию для удаления"
+            else -> return
+        }
+        editMessage(
+            data,
+            msgText,
+            CategoryKeyboards.choosingCategory(
+                page,pageSize,categoryRepository
+            )
+        )
+    }
     private fun clickEdit(data: RequestData){
         data.userInfo = data.userInfo.copy(
             lastUserActionType = LastUserActionType.CATEGORY_EDITING
@@ -82,7 +102,7 @@ class CategoryButtonHandlerFetcher (
             data,
             "✏️ Выберите категорию для изменения",
             CategoryKeyboards.choosingCategory(
-                0L,6,categoryRepository
+                0L,pageSize,categoryRepository
             )
         )
     }
@@ -100,39 +120,43 @@ class CategoryButtonHandlerFetcher (
             data,
             "❌ Выберите категорию для удаления",
             CategoryKeyboards.choosingCategory(
-                0L,6,categoryRepository
+                0L,pageSize,categoryRepository
             )
         )
     }
     private fun clickPage(data: RequestData, params: List<String>){
+        val page = params[0].toLong()
         editMessage(
             data,
             CategoryKeyboards.choosingCategory(
-                params[0].toLong(),6,categoryRepository
+                page,pageSize,categoryRepository
             )
         )
     }
     private fun clickChoose(data: RequestData, params: List<String>){
         val catId = params[0].toLong()
+        val prevPage = params[1].toLong()
         val category = categoryRepository.findById(catId)
         when(data.userInfo.lastUserActionType){
             LastUserActionType.CATEGORY_DELETING ->
                 editMessage(
                     data,
-                    "❓ Вы действительно хотите удалить категорию с названием:\n" +
+                    "❓ Вы действительно хотите удалить категорию с\n" +
+                            "названием:\t" +
                             "${category.get().title}\n" +
-                            "тэгом: ${category.get().suffix}\n" +
-                            "описанием: ${category.get().description}\n",
-                    CategoryKeyboards.confirmationAction(catId)
+                            "тэгом:\t${category.get().suffix}\n" +
+                            "описанием:\t${category.get().description}\n",
+                    CategoryKeyboards.confirmationAction(catId,prevPage)
                 )
             LastUserActionType.CATEGORY_EDITING ->
                 editMessage(
                     data,
-                    "❓ Вы действительно хотите изменить категорию с названием:\n" +
+                    "❓ Вы действительно хотите изменить категорию с\n" +
+                            "названием:\t" +
                             "${category.get().title}\n" +
-                            "тэгом: ${category.get().suffix}\n" +
-                            "описанием: ${category.get().description}\n",
-                    CategoryKeyboards.confirmationAction(catId)
+                            "тэгом:\t${category.get().suffix}\n" +
+                            "описанием:\t${category.get().description}\n",
+                    CategoryKeyboards.confirmationAction(catId,prevPage)
                 )
             else -> return
         }
@@ -149,7 +173,13 @@ class CategoryButtonHandlerFetcher (
                     CategoryKeyboards.confirmationDone()
                 )
             }
-            LastUserActionType.CATEGORY_EDITING -> return
+            LastUserActionType.CATEGORY_EDITING -> {
+
+            }
+            LastUserActionType.CATEGORY_ADDING -> {
+
+            }
+            //TODO реализовать меню ввода категории
             else -> return
         }
 
