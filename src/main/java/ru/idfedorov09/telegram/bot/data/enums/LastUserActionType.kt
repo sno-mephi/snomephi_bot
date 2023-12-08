@@ -21,6 +21,12 @@ enum class LastUserActionType {
     CATEGORY_DELETING,
     /**Отправлена inline клавиатура изменения категории**/
     CATEGORY_EDITING,
+    /**Введено название категории**/
+    CATEGORY_INPUT_TITLE,
+    /**Введен тэг категории**/
+    CATEGORY_INPUT_SUFFIX,
+    /**Введено описание категории**/
+    CATEGORY_INPUT_DESCRIPTION,
     
     /** действия при регистраци **/
     REGISTRATION_START,

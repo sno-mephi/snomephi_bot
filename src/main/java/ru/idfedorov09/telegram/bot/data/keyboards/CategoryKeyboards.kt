@@ -101,6 +101,17 @@ class CategoryKeyboards {
                 )
             )
         }
+        fun inputCancel(): InlineKeyboardMarkup{
+            return InlineKeyboardMarkup(
+                mutableListOf(
+                    mutableListOf(
+                        InlineKeyboardButton("❌ Отмена").also {
+                            it.callbackData = CallbackCommands.CATEGORY_ACTION_MENU.data
+                        },
+                    )
+                )
+            )
+        }
         fun confirmationDone(): InlineKeyboardMarkup{
             return InlineKeyboardMarkup(
                 mutableListOf(
