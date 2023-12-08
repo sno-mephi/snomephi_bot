@@ -1,4 +1,3 @@
-
 package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
@@ -49,6 +48,7 @@ class QuestStartFetcher(
             // если была нажата кнопка на ожидание ответа, то значит следующим сообщением будет отправлен ответ
             userActualizedInfo.lastUserActionType == LastUserActionType.ACT_QUEST_ANS_CLICK ->
                 giveAnswer(update, userActualizedInfo)
+
             else -> ask(update, userActualizedInfo)
         }
     }

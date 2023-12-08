@@ -20,16 +20,17 @@ import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
  * Фетчер, обрабатывающий переходы при помощи lastUserActionType
  */
 @Component
-class CategoryActionTypeHandlerFetcher (
+class CategoryActionTypeHandlerFetcher(
     private val bot: Executor,
     private val updatesUtil: UpdatesUtil,
     private val categoryRepository: CategoryRepository,
-) : GeneralFetcher(){
+) : GeneralFetcher() {
     private data class RequestData(
         val chatId: String,
         val update: Update,
         var userInfo: UserActualizedInfo,
     )
+
     @InjectData
     fun doFetch(
         update: Update,
@@ -41,26 +42,30 @@ class CategoryActionTypeHandlerFetcher (
             update,
             userActualizedInfo,
         )
-        when(userActualizedInfo.lastUserActionType){
+        when (userActualizedInfo.lastUserActionType) {
             LastUserActionType.CATEGORY_INPUT_START ->
                 actionAddTitle(requestData)
+
             LastUserActionType.CATEGORY_INPUT_TITLE ->
                 actionAddSuffix(requestData)
+
             LastUserActionType.CATEGORY_INPUT_SUFFIX ->
                 actionAddDescription(requestData)
+
             else ->
                 return userActualizedInfo
         }
         return requestData.userInfo
     }
-    private fun actionAddTitle(data: RequestData){
-        if(data.update.message == null || !data.update.message.hasText())return
+
+    private fun actionAddTitle(data: RequestData) {
+        if (data.update.message == null || !data.update.message.hasText()) return
         val messageText = data.update.message.text
-        if(messageText.length>255){
+        if (messageText.length > 255) {
             sendMessage(
                 data,
                 "❗Слишком длинное сообщение",
-                CategoryKeyboards.inputCancel()
+                CategoryKeyboards.inputCancel(),
             )
             return
         }
@@ -72,42 +77,43 @@ class CategoryActionTypeHandlerFetcher (
                 suffix = category.suffix,
                 description = category.description,
                 changingByTui = category.changingByTui,
-            )
+            ),
         )
         sendMessage(
             data,
             "Введите тэг категории:",
-            CategoryKeyboards.inputCancel()
+            CategoryKeyboards.inputCancel(),
         )
         data.userInfo = data.userInfo.copy(
-            lastUserActionType = LastUserActionType.CATEGORY_INPUT_TITLE
+            lastUserActionType = LastUserActionType.CATEGORY_INPUT_TITLE,
         )
     }
-    private fun actionAddSuffix(data: RequestData){
-        if(data.update.message == null || !data.update.message.hasText())return
-        val messageText = data.update.message.text.lowercase().replace(' ','_')
+
+    private fun actionAddSuffix(data: RequestData) {
+        if (data.update.message == null || !data.update.message.hasText()) return
+        val messageText = data.update.message.text.lowercase().replace(' ', '_')
         val category = categoryRepository.findByChangingByTui(data.userInfo.tui) ?: return
-        if(messageText.length>255){
+        if (messageText.length > 255) {
             sendMessage(
                 data,
                 "❗Слишком длинное сообщение",
-                CategoryKeyboards.inputCancel()
+                CategoryKeyboards.inputCancel(),
             )
             return
         }
-        if(categoryRepository.findAllBySuffix(messageText).isNotEmpty()){
+        if (categoryRepository.findAllBySuffix(messageText).isNotEmpty()) {
             sendMessage(
                 data,
                 "❗Категория с таким тэгом уже есть, попробуйте ввести другой",
-                CategoryKeyboards.inputCancel()
+                CategoryKeyboards.inputCancel(),
             )
             return
         }
-        if(!messageText.matches(Regex("^[a-z0-9_]+$"))){
+        if (!messageText.matches(Regex("^[a-zа-я0-9_]+$"))) {
             sendMessage(
                 data,
                 "❗Тэг может содержать в себе только буквы латинского алфавита или цифры, попробуйте ввести другой",
-                CategoryKeyboards.inputCancel()
+                CategoryKeyboards.inputCancel(),
             )
             return
         }
@@ -118,26 +124,27 @@ class CategoryActionTypeHandlerFetcher (
                 suffix = messageText,
                 description = category.description,
                 changingByTui = category.changingByTui,
-            )
+            ),
         )
         sendMessage(
             data,
             "Введите описание категории:",
-            CategoryKeyboards.inputCancel()
+            CategoryKeyboards.inputCancel(),
         )
         data.userInfo = data.userInfo.copy(
-            lastUserActionType = LastUserActionType.CATEGORY_INPUT_SUFFIX
+            lastUserActionType = LastUserActionType.CATEGORY_INPUT_SUFFIX,
         )
     }
-    private fun actionAddDescription(data: RequestData){
-        if(data.update.message == null || !data.update.message.hasText())return
+
+    private fun actionAddDescription(data: RequestData) {
+        if (data.update.message == null || !data.update.message.hasText()) return
         val messageText = data.update.message.text
         val category = categoryRepository.findByChangingByTui(data.userInfo.tui) ?: return
-        if(messageText.length>255){
+        if (messageText.length > 255) {
             sendMessage(
                 data,
                 "❗Слишком длинное сообщение",
-                CategoryKeyboards.inputCancel()
+                CategoryKeyboards.inputCancel(),
             )
             return
         }
@@ -148,26 +155,29 @@ class CategoryActionTypeHandlerFetcher (
                 suffix = category.suffix,
                 description = messageText,
                 changingByTui = null,
-            )
+            ),
         )
         sendMessage(
             data,
             "✅ Категория #${category.suffix} успешно добавлена",
-            CategoryKeyboards.confirmationDone()
+            CategoryKeyboards.confirmationDone(),
         )
         data.userInfo = data.userInfo.copy(
-            lastUserActionType = LastUserActionType.DEFAULT
+            lastUserActionType = LastUserActionType.DEFAULT,
         )
     }
-    private fun sendMessage(data: RequestData, text: String){
-        bot.execute(SendMessage(data.chatId,text)).messageId
+
+    private fun sendMessage(data: RequestData, text: String) {
+        bot.execute(SendMessage(data.chatId, text)).messageId
     }
-    private fun sendMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup){
-        val msg = SendMessage(data.chatId,text)
-        msg.replyMarkup=keyboard
+
+    private fun sendMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup) {
+        val msg = SendMessage(data.chatId, text)
+        msg.replyMarkup = keyboard
         bot.execute(msg).messageId
     }
-    private fun editMessage(data: RequestData, text: String){
+
+    private fun editMessage(data: RequestData, text: String) {
         val msgId = data.update.callbackQuery.message.messageId
         bot.execute(
             EditMessageText(
@@ -179,10 +189,11 @@ class CategoryActionTypeHandlerFetcher (
                 null,
                 null,
                 null,
-            )
+            ),
         )
     }
-    private fun editMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup?){
+
+    private fun editMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup?) {
         val msgId = data.update.callbackQuery.message.messageId
         bot.execute(
             EditMessageText(
@@ -194,10 +205,11 @@ class CategoryActionTypeHandlerFetcher (
                 null,
                 keyboard,
                 null,
-            )
+            ),
         )
     }
-    private fun editMessage(data: RequestData, keyboard: InlineKeyboardMarkup?){
+
+    private fun editMessage(data: RequestData, keyboard: InlineKeyboardMarkup?) {
         val msgId = data.update.callbackQuery.message.messageId
         bot.execute(
             EditMessageReplyMarkup(
@@ -205,7 +217,7 @@ class CategoryActionTypeHandlerFetcher (
                 msgId,
                 null,
                 keyboard,
-            )
+            ),
         )
     }
 }
