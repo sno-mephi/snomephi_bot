@@ -15,11 +15,16 @@ enum class CallbackCommands(
     QUEST_START_DIALOG("quest_start_dialog|%d"),
 
     CATEGORY_ACTION_MENU("category_action_menu"),
+    /** страница категорий **/
+    CATEGORY_CHOOSE_MENU("category_choose_menu|%d"),
     CATEGORY_EDIT("category_edit"),
     CATEGORY_ADD("category_add"),
     CATEGORY_DELETE("category_delete"),
+    /** страница категорий**/
     CATEGORY_PAGE("category_page|%d"),
-    CATEGORY_CHOOSE("category_choose|%d"),
+    /** id категории, страница категорий**/
+    CATEGORY_CHOOSE("category_choose|%d|%d"),
+    /** id категории **/
     CATEGORY_CONFIRM("category_confirm|%d"),
     
     USER_EDIT("user_edit"),
