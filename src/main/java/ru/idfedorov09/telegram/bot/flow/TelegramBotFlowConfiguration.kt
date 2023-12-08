@@ -25,7 +25,8 @@ open class TelegramBotFlowConfiguration(
     private val questButtonHandlerFetcher: QuestButtonHandlerFetcher,
     private val dialogHandleFetcher: DialogHandleFetcher,
     private val categoryButtonHandlerFetcher: CategoryButtonHandlerFetcher,
-    private val categoryCommandFetcher: CategoryCommandFetcher,
+    private val categoryCommandHandlerFetcher: CategoryCommandHandlerFetcher,
+    private val categoryActionTypeHandlerFetcher: CategoryActionTypeHandlerFetcher,
     private val registrationFetcher: RegistrationFetcher,
     private val userActionHandlerFetcher: RegistrationActionHandlerFetcher,
     private val roleDescriptionFetcher: RoleDescriptionFetcher,
@@ -53,8 +54,9 @@ open class TelegramBotFlowConfiguration(
             }
 
             group(condition = { it.isByUser() && it.isUserRegistered() }) {
-                fetch(categoryCommandFetcher)
+                fetch(categoryCommandHandlerFetcher)
                 fetch(categoryButtonHandlerFetcher)
+                fetch(categoryActionTypeHandlerFetcher)
                 
                 fetch(roleDescriptionFetcher)
                 fetch(userInfoCommandFetcher)

@@ -10,6 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.keyboards.CategoryKeyboards
+import ru.idfedorov09.telegram.bot.data.model.Category
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository
@@ -19,7 +20,7 @@ import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 
 /**
- * Фетчер, обрабатывающий случаи нажатия на кнопки для действий с категориями
+ * Фетчер, обрабатывающий нажатия на кнопки категорий
  */
 @Component
 class CategoryButtonHandlerFetcher (
@@ -110,7 +111,7 @@ class CategoryButtonHandlerFetcher (
         data.userInfo = data.userInfo.copy(
             lastUserActionType = LastUserActionType.CATEGORY_ADDING
         )
-        //TODO: Реализовать добавление
+        clickConfirm(data, listOf("0"))
     }
     private fun clickDelete(data: RequestData){
         data.userInfo = data.userInfo.copy(
@@ -173,16 +174,43 @@ class CategoryButtonHandlerFetcher (
                     CategoryKeyboards.confirmationDone()
                 )
             }
-            LastUserActionType.CATEGORY_EDITING -> {
-
-            }
-            LastUserActionType.CATEGORY_ADDING -> {
-
-            }
-            //TODO реализовать меню ввода категории
+            LastUserActionType.CATEGORY_EDITING ->
+                actionEditCategory(catId,data)
+            LastUserActionType.CATEGORY_ADDING ->
+                actionAddCategory(data)
             else -> return
         }
-
+    }
+    private fun actionEditCategory(catId: Long,data: RequestData){
+        data.userInfo = data.userInfo.copy(
+            lastUserActionType = LastUserActionType.CATEGORY_INPUT_TITLE
+        )
+        categoryRepository.save(
+            Category(
+                id = catId,
+                changingByTui = data.userInfo.tui
+            )
+        )
+        sendMessage(
+            data,
+            "✏️ Введите заголовок категории:",
+            CategoryKeyboards.inputCancel()
+        )
+    }
+    private fun actionAddCategory(data: RequestData){
+        data.userInfo = data.userInfo.copy(
+            lastUserActionType = LastUserActionType.CATEGORY_INPUT_TITLE
+        )
+        categoryRepository.save(
+            Category(
+                changingByTui = data.userInfo.tui
+            )
+        )
+        sendMessage(
+            data,
+            "✅ Введите заголовок категории:",
+            CategoryKeyboards.inputCancel()
+        )
     }
     private fun sendMessage(data: RequestData, text: String){
         bot.execute(SendMessage(data.chatId,text)).messageId
