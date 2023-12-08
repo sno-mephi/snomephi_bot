@@ -26,6 +26,7 @@ enum class CallbackCommands(
     CATEGORY_CHOOSE("category_choose|%d|%d"),
     /** id категории **/
     CATEGORY_CONFIRM("category_confirm|%d"),
+    CATEGORY_INPUT_CANCEL("category_input_cancel"),
     
     USER_EDIT("user_edit"),
     USER_DELETE("user_delete"),

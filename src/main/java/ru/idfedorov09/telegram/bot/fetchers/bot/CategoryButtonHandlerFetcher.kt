@@ -65,6 +65,8 @@ class CategoryButtonHandlerFetcher (
                 clickChoose(requestData,CallbackCommands.params(callbackData))
             CallbackCommands.CATEGORY_CONFIRM.isMatch(callbackData) ->
                 clickConfirm(requestData,CallbackCommands.params(callbackData))
+            CallbackCommands.CATEGORY_INPUT_CANCEL.isMatch(callbackData) ->
+                clickInputCancel(requestData)
         }
         return requestData.userInfo
     }
@@ -181,9 +183,17 @@ class CategoryButtonHandlerFetcher (
             else -> return
         }
     }
+    private fun clickInputCancel(data: RequestData){
+        data.userInfo = data.userInfo.copy(
+            lastUserActionType = LastUserActionType.DEFAULT
+        )
+        val category = categoryRepository.findByChangingByTui(data.userInfo.tui) ?: return
+        categoryRepository.deleteById(category.id)
+        clickActionMenu(data)
+    }
     private fun actionEditCategory(catId: Long,data: RequestData){
         data.userInfo = data.userInfo.copy(
-            lastUserActionType = LastUserActionType.CATEGORY_INPUT_TITLE
+            lastUserActionType = LastUserActionType.CATEGORY_INPUT_START
         )
         categoryRepository.save(
             Category(
@@ -199,7 +209,7 @@ class CategoryButtonHandlerFetcher (
     }
     private fun actionAddCategory(data: RequestData){
         data.userInfo = data.userInfo.copy(
-            lastUserActionType = LastUserActionType.CATEGORY_INPUT_TITLE
+            lastUserActionType = LastUserActionType.CATEGORY_INPUT_START
         )
         categoryRepository.save(
             Category(

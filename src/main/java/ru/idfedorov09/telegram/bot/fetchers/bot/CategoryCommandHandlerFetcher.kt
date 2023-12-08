@@ -61,7 +61,7 @@ class CategoryCommandHandlerFetcher (
             )
         }else {
             data.userInfo = data.userInfo.copy(
-                lastUserActionType = LastUserActionType.CATEGORY_WAITING
+                lastUserActionType = LastUserActionType.DEFAULT
             )
             sendMessage(
                 data,

@@ -10,9 +10,6 @@ enum class LastUserActionType {
     ACT_QUEST_ANS_CLICK,
     /** Завершил диалог **/
     ACT_QUEST_DIALOG_CLOSE,
-    
-    /**Фетчер категорий не активен**/
-    CATEGORY_WAITING,
     /**Отправлена inline клавиатура выбора действия с категорией**/
     CATEGORY_ACTION_CHOOSING,
     /**Отправлена inline клавиатура создания категории**/
@@ -21,6 +18,8 @@ enum class LastUserActionType {
     CATEGORY_DELETING,
     /**Отправлена inline клавиатура изменения категории**/
     CATEGORY_EDITING,
+    /**Запущена последовательность ввода категории**/
+    CATEGORY_INPUT_START,
     /**Введено название категории**/
     CATEGORY_INPUT_TITLE,
     /**Введен тэг категории**/
