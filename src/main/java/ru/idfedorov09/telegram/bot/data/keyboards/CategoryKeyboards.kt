@@ -6,7 +6,7 @@ import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository
 
 class CategoryKeyboards {
-    companion object{
+    companion object {
         fun choosingAction(): InlineKeyboardMarkup {
             return InlineKeyboardMarkup(
                 mutableListOf(
@@ -21,61 +21,72 @@ class CategoryKeyboards {
                             it.callbackData = CallbackCommands.CATEGORY_DELETE.data
                         },
                     ),
-                )
+                ),
             )
         }
-        fun choosingCategory(page: Long, pageSize: Long, catRep: CategoryRepository): InlineKeyboardMarkup{
-            val body=choosingCategoryBody(page,pageSize,catRep)
-            val nav=choosingCategoryNav(page,pageSize,catRep)
+
+        fun choosingCategory(page: Long, pageSize: Long, catRep: CategoryRepository): InlineKeyboardMarkup {
+            val body = choosingCategoryBody(page, pageSize, catRep)
+            val nav = choosingCategoryNav(page, pageSize, catRep)
             body.addAll(nav)
             return InlineKeyboardMarkup(body)
         }
-        fun choosingCategoryBody(page: Long, pageSize: Long, catRep: CategoryRepository): MutableList<MutableList<InlineKeyboardButton>>{
-            val categoriesList = catRep.findCategoriesByPage(page,pageSize)
+
+        fun choosingCategoryBody(
+            page: Long,
+            pageSize: Long,
+            catRep: CategoryRepository,
+        ): MutableList<MutableList<InlineKeyboardButton>> {
+            val categoriesList = catRep.findCategoriesByPage(page, pageSize)
             val keyboard = mutableListOf(mutableListOf<InlineKeyboardButton>())
-            for(i in categoriesList.indices){
+            for (i in categoriesList.indices) {
                 keyboard.add(
                     mutableListOf(
-                        InlineKeyboardButton("${categoriesList[i].title} #${categoriesList[i].suffix}").also{
-                            it.callbackData = CallbackCommands.CATEGORY_CHOOSE.format(categoriesList[i].id,page)
-                        }
-                    )
+                        InlineKeyboardButton("${categoriesList[i].title} #${categoriesList[i].suffix}").also {
+                            it.callbackData = CallbackCommands.CATEGORY_CHOOSE.format(categoriesList[i].id, page)
+                        },
+                    ),
                 )
             }
-            for(i in categoriesList.size until pageSize){
+            for (i in categoriesList.size until pageSize) {
                 keyboard.add(
                     mutableListOf(
-                        InlineKeyboardButton("----").also{
+                        InlineKeyboardButton("----").also {
                             it.callbackData = CallbackCommands.VOID.data
-                        }
-                    )
+                        },
+                    ),
                 )
             }
             return keyboard
         }
-        fun choosingCategoryNav(page: Long, pageSize: Long, catRep: CategoryRepository): MutableList<MutableList<InlineKeyboardButton>>{
-            val catCount=catRep.count()
-            val pageCount = if(catCount%pageSize==0L){
-                catCount/pageSize
-            }else{
-                catCount/pageSize+1
+
+        fun choosingCategoryNav(
+            page: Long,
+            pageSize: Long,
+            catRep: CategoryRepository,
+        ): MutableList<MutableList<InlineKeyboardButton>> {
+            val catCount = catRep.count()
+            val pageCount = if (catCount % pageSize == 0L) {
+                catCount / pageSize
+            } else {
+                catCount / pageSize + 1
             }
             return mutableListOf(
                 mutableListOf(
                     InlineKeyboardButton("⬅️ Назад").also {
-                        it.callbackData = if(pageCount!=1L){
-                            CallbackCommands.CATEGORY_PAGE.format((page-1).mod(pageCount))
-                        }else{
+                        it.callbackData = if (pageCount != 1L) {
+                            CallbackCommands.CATEGORY_PAGE.format((page - 1).mod(pageCount))
+                        } else {
                             CallbackCommands.VOID.data
                         }
                     },
-                    InlineKeyboardButton("${page+1}/$pageCount").also {
+                    InlineKeyboardButton("${page + 1}/$pageCount").also {
                         it.callbackData = CallbackCommands.VOID.data
                     },
                     InlineKeyboardButton("Вперёд ➡️").also {
-                        it.callbackData = if(pageCount!=1L){
-                            CallbackCommands.CATEGORY_PAGE.format((page+1).mod(pageCount))
-                        }else{
+                        it.callbackData = if (pageCount != 1L) {
+                            CallbackCommands.CATEGORY_PAGE.format((page + 1).mod(pageCount))
+                        } else {
                             CallbackCommands.VOID.data
                         }
                     },
@@ -84,10 +95,11 @@ class CategoryKeyboards {
                     InlineKeyboardButton("В меню ↩️").also {
                         it.callbackData = CallbackCommands.CATEGORY_ACTION_MENU.format(0)
                     },
-                )
+                ),
             )
         }
-        fun confirmationAction(catId: Long, prevPage: Long): InlineKeyboardMarkup{
+
+        fun confirmationAction(catId: Long, prevPage: Long): InlineKeyboardMarkup {
             return InlineKeyboardMarkup(
                 mutableListOf(
                     mutableListOf(
@@ -98,29 +110,31 @@ class CategoryKeyboards {
                             it.callbackData = CallbackCommands.CATEGORY_CHOOSE_MENU.format(prevPage)
                         },
                     ),
-                )
+                ),
             )
         }
-        fun inputCancel(): InlineKeyboardMarkup{
+
+        fun inputCancel(): InlineKeyboardMarkup {
             return InlineKeyboardMarkup(
                 mutableListOf(
                     mutableListOf(
                         InlineKeyboardButton("❌ Отмена").also {
                             it.callbackData = CallbackCommands.CATEGORY_INPUT_CANCEL.data
                         },
-                    )
-                )
+                    ),
+                ),
             )
         }
-        fun confirmationDone(): InlineKeyboardMarkup{
+
+        fun confirmationDone(): InlineKeyboardMarkup {
             return InlineKeyboardMarkup(
                 mutableListOf(
                     mutableListOf(
                         InlineKeyboardButton("В меню ↩️").also {
                             it.callbackData = CallbackCommands.CATEGORY_ACTION_MENU.format(1)
                         },
-                    )
-                )
+                    ),
+                ),
             )
         }
     }

@@ -8,6 +8,7 @@ enum class CallbackCommands(
     val data: String,
 ) {
     VOID("void"),
+
     /** Нажата кнопка Ответ **/
     QUEST_ANSWER("quest_ans|%d"),
     QUEST_IGNORE("quest_ignore|%d"),
@@ -15,15 +16,19 @@ enum class CallbackCommands(
     QUEST_START_DIALOG("quest_start_dialog|%d"),
 
     CATEGORY_ACTION_MENU("category_action_menu|%d"),
+
     /** страница категорий **/
     CATEGORY_CHOOSE_MENU("category_choose_menu|%d"),
     CATEGORY_EDIT("category_edit"),
     CATEGORY_ADD("category_add"),
     CATEGORY_DELETE("category_delete"),
+
     /** страница категорий**/
     CATEGORY_PAGE("category_page|%d"),
+
     /** id категории, страница категорий**/
     CATEGORY_CHOOSE("category_choose|%d|%d"),
+
     /** id категории **/
     CATEGORY_CONFIRM("category_confirm|%d"),
     CATEGORY_INPUT_CANCEL("category_input_cancel"),
@@ -41,7 +46,7 @@ enum class CallbackCommands(
 
     fun isMatch(callbackData: String): Boolean {
         var index = data.indexOf("%")
-        if(index < 0){
+        if (index < 0) {
             index = data.length
         }
         val prefix = data.substring(

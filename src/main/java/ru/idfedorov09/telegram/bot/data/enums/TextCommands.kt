@@ -14,6 +14,7 @@ enum class TextCommands(
     QUEST_DIALOG_CLOSE(
         "❌ Завершить диалог",
     ),
+
     /** Открыть меню категорий **/
     CATEGORY_CHOOSE_ACTION(
         "/category",
