@@ -16,7 +16,8 @@ enum class CallbackCommands(
     USER_EDIT("user_edit"),
     USER_DELETE("user_delete"),
     USER_CONFIRM("user_confirm|%s"),
-    USER_DECLINE("user_decline|%s")
+    USER_DECLINE("user_decline|%s"),
+    USER_WITHOUT_GROUP("user_without_group")
     ;
 
     fun format(vararg args: Any?): String {
@@ -24,10 +25,13 @@ enum class CallbackCommands(
     }
 
     fun isMatch(callbackData: String): Boolean {
-
+        var index = data.indexOf("%")
+        if (index < 0) {
+            index = data.length
+        }
         val prefix = data.substring(
             0,
-            data.indexOf("%"),
+            index,
         )
         return callbackData.startsWith(prefix)
     }
