@@ -32,6 +32,9 @@ enum class CallbackCommands(
     /** id категории **/
     CATEGORY_CONFIRM("category_confirm|%d"),
     CATEGORY_INPUT_CANCEL("category_input_cancel"),
+
+    /** bool можно ли снять категорию **/
+    CATEGORY_IS_UNREMOVABLE("category_is_unremovable|%d"),
     
     USER_EDIT("user_edit"),
     USER_DELETE("user_delete"),
