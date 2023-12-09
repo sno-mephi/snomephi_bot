@@ -18,16 +18,18 @@ import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_START_DIALO
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
-import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.data.model.Quest
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
+import ru.idfedorov09.telegram.bot.repo.BanRepository
 import ru.idfedorov09.telegram.bot.repo.QuestDialogMessageRepository
 import ru.idfedorov09.telegram.bot.repo.QuestRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
+import ru.idfedorov09.telegram.bot.util.BanUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 import java.lang.NumberFormatException
+import java.time.LocalDateTime
 
 /**
  * Фетчер, обрабатывающий случаи нажатия на кнопки для вопросов
@@ -37,6 +39,7 @@ class QuestButtonHandlerFetcher(
     private val bot: Executor,
     private val questRepository: QuestRepository,
     private val userRepository: UserRepository,
+    private val banRepository: BanRepository,
     private val dialogMessageRepository: QuestDialogMessageRepository,
 ) : GeneralFetcher() {
 
@@ -184,14 +187,29 @@ class QuestButtonHandlerFetcher(
             ),
         )
 
-        // TODO: логика банов скоро изменится, тут тоже надо будет менять код
-        val authorInBan = userRepository.findById(data.quest.authorId!!).get().copy(
-            roles = mutableSetOf(UserRole.BANNED),
+        var newText = "✍️ Укажите причину бана."
+
+        bot.execute(
+            EditMessageText().also {
+                it.chatId = QUEST_RESPONDENT_CHAT_ID
+                it.messageId = data.quest.consoleMessageId?.toInt()
+                it.text = newText
+                it.replyMarkup = createUnbanKeyboard(data.quest)
+            },
         )
-        userRepository.save(authorInBan)
+
+        val text = "" // TODO: как-то получить причину бана
+
+        // TODO: логика банов скоро изменится, тут тоже надо будет менять код
+
+        val user = userRepository.findByTui(data.userActualizedInfo.tui)
+        user?.let {
+            val banUtil = BanUtil(userRepository, banRepository)
+            banUtil.banUser(user, text, LocalDateTime.now())
+        }
 
         // TODO: а если у пользователя нет ника?
-        val newText = "\uD83D\uDD34 Автор забанен пользователем @${data.userActualizedInfo.lastTgNick}."
+        newText = "\uD83D\uDD34 Автор забанен пользователем @${data.userActualizedInfo.lastTgNick}."
         bot.execute(
             EditMessageText().also {
                 it.chatId = QUEST_RESPONDENT_CHAT_ID

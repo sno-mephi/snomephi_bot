@@ -5,12 +5,13 @@ import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
-import ru.idfedorov09.telegram.bot.data.model.Ban
 import ru.idfedorov09.telegram.bot.data.model.User
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
+import ru.idfedorov09.telegram.bot.flow.ExpContainer
 import ru.idfedorov09.telegram.bot.repo.BanRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
+import ru.idfedorov09.telegram.bot.util.BanUtil
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
@@ -33,6 +34,7 @@ class BanUserFetcher(
     fun doFetch(
         update: Update,
         bot: Executor,
+        exp: ExpContainer,
         userActualizedInfo: UserActualizedInfo,
     ) {
         if (!TextCommands.BAN_COMMAND.isAllowed(userActualizedInfo)) {
@@ -76,11 +78,8 @@ class BanUserFetcher(
                 )
                 val comment = updatesUtil.getText(update)
                 comment?.let {
-                    val ban: Ban = Ban(
-                        userId = user.id,
-                        comment = comment,
-                    )
-                    banRepository.save(ban)
+                    val banUtil = BanUtil(userRepository, banRepository)
+                    banUtil.banUser(user, comment, exp.updateTime)
 
                     bot.execute(
                         SendMessage(

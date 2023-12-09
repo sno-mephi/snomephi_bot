@@ -63,10 +63,7 @@ class UnbanUserFetcher(
                     ),
                 )
             } else {
-                val ban: Ban? = banRepository.findByUserId(userId = user.id)
-                ban?.let {
-                    banRepository.delete(ban)
-                }
+
             }
         }
     }

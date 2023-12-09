@@ -2,6 +2,7 @@ package ru.idfedorov09.telegram.bot.flow
 
 import ru.idfedorov09.telegram.bot.data.enums.BotStage
 import ru.mephi.sno.libs.flow.belly.Mutable
+import java.time.LocalDateTime
 
 /**
  * Объект контекста флоу, содержащий информацию о работающих фичах, режимах и тд и тп
@@ -12,4 +13,7 @@ data class ExpContainer(
 
     /** флаг который говорит что апдейт пришел от пользователя **/
     var byUser: Boolean = true,
+
+    /** для хранения времени запроса**/
+    var updateTime: LocalDateTime = LocalDateTime.now()
 )

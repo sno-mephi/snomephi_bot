@@ -13,6 +13,7 @@ import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
+import java.time.LocalDateTime
 import kotlin.jvm.optionals.getOrNull
 
 @Component
@@ -56,6 +57,8 @@ class ActualizeUserInfoFetcher(
         if (userDataFromDatabase.lastTgNick != tgUser.userName) {
             userRepository.save(userDataFromDatabase.copy(lastTgNick = tgUser.userName))
         }
+
+        expContainer.updateTime = LocalDateTime.now()
 
         return UserActualizedInfo(
             id = userDataFromDatabase.id,

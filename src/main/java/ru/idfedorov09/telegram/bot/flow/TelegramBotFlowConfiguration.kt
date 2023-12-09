@@ -24,8 +24,6 @@ open class TelegramBotFlowConfiguration(
     private val banUserFetcher: BanUserFetcher,
     private val unbanUserFetcher: UnbanUserFetcher,
     private val roleDescriptionFetcher: RoleDescriptionFetcher,
-
-    private val userInfoFetcher: UserInfoFetcher,
 ) {
 
     /**
