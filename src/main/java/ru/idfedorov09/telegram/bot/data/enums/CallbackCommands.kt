@@ -24,6 +24,7 @@ enum class CallbackCommands(
     }
 
     fun isMatch(callbackData: String): Boolean {
+
         val prefix = data.substring(
             0,
             data.indexOf("%"),

@@ -8,7 +8,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
-import ru.idfedorov09.telegram.bot.data.enums.UserStrings
+import ru.idfedorov09.telegram.bot.data.enums.UserMessages
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.flow.ExpContainer
@@ -41,7 +41,7 @@ class RegistrationFetcher(
             bot.execute(
                 SendMessage(
                     chatId,
-                    UserStrings.RegistrationStart(),
+                    UserMessages.RegistrationStart(),
                 ),
             )
             LastUserActionType.REGISTRATION_START
@@ -54,7 +54,7 @@ class RegistrationFetcher(
                 bot.execute(
                     SendMessage(
                         chatId,
-                        UserStrings.FullNameRequest(),
+                        UserMessages.FullNameRequest(),
                     ),
                 )
                 userInfo = userInfo.copy(
@@ -67,7 +67,7 @@ class RegistrationFetcher(
                     bot.execute(
                         SendMessage().apply {
                             this.chatId = chatId
-                            this.text = UserStrings.FullNameConfirmation.format(message.text)
+                            this.text = UserMessages.FullNameConfirmation.format(message.text)
                             this.replyMarkup = createActionsKeyboard("fullName")
                         },
                     )
@@ -78,7 +78,7 @@ class RegistrationFetcher(
                     bot.execute(
                         SendMessage(
                             chatId,
-                            UserStrings.InvalidFullName(),
+                            UserMessages.InvalidFullName(),
                         ),
                     )
                 }
@@ -89,7 +89,7 @@ class RegistrationFetcher(
                     bot.execute(
                         SendMessage(
                             chatId,
-                            UserStrings.AlreadyExists.format(userInfo.lastTgNick ?: "")
+                            UserMessages.AlreadyExists.format(userInfo.lastTgNick ?: "")
                         )
                     )
                     return userInfo
@@ -98,7 +98,7 @@ class RegistrationFetcher(
                     bot.execute(
                         SendMessage().apply {
                             this.chatId = chatId
-                            this.text = UserStrings.GroupConfirmation.format(message.text)
+                            this.text = UserMessages.GroupConfirmation.format(message.text)
                             this.replyMarkup = createActionsKeyboard("studyGroup")
                         },
                     )
@@ -107,7 +107,7 @@ class RegistrationFetcher(
                     bot.execute(
                         SendMessage(
                             chatId,
-                            UserStrings.InvalidGroup(),
+                            UserMessages.InvalidGroup(),
                         ),
                     )
                 }
