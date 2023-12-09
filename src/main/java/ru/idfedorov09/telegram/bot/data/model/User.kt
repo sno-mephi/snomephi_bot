@@ -32,6 +32,10 @@ data class User(
     @Column(name = "categories")
     val categories: MutableSet<Long> = mutableSetOf(),
 
+    /** поле для временных данных юзера **/
+    @Column(name = "data")
+    val data: String? = null,
+
     /** роли **/
     @Enumerated(EnumType.STRING)
     @Column(name = "roles")
