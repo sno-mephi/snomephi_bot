@@ -6,9 +6,10 @@ enum class UserMessages(private val text: String) {
 
     FullNameConfirmation("Вы действительно хотите использовать ФИО %s?"),
     GroupConfirmation("Вы действительно состоите в группе %s?"),
+    WithoutGroupConfirmation("Вы действительно не из МИФИ?"),
 
     InvalidGroup("Кажется такой группы не существует, пожалуйста, введите свою группу заново"),
-    InvalidFullName("Кажется Вы ввели ФИО неправильно"),
+    InvalidFullName("Кажется Вы ввели ФИО неправильно. Используйте только символы из кириллицы и пробелы"),
     AlreadyExists("Такой пользователь уже зарегистрирован под юзернеймом @%s"),
 
     RegistrationComplete("Спасибо, Вы зарегистрированы"),

@@ -115,7 +115,8 @@ class RegistrationFetcher(
 
             else -> {
                 if (action != LastUserActionType.REGISTRATION_CONFIRM_GROUP &&
-                    action != LastUserActionType.REGISTRATION_CONFIRM_FULL_NAME) {
+                    action != LastUserActionType.REGISTRATION_CONFIRM_FULL_NAME
+                ) {
                     exp.isUserRegistered = true
                 }
             }
@@ -124,23 +125,8 @@ class RegistrationFetcher(
         return userInfo
     }
 
-    private fun createActionsKeyboard(
-        parameter: String
-    ) = InlineKeyboardMarkup(
-        listOf(
-            listOf(
-                InlineKeyboardButton("✅ Подтвердить").also {
-                    it.callbackData = CallbackCommands.USER_CONFIRM.data.format(parameter)
-                },
-                InlineKeyboardButton("❌ Отменить").also {
-                    it.callbackData = CallbackCommands.USER_DECLINE.data.format(parameter)
-                }
-            ),
-        )
-    )
-
     private fun String?.isValidFullName() = this?.let {
-        it.isNotEmpty() && it.length < 128
+        it.isNotEmpty() && it.length < 80 && all {char -> "[а-я А-Я]".toRegex().matches(char.toString()) }
     } ?: false
 
     private fun String?.isValidGroup() = this?.let {
