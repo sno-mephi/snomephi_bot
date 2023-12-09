@@ -8,7 +8,7 @@ import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
-import ru.idfedorov09.telegram.bot.data.enums.UserStrings
+import ru.idfedorov09.telegram.bot.data.enums.UserMessages
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
@@ -74,7 +74,7 @@ class RegistrationActionHandlerFetcher(
                     bot.execute(
                         SendMessage(
                             chat,
-                            UserStrings.FullNameRequest(" заново")
+                            UserMessages.FullNameRequest(" заново")
                         )
                     )
                     user = user.copy(
@@ -86,7 +86,7 @@ class RegistrationActionHandlerFetcher(
                     bot.execute(
                         SendMessage(
                             chat,
-                            UserStrings.GroupRequest(" заново")
+                            UserMessages.GroupRequest(" заново")
                         )
                     )
                     user = user.copy(
@@ -124,7 +124,7 @@ class RegistrationActionHandlerFetcher(
                     bot.execute(
                         SendMessage(
                             chat,
-                            UserStrings.GroupRequest()
+                            UserMessages.GroupRequest()
                         )
                     )
                     user = user.copy(
@@ -136,7 +136,7 @@ class RegistrationActionHandlerFetcher(
                     bot.execute(
                         SendMessage(
                             chat,
-                            UserStrings.RegistrationComplete(),
+                            UserMessages.RegistrationComplete(),
                         ),
                     )
                     user = user.copy(
