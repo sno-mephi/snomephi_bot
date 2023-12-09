@@ -1,6 +1,6 @@
 package ru.idfedorov09.telegram.bot.data.enums
 
-enum class UserMessages(private val text: String) {
+enum class RegistrationMessageText(private val text: String) {
     FullNameRequest("Пожалуйста, введите свое ФИО"),
     GroupRequest("Введите свою группу"),
 

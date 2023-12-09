@@ -7,12 +7,9 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
-import org.telegram.telegrambots.meta.api.objects.User
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
-import ru.idfedorov09.telegram.bot.data.enums.UserMessages
+import ru.idfedorov09.telegram.bot.data.enums.RegistrationMessageText
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
@@ -85,7 +82,7 @@ class RegistrationActionHandlerFetcher(
                     bot.execute(
                         SendMessage(
                             chat,
-                            UserMessages.FullNameRequest(" заново")
+                            RegistrationMessageText.FullNameRequest(" заново")
                         )
                     )
                     user = user.copy(
@@ -97,7 +94,7 @@ class RegistrationActionHandlerFetcher(
                     bot.execute(
                         SendMessage().apply {
                             chatId = chat
-                            text = UserMessages.GroupRequest(" заново")
+                            text = RegistrationMessageText.GroupRequest(" заново")
                             replyMarkup = userWithoutGroupActionCallback()
                         }
                     )
@@ -136,7 +133,7 @@ class RegistrationActionHandlerFetcher(
                     bot.execute(
                         SendMessage().apply {
                             chatId = chat
-                            text = UserMessages.GroupRequest()
+                            text = RegistrationMessageText.GroupRequest()
                             replyMarkup = userWithoutGroupActionCallback()
                         }
                     )
@@ -149,7 +146,7 @@ class RegistrationActionHandlerFetcher(
                     bot.execute(
                         SendMessage(
                             chat,
-                            UserMessages.RegistrationComplete(),
+                            RegistrationMessageText.RegistrationComplete(),
                         ),
                     )
                     user = user.copy(
@@ -180,7 +177,7 @@ class RegistrationActionHandlerFetcher(
         bot.execute(
             SendMessage().apply {
                 this.chatId = chat
-                this.text = UserMessages.WithoutGroupConfirmation()
+                this.text = RegistrationMessageText.WithoutGroupConfirmation()
                 this.replyMarkup = createActionsKeyboard("studyGroup")
             },
         )
