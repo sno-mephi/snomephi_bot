@@ -1,7 +1,6 @@
 package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
-import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
@@ -48,7 +47,6 @@ class CategoryButtonHandlerFetcher(
             update,
             userActualizedInfo,
         )
-        bot.execute(AnswerCallbackQuery(update.callbackQuery.id))
         when {
             CallbackCommands.CATEGORY_ACTION_MENU.isMatch(callbackData) ->
                 clickActionMenu(requestData, CallbackCommands.params(callbackData))
@@ -76,6 +74,9 @@ class CategoryButtonHandlerFetcher(
 
             CallbackCommands.CATEGORY_INPUT_CANCEL.isMatch(callbackData) ->
                 clickInputCancel(requestData)
+
+            CallbackCommands.CATEGORY_IS_UNREMOVABLE.isMatch(callbackData) ->
+                clickIsUnremovable(requestData, CallbackCommands.params(callbackData))
         }
         return requestData.userInfo
     }
@@ -227,14 +228,41 @@ class CategoryButtonHandlerFetcher(
         data.userInfo = data.userInfo.copy(
             lastUserActionType = LastUserActionType.DEFAULT,
         )
-        val category = categoryRepository.findByChangingByTui(data.userInfo.tui) ?: return
+        val category = categoryRepository.findByChangedByTui(data.userInfo.tui) ?: return
         categoryRepository.deleteById(category.id)
         clickActionMenu(data, listOf("0"))
     }
 
+    private fun clickIsUnremovable(data: RequestData, params: List<String>) {
+        val category = categoryRepository.findByChangedByTui(data.userInfo.tui) ?: return
+        val isUnremovable = params[0].toLong() == 1L
+        categoryRepository.save(
+            Category(
+                id = category.id,
+                title = category.title,
+                suffix = category.suffix,
+                description = category.description,
+                isUnremovable = isUnremovable,
+                changedByTui = null,
+            ),
+        )
+        editMessage(
+            data,
+            CategoryKeyboards.inputCancel(),
+        )
+        sendMessage(
+            data,
+            "✅ Категория #${category.suffix} успешно добавлена",
+            CategoryKeyboards.choosingAction(),
+        )
+        data.userInfo = data.userInfo.copy(
+            lastUserActionType = LastUserActionType.DEFAULT,
+        )
+    }
+
     private fun actionDeleteCategory(catId: Long, data: RequestData) {
         val category = categoryRepository.findById(catId)
-        if (category.get().changingByTui == null) {
+        if (category.get().changedByTui == null) {
             categoryRepository.deleteById(catId)
             editMessage(
                 data,
@@ -266,7 +294,7 @@ class CategoryButtonHandlerFetcher(
         categoryRepository.save(
             Category(
                 id = catId,
-                changingByTui = data.userInfo.tui,
+                changedByTui = data.userInfo.tui,
             ),
         )
         editMessage(
@@ -275,7 +303,7 @@ class CategoryButtonHandlerFetcher(
         )
         sendMessage(
             data,
-            "✏️ Введите заголовок категории:",
+            "✏️ Введите заголовок категории (до 64 символов):",
             CategoryKeyboards.inputCancel(),
         )
     }
@@ -284,44 +312,24 @@ class CategoryButtonHandlerFetcher(
         data.userInfo = data.userInfo.copy(
             lastUserActionType = LastUserActionType.CATEGORY_INPUT_START,
         )
-        if (categoryRepository.findByChangingByTui(data.userInfo.tui) == null) {
+        if (categoryRepository.findByChangedByTui(data.userInfo.tui) == null) {
             categoryRepository.save(
                 Category(
-                    changingByTui = data.userInfo.tui,
+                    changedByTui = data.userInfo.tui,
                 ),
             )
         }
         editMessage(
             data,
-            "✅ Введите заголовок категории:",
+            "✅ Введите заголовок категории (до 64 символов):",
             CategoryKeyboards.inputCancel(),
         )
-    }
-
-    private fun sendMessage(data: RequestData, text: String) {
-        bot.execute(SendMessage(data.chatId, text)).messageId
     }
 
     private fun sendMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup) {
         val msg = SendMessage(data.chatId, text)
         msg.replyMarkup = keyboard
         bot.execute(msg).messageId
-    }
-
-    private fun editMessage(data: RequestData, text: String) {
-        val msgId = data.update.callbackQuery.message.messageId
-        bot.execute(
-            EditMessageText(
-                data.chatId,
-                msgId,
-                null,
-                text,
-                null,
-                null,
-                null,
-                null,
-            ),
-        )
     }
 
     private fun editMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup?) {

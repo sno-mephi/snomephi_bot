@@ -2,8 +2,6 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
@@ -11,7 +9,6 @@ import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.keyboards.CategoryKeyboards
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
-import ru.idfedorov09.telegram.bot.repo.CategoryRepository
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
@@ -23,7 +20,6 @@ import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 class CategoryCommandHandlerFetcher(
     private val bot: Executor,
     private val updatesUtil: UpdatesUtil,
-    private val categoryRepository: CategoryRepository,
 ) : GeneralFetcher() {
     private data class RequestData(
         val chatId: String,
@@ -80,49 +76,5 @@ class CategoryCommandHandlerFetcher(
         val msg = SendMessage(data.chatId, text)
         msg.replyMarkup = keyboard
         bot.execute(msg).messageId
-    }
-
-    private fun editMessage(data: RequestData, text: String) {
-        val msgId = data.update.callbackQuery.message.messageId
-        bot.execute(
-            EditMessageText(
-                data.chatId,
-                msgId,
-                null,
-                text,
-                null,
-                null,
-                null,
-                null,
-            ),
-        )
-    }
-
-    private fun editMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup?) {
-        val msgId = data.update.callbackQuery.message.messageId
-        bot.execute(
-            EditMessageText(
-                data.chatId,
-                msgId,
-                null,
-                text,
-                null,
-                null,
-                keyboard,
-                null,
-            ),
-        )
-    }
-
-    private fun editMessage(data: RequestData, keyboard: InlineKeyboardMarkup?) {
-        val msgId = data.update.callbackQuery.message.messageId
-        bot.execute(
-            EditMessageReplyMarkup(
-                data.chatId,
-                msgId,
-                null,
-                keyboard,
-            ),
-        )
     }
 }

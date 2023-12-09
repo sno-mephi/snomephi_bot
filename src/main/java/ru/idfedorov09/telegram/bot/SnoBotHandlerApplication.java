@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableAsync
 @EnableScheduling
 public class SnoBotHandlerApplication {
-	//
 	public static void main(String[] args) {
 		SpringApplication.run(SnoBotHandlerApplication.class, args);
 	}

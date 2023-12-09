@@ -7,9 +7,7 @@ import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUEST_RESPONDENT_CHAT_ID
-import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_ANSWER
-import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_BAN
-import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_IGNORE
+import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.*
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
