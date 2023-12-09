@@ -235,7 +235,7 @@ class CategoryButtonHandlerFetcher(
 
     private fun clickIsUnremovable(data: RequestData, params: List<String>) {
         val category = categoryRepository.findByChangedByTui(data.userInfo.tui) ?: return
-        val isUnremovable = params[0].toLong() == 1L
+        val isUnremovable = params[0].toLong() == 0L
         categoryRepository.save(
             Category(
                 id = category.id,
@@ -246,14 +246,17 @@ class CategoryButtonHandlerFetcher(
                 changedByTui = null,
             ),
         )
-        editMessage(
-            data,
-            CategoryKeyboards.inputCancel(),
-        )
-        sendMessage(
-            data,
-            "✅ Категория #${category.suffix} успешно добавлена",
-            CategoryKeyboards.choosingAction(),
+        bot.execute(
+            EditMessageText(
+                data.chatId,
+                data.userInfo.data?.toInt(),
+                null,
+                "✅ Категория #${category.suffix} успешно добавлена",
+                null,
+                null,
+                CategoryKeyboards.confirmationDone(),
+                null,
+            ),
         )
         data.userInfo = data.userInfo.copy(
             lastUserActionType = LastUserActionType.DEFAULT,
@@ -321,7 +324,7 @@ class CategoryButtonHandlerFetcher(
         }
         editMessage(
             data,
-            "✅ Введите заголовок категории (до 64 символов):",
+            "✏️ Введите заголовок категории (до 64 символов):",
             CategoryKeyboards.inputCancel(),
         )
     }
@@ -329,7 +332,10 @@ class CategoryButtonHandlerFetcher(
     private fun sendMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup) {
         val msg = SendMessage(data.chatId, text)
         msg.replyMarkup = keyboard
-        bot.execute(msg).messageId
+        val lastSent = bot.execute(msg).messageId
+        data.userInfo = data.userInfo.copy(
+            data = lastSent.toString(),
+        )
     }
 
     private fun editMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup?) {
@@ -346,6 +352,9 @@ class CategoryButtonHandlerFetcher(
                 null,
             ),
         )
+        data.userInfo = data.userInfo.copy(
+            data = msgId.toString(),
+        )
     }
 
     private fun editMessage(data: RequestData, keyboard: InlineKeyboardMarkup?) {
@@ -357,6 +366,9 @@ class CategoryButtonHandlerFetcher(
                 null,
                 keyboard,
             ),
+        )
+        data.userInfo = data.userInfo.copy(
+            data = msgId.toString(),
         )
     }
 }

@@ -39,6 +39,7 @@ class UpdateDataFetcher(
                     fullName = fullName,
                     studyGroup = studyGroup,
                     categories = categories.mapNotNull { it.id }.toMutableSet(),
+                    data = data,
                     roles = roles,
                     lastUserActionType = lastUserActionType,
                     questDialogId = getQuestDialogId(activeQuest),
