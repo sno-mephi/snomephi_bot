@@ -11,15 +11,15 @@ data class Category(
     val id: Long? = null,
 
     /** суффикс (для команд типа /toggle_{suffix}) **/
-    @Column(name = "suffix", length = 64)
+    @Column(name = "suffix", columnDefinition = "VARCHAR(64)")
     val suffix: String? = null,
 
     /** название категории **/
-    @Column(name = "title", length = 64)
+    @Column(name = "title", columnDefinition = "VARCHAR(64)")
     val title: String? = null,
 
     /** описание категории **/
-    @Column(name = "description", length = 1024)
+    @Column(name = "description", columnDefinition = "TEXT")
     val description: String? = null,
 
     /** последний редактор категории **/
