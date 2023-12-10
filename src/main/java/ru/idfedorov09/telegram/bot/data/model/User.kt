@@ -33,7 +33,7 @@ data class User(
     val categories: MutableSet<Long> = mutableSetOf(),
 
     /** поле для временных данных юзера **/
-    @Column(name = "data")
+    @Column(name = "data", columnDefinition = "TEXT")
     val data: String? = null,
 
     /** роли **/
