@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
+import ru.idfedorov09.telegram.bot.data.model.User
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.UserRepository
@@ -41,9 +42,9 @@ class UserInfoCommandFetcher(
             chatId = chatId,
         )
 
-        if (messageText.contains(TextCommands.USER_INFO.commandText)) {
-            handleCommands(params)
-        }
+        if (!messageText.contains(TextCommands.USER_INFO.commandText)) return
+
+        handleCommands(params)
     }
 
     private fun handleCommands(params: UserInfoCommandFetcher.Params) {
@@ -52,29 +53,56 @@ class UserInfoCommandFetcher(
             return
         }
 
-        val tui: String? = Regex("""${TextCommands.USER_INFO.commandText}\s+\d+""")
-            .find(params.messageText)?.value?.let { Regex("""\d+""").find(it)?.value }
-
-        if (tui == null) {
-            bot.execute(
-                SendMessage(
-                    params.chatId,
-                    "отправьте команду формата\n\"/userInfo tui\"",
-                ),
-            )
+        val tuiMatchResult = """${TextCommands.USER_INFO.commandText}\s+(\d+)""".toRegex().find(params.messageText)
+        if (tuiMatchResult != null) {
+            val tui = tuiMatchResult.groupValues[1]
+            val user = userRepository.findByTui(tui)
+            if (user == null) {
+                bot.execute(SendMessage(params.chatId, "Пользователь не найден по tui $tui"))
+                return
+            }
+            sendUserInfo(params, user)
             return
         }
 
-        sendUserInfo(params, tui)
+        val fullNameMatchResult = """${TextCommands.USER_INFO.commandText}\s+([А-ЯЁ][а-яё]* [А-ЯЁ][а-яё]* [А-ЯЁ][а-яё]*)"""
+            .toRegex().find(params.messageText)
+        if (fullNameMatchResult != null) {
+            val fullName = fullNameMatchResult.groupValues[1]
+            val user = userRepository.findByFullName(fullName)
+            if (user == null) {
+                bot.execute(SendMessage(params.chatId, "Пользователь не найден по ФИО $fullName"))
+                return
+            }
+            sendUserInfo(params, user)
+            return
+        }
+
+        val lastTgNickMatchResult = """${TextCommands.USER_INFO.commandText}\s+@(\S+)""".toRegex()
+            .find(params.messageText)
+        if (lastTgNickMatchResult != null) {
+            val lastTgNick = lastTgNickMatchResult.groupValues[1]
+            val user = userRepository.findByLastTgNick(lastTgNick)
+            if (user == null) {
+                bot.execute(SendMessage(params.chatId, "Пользователь не найден по tg нику $lastTgNick"))
+                return
+            }
+            sendUserInfo(params, user)
+            return
+        }
+
+        bot.execute(
+            SendMessage(
+                params.chatId,
+                "отправьте команду формата\n\"/userInfo tui\"\n" +
+                    "или \"/userInfo ФИО\"\n" +
+                    "или \"/userInfo @nick\"",
+            ),
+        )
     }
 
-    private fun sendUserInfo(params: Params, tui: String) {
-        val user = userRepository.findByTui(tui)
-        if (user == null) {
-            bot.execute(SendMessage(params.chatId, "Пользователь не найден"))
-            return
-        }
-
+    private fun sendUserInfo(params: Params, user: User) {
+        val tui = user.tui ?: "-"
         val fullName = user.fullName ?: "-"
         val studyGroup = user.studyGroup ?: "-"
         val lastTgNick = user.lastTgNick ?: "-"
