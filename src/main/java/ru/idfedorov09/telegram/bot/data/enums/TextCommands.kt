@@ -25,7 +25,7 @@ enum class TextCommands(
 
     USER_INFO(
         "/userInfo",
-        listOf(UserRole.ROOT),
+        listOf(UserRole.ROOT, UserRole.USER),
     ),
 
     ROLE_DESCRIPTION(

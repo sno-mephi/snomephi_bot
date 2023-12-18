@@ -18,7 +18,7 @@ import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 
 @Component
 class RegistrationActionHandlerFetcher(
-    private val updatesUtil: UpdatesUtil
+    private val updatesUtil: UpdatesUtil,
 ) : GeneralFetcher() {
 
     companion object {
@@ -29,7 +29,7 @@ class RegistrationActionHandlerFetcher(
     fun doFetch(
         update: Update,
         bot: Executor,
-        userInfo: UserActualizedInfo
+        userInfo: UserActualizedInfo,
     ): UserActualizedInfo {
         if (!update.hasCallbackQuery()) return userInfo
         val chatId: String = updatesUtil.getChatId(update) ?: return userInfo
@@ -44,7 +44,7 @@ class RegistrationActionHandlerFetcher(
                 chatId,
                 bot,
                 parameters,
-                userInfo
+                userInfo,
             )
 
             CallbackCommands.USER_DECLINE.isMatch(callbackData) -> onUserDecline(
@@ -52,7 +52,7 @@ class RegistrationActionHandlerFetcher(
                 chatId,
                 bot,
                 userInfo,
-                parameters
+                parameters,
             )
 
             CallbackCommands.USER_WITHOUT_GROUP.isMatch(callbackData) -> onUserWithoutGroup(
@@ -64,7 +64,6 @@ class RegistrationActionHandlerFetcher(
 
             else -> userInfo
         }
-
     }
 
     private fun onUserDecline(
@@ -72,7 +71,7 @@ class RegistrationActionHandlerFetcher(
         chat: String,
         bot: Executor,
         userInfo: UserActualizedInfo,
-        parameter: String?
+        parameter: String?,
     ): UserActualizedInfo {
         var user = userInfo
 
@@ -82,11 +81,11 @@ class RegistrationActionHandlerFetcher(
                     bot.execute(
                         SendMessage(
                             chat,
-                            RegistrationMessageText.FullNameRequest(" заново")
-                        )
+                            RegistrationMessageText.FullNameRequest(" заново"),
+                        ),
                     )
                     user = user.copy(
-                        lastUserActionType = LastUserActionType.REGISTRATION_ENTER_FULL_NAME
+                        lastUserActionType = LastUserActionType.REGISTRATION_ENTER_FULL_NAME,
                     )
                 }
 
@@ -96,10 +95,10 @@ class RegistrationActionHandlerFetcher(
                             chatId = chat
                             text = RegistrationMessageText.GroupRequest(" заново")
                             replyMarkup = userWithoutGroupActionCallback()
-                        }
+                        },
                     )
                     user = user.copy(
-                        lastUserActionType = LastUserActionType.REGISTRATION_ENTER_GROUP
+                        lastUserActionType = LastUserActionType.REGISTRATION_ENTER_GROUP,
                     )
                 }
 
@@ -111,7 +110,7 @@ class RegistrationActionHandlerFetcher(
                     chatId = chat
                     messageId = message.messageId
                     text = message.text
-                }
+                },
             )
         }
         return user
@@ -122,9 +121,8 @@ class RegistrationActionHandlerFetcher(
         chat: String,
         bot: Executor,
         parameter: String?,
-        userInfo: UserActualizedInfo
+        userInfo: UserActualizedInfo,
     ): UserActualizedInfo {
-
         var user = userInfo
 
         parameter?.let {
@@ -135,10 +133,12 @@ class RegistrationActionHandlerFetcher(
                             chatId = chat
                             text = RegistrationMessageText.GroupRequest()
                             replyMarkup = userWithoutGroupActionCallback()
-                        }
+                        },
                     )
                     user = user.copy(
-                        lastUserActionType = LastUserActionType.REGISTRATION_ENTER_GROUP
+                        lastUserActionType = LastUserActionType.REGISTRATION_ENTER_GROUP,
+                        fullName = userInfo.data,
+                        data = null,
                     )
                 }
 
@@ -150,7 +150,9 @@ class RegistrationActionHandlerFetcher(
                         ),
                     )
                     user = user.copy(
-                        lastUserActionType = LastUserActionType.DEFAULT
+                        lastUserActionType = LastUserActionType.DEFAULT,
+                        studyGroup = userInfo.data,
+                        data = null,
                     )
                 }
 
@@ -160,19 +162,18 @@ class RegistrationActionHandlerFetcher(
             bot.execute(
                 DeleteMessage(
                     chat,
-                    message.messageId
-                )
+                    message.messageId,
+                ),
             )
         }
         return user
     }
 
-
     private fun onUserWithoutGroup(
         message: Message,
         chat: String,
         bot: Executor,
-        userInfo: UserActualizedInfo
+        userInfo: UserActualizedInfo,
     ): UserActualizedInfo {
         bot.execute(
             SendMessage().apply {
@@ -187,9 +188,8 @@ class RegistrationActionHandlerFetcher(
                 chatId = chat
                 messageId = message.messageId
                 text = message.text
-            }
+            },
         )
         return userInfo.copy(lastUserActionType = LastUserActionType.REGISTRATION_CONFIRM_GROUP)
     }
-
 }

@@ -67,6 +67,7 @@ class ActualizeUserInfoFetcher(
             roles = userDataFromDatabase.roles,
             lastUserActionType = userDataFromDatabase.lastUserActionType,
             activeQuest = activeQuest,
+            data = userDataFromDatabase.data,
         )
     }
 }

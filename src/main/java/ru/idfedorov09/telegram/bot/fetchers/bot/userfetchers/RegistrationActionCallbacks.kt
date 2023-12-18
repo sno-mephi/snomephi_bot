@@ -9,13 +9,13 @@ fun userWithoutGroupActionCallback() = InlineKeyboardMarkup(
         listOf(
             InlineKeyboardButton("👾Я не из МИФИ").also {
                 it.callbackData = CallbackCommands.USER_WITHOUT_GROUP.data
-            }
+            },
         ),
-    )
+    ),
 )
 
 fun createActionsKeyboard(
-    parameter: String
+    parameter: String,
 ) = InlineKeyboardMarkup(
     listOf(
         listOf(
@@ -24,7 +24,7 @@ fun createActionsKeyboard(
             },
             InlineKeyboardButton("❌ Отменить").also {
                 it.callbackData = CallbackCommands.USER_DECLINE.data.format(parameter)
-            }
+            },
         ),
-    )
+    ),
 )

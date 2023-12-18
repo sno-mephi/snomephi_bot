@@ -17,7 +17,7 @@ import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 @Component
 class RegistrationFetcher(
     private val updatesUtil: UpdatesUtil,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) : GeneralFetcher() {
     companion object {
         private val log = LoggerFactory.getLogger(RegistrationFetcher::class.java)
@@ -30,7 +30,6 @@ class RegistrationFetcher(
         exp: ExpContainer,
         userActualizedInfo: UserActualizedInfo,
     ): UserActualizedInfo {
-
         val chatId = updatesUtil.getChatId(update) ?: return userActualizedInfo
         val message = update.message.takeIf { update.hasMessage() } ?: return userActualizedInfo
 
@@ -55,7 +54,7 @@ class RegistrationFetcher(
                     ),
                 )
                 userInfo = userInfo.copy(
-                    lastUserActionType = LastUserActionType.REGISTRATION_ENTER_FULL_NAME
+                    lastUserActionType = LastUserActionType.REGISTRATION_ENTER_FULL_NAME,
                 )
             }
 
@@ -69,7 +68,8 @@ class RegistrationFetcher(
                         },
                     )
                     userInfo = userInfo.copy(
-                        lastUserActionType = LastUserActionType.REGISTRATION_CONFIRM_FULL_NAME
+                        lastUserActionType = LastUserActionType.REGISTRATION_CONFIRM_FULL_NAME,
+                        data = message.text,
                     )
                 } else {
                     bot.execute(
@@ -86,8 +86,8 @@ class RegistrationFetcher(
                     bot.execute(
                         SendMessage(
                             chatId,
-                            RegistrationMessageText.AlreadyExists.format(userInfo.lastTgNick ?: "")
-                        )
+                            RegistrationMessageText.AlreadyExists.format(userInfo.lastTgNick ?: ""),
+                        ),
                     )
                     return userInfo
                 }
@@ -99,7 +99,10 @@ class RegistrationFetcher(
                             this.replyMarkup = createActionsKeyboard("studyGroup")
                         },
                     )
-                    userInfo = userInfo.copy(lastUserActionType = LastUserActionType.REGISTRATION_CONFIRM_GROUP)
+                    userInfo = userInfo.copy(
+                        lastUserActionType = LastUserActionType.REGISTRATION_CONFIRM_GROUP,
+                        data = message.text.uppercase(),
+                    )
                 } else {
                     bot.execute(
                         SendMessage(
@@ -123,11 +126,10 @@ class RegistrationFetcher(
     }
 
     private fun String?.isValidFullName() = this?.let {
-        it.isNotEmpty() && it.length < 80 && all {char -> "[а-я А-Я]".toRegex().matches(char.toString()) }
+        it.isNotEmpty() && it.length < 80 && all { char -> "[а-я А-Я]".toRegex().matches(char.toString()) }
     } ?: false
 
     private fun String?.isValidGroup() = this?.let {
         it.isNotEmpty() && "([АМСБамсб]{1})([0-9]{2})-([0-9]{3})".toRegex().matches(it)
     } ?: false
-
 }
