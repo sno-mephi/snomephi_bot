@@ -22,4 +22,7 @@ data class UserActualizedInfo(
     /** Последний активный вопрос, заданный пользователем **/
     // TODO: readme -> активный вопрос - вопрос с диалогом
     val activeQuest: Quest?,
+
+    /** Временные данные **/
+    val data: String? = null,
 )

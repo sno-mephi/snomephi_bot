@@ -45,4 +45,8 @@ data class User(
     /** айди диалога (quest), который сейчас идет **/
     @Column(name = "quest_dialog_id")
     val questDialogId: Long? = null,
+
+    /* Храним какие-то временные данные */
+    @Column(name = "data", columnDefinition = "TEXT")
+    val data: String? = null,
 )

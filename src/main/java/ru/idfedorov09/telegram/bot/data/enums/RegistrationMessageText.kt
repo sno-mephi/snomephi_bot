@@ -14,11 +14,10 @@ enum class RegistrationMessageText(private val text: String) {
 
     RegistrationComplete("Спасибо, Вы зарегистрированы"),
     Welcome("Здравствуйте, %s"),
-    RegistrationStart("Здравствуйте! Вы не зарегистрированы");
-
+    RegistrationStart("Здравствуйте! Вы не зарегистрированы"),
+    ;
 
     operator fun invoke(extraText: String = "") = text + extraText
 
     fun format(parameter: String) = text.format(parameter)
-
 }
