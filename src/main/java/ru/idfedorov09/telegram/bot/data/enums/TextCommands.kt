@@ -36,7 +36,7 @@ enum class TextCommands(
 
     /** Проверяет, является ли текст командой **/
     companion object {
-        fun isTextCommand(text: String?) = entries.map { it.commandText }.contains(text)
+        fun isTextCommand(text: String?) = entries.map { it.commandText }.any { text?.startsWith(it) ?: false }
     }
 
     fun isAllowed(user: UserActualizedInfo): Boolean {

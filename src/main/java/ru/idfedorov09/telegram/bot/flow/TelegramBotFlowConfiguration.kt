@@ -12,17 +12,11 @@ import ru.mephi.sno.libs.flow.belly.FlowContext
  */
 @Configuration
 open class TelegramBotFlowConfiguration(
-    // TODO: удалить лишние фетчеры
-    private val testFetcher: TestFetcher,
-    private val toggleStageFetcher: ToggleStageFetcher,
-
     private val actualizeUserInfoFetcher: ActualizeUserInfoFetcher,
     private val questStartFetcher: QuestStartFetcher,
     private val updateDataFetcher: UpdateDataFetcher,
     private val questButtonHandlerFetcher: QuestButtonHandlerFetcher,
     private val dialogHandleFetcher: DialogHandleFetcher,
-
-    // TODO: вписать в граф
     private val roleDescriptionFetcher: RoleDescriptionFetcher,
     private val userInfoCommandFetcher: UserInfoCommandFetcher,
 ) {
@@ -41,6 +35,8 @@ open class TelegramBotFlowConfiguration(
         sequence {
             fetch(actualizeUserInfoFetcher)
             group(condition = { it.isByUser() }) {
+                fetch(roleDescriptionFetcher)
+                fetch(userInfoCommandFetcher)
                 fetch(questStartFetcher)
                 fetch(questButtonHandlerFetcher)
                 fetch(dialogHandleFetcher)

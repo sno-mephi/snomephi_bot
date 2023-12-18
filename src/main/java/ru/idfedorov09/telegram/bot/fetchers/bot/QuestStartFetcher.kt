@@ -13,6 +13,7 @@ import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_BAN
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_IGNORE
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
+import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.model.Quest
 import ru.idfedorov09.telegram.bot.data.model.QuestDialogMessage
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
@@ -70,6 +71,10 @@ class QuestStartFetcher(
         userActualizedInfo: UserActualizedInfo,
     ) {
         val messageText = update.message.text
+
+        // если пришла команда - ничего не делаем
+        if (TextCommands.isTextCommand(messageText)) return
+
         val quest = Quest(
             authorId = userActualizedInfo.id,
             questionStatus = QuestionStatus.WAIT,

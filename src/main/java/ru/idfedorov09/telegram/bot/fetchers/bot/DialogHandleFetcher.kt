@@ -39,14 +39,14 @@ class DialogHandleFetcher(
     fun doFetch(
         update: Update,
         userActualizedInfo: UserActualizedInfo,
-    ) {
+    ): UserActualizedInfo {
         // если пользователь не в активном диалоге то скипаем фетчер
-        if (userActualizedInfo.activeQuest == null) return
+        if (userActualizedInfo.activeQuest == null) return userActualizedInfo
 
-        if (!update.hasMessage()) return
+        if (!update.hasMessage()) return userActualizedInfo
 
         // если апдейт из беседы, то игнорим
-        if (update.message.chatId.toString() != userActualizedInfo.tui) return
+        if (update.message.chatId.toString() != userActualizedInfo.tui) return userActualizedInfo
 
         val messageText = update.message.text
         val quest = userActualizedInfo.activeQuest
@@ -64,28 +64,31 @@ class DialogHandleFetcher(
             update = update,
         )
 
-        when {
+        val updatedUserActualizedInfo = when {
             TextCommands.isTextCommand(params.messageText) -> handleCommands(params)
             update.hasMessage() && update.message.hasText() -> handleMessageText(params)
             update.hasMessage() && update.message.hasPhoto() -> handleMessagePhoto(params)
             else -> nonSupportedUpdateType(params)
         }
+        return updatedUserActualizedInfo
     }
 
-    private fun nonSupportedUpdateType(params: Params) {
+    private fun nonSupportedUpdateType(params: Params): UserActualizedInfo {
         bot.execute(
             SendMessage().also {
                 it.chatId = params.userActualizedInfo.tui
                 it.text = "⛔\uFE0F Сообщение данного типа не поддерживается."
             },
         )
+        return params.userActualizedInfo
     }
 
-    private fun handleMessagePhoto(params: Params) {
+    private fun handleMessagePhoto(params: Params): UserActualizedInfo {
         nonSupportedUpdateType(params)
         // TODO()
+        return params.userActualizedInfo
     }
-    private fun handleMessageText(params: Params) {
+    private fun handleMessageText(params: Params): UserActualizedInfo {
         val quest = params.quest
         val isByQuestionAuthor = params.isByQuestionAuthor
         val userActualizedInfo = params.userActualizedInfo
@@ -110,14 +113,17 @@ class DialogHandleFetcher(
                 it.text = messageText!!
             },
         )
+
+        return userActualizedInfo
     }
-    private fun handleCommands(params: Params) {
-        when (params.messageText) {
+    private fun handleCommands(params: Params): UserActualizedInfo {
+        return when (params.messageText) {
             TextCommands.QUEST_DIALOG_CLOSE.commandText -> closeDialog(params)
+            else -> params.userActualizedInfo
         }
     }
 
-    private fun closeDialog(params: Params) {
+    private fun closeDialog(params: Params): UserActualizedInfo {
         questRepository.save(
             params.quest.copy(
                 questionStatus = QuestionStatus.CLOSED,
@@ -155,6 +161,10 @@ class DialogHandleFetcher(
                 it.messageId = params.quest.consoleMessageId!!.toInt()
                 it.text = "✅ @${params.responder.lastTgNick} пообщался(-ась)"
             },
+        )
+
+        return params.userActualizedInfo.copy(
+            lastUserActionType = null
         )
     }
 
