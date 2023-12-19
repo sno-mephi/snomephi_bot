@@ -47,8 +47,9 @@ class QuestButtonHandlerFetcher(
         userActualizedInfo: UserActualizedInfo,
     ): UserActualizedInfo {
         if (!update.hasCallbackQuery()) return userActualizedInfo
-
         val callbackData = update.callbackQuery.data
+        if (!Regex("^.*\\|\\d+$").matches(callbackData)) return userActualizedInfo
+
         val requestData = RequestData(
             getQuestByCallbackData(callbackData),
             userActualizedInfo,
