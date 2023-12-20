@@ -15,9 +15,6 @@ import ru.mephi.sno.libs.flow.belly.FlowContext
  */
 @Configuration
 open class TelegramBotFlowConfiguration(
-    // TODO: удалить лишние фетчеры
-    private val testFetcher: TestFetcher,
-    private val toggleStageFetcher: ToggleStageFetcher,
 
     private val actualizeUserInfoFetcher: ActualizeUserInfoFetcher,
     private val questStartFetcher: QuestStartFetcher,

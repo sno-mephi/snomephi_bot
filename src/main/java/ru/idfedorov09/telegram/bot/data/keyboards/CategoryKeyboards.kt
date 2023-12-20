@@ -65,10 +65,10 @@ object CategoryKeyboards {
         catRep: CategoryRepository,
     ): MutableList<MutableList<InlineKeyboardButton>> {
         val catCount = catRep.count()
-        val pageCount = if (catCount % pageSize == 0L) {
-            catCount / pageSize
-        } else {
+        val pageCount = if (catCount % pageSize != 0L || catCount == 0L) {
             catCount / pageSize + 1
+        } else {
+            catCount / pageSize
         }
         return mutableListOf(
             mutableListOf(
