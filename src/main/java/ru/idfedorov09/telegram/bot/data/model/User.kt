@@ -49,4 +49,7 @@ data class User(
     /* Храним какие-то временные данные */
     @Column(name = "data", columnDefinition = "TEXT")
     val data: String? = null,
+
+    @Column(name = "is_registered", columnDefinition = "TEXT")
+    val isRegistered: Boolean = false
 )
