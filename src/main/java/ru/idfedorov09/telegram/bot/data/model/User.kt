@@ -50,6 +50,6 @@ data class User(
     @Column(name = "data", columnDefinition = "TEXT")
     val data: String? = null,
 
-    @Column(name = "is_registered", columnDefinition = "TEXT")
+    @Column(name = "is_registered")
     val isRegistered: Boolean = false
 )
