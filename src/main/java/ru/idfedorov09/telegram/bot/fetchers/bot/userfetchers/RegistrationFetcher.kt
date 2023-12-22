@@ -117,7 +117,7 @@ class RegistrationFetcher(
                 if (action != LastUserActionType.REGISTRATION_CONFIRM_GROUP &&
                     action != LastUserActionType.REGISTRATION_CONFIRM_FULL_NAME
                 ) {
-                    exp.isUserRegistered = true
+                    userInfo = userInfo.copy(isRegistered = true)
                 }
             }
         }
@@ -126,7 +126,7 @@ class RegistrationFetcher(
     }
 
     private fun String?.isValidFullName() = this?.let {
-        it.isNotEmpty() && it.length < 80 && all { char -> "[а-я А-Я]".toRegex().matches(char.toString()) }
+        it.isNotEmpty() && it.length < 80
     } ?: false
 
     private fun String?.isValidGroup() = this?.let {

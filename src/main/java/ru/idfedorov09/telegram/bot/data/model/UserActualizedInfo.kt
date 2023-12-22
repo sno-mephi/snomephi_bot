@@ -25,4 +25,6 @@ data class UserActualizedInfo(
 
     /** Временные данные **/
     val data: String? = null,
+
+    val isRegistered: Boolean,
 )

@@ -43,6 +43,7 @@ class UpdateDataFetcher(
                     lastUserActionType = lastUserActionType,
                     questDialogId = getQuestDialogId(activeQuest),
                     data = data,
+                    isRegistered = isRegistered,
                 ),
             )
         }

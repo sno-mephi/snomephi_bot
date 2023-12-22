@@ -68,6 +68,7 @@ class ActualizeUserInfoFetcher(
             lastUserActionType = userDataFromDatabase.lastUserActionType,
             activeQuest = activeQuest,
             data = userDataFromDatabase.data,
+            isRegistered = userDataFromDatabase.isRegistered,
         )
     }
 }
