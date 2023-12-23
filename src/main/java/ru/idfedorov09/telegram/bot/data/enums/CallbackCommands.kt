@@ -35,12 +35,15 @@ enum class CallbackCommands(
 
     /** bool можно ли снять категорию **/
     CATEGORY_IS_UNREMOVABLE("category_is_unremovable|%d"),
-    
+
+    CATEGORY_EXIT("category_exit"),
+
     USER_EDIT("user_edit"),
     USER_DELETE("user_delete"),
     USER_CONFIRM("user_confirm|%s"),
     USER_DECLINE("user_decline|%s"),
-    USER_WITHOUT_GROUP("user_without_group")
+    USER_WITHOUT_GROUP("user_without_group"),
+    
     ;
 
     fun format(vararg args: Any?): String {
