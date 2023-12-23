@@ -86,6 +86,7 @@ class DialogHandleFetcher(
         // TODO()
         return params.userActualizedInfo
     }
+
     private fun handleMessageText(params: Params): UserActualizedInfo {
         val quest = params.quest
         val isByQuestionAuthor = params.isByQuestionAuthor
@@ -114,6 +115,7 @@ class DialogHandleFetcher(
 
         return userActualizedInfo
     }
+
     private fun handleCommands(params: Params): UserActualizedInfo {
         return when (params.messageText) {
             TextCommands.QUEST_DIALOG_CLOSE.commandText -> closeDialog(params)
@@ -162,7 +164,7 @@ class DialogHandleFetcher(
         )
 
         return params.userActualizedInfo.copy(
-            lastUserActionType = null
+            lastUserActionType = null,
         )
     }
 

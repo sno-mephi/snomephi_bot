@@ -32,10 +32,10 @@ enum class LastUserActionType {
 
     /**Введен тэг категории**/
     CATEGORY_INPUT_SUFFIX,
-    
+
     /**Введено описание категории**/
     CATEGORY_INPUT_DESCRIPTION,
-    
+
     /** действия при регистраци **/
     REGISTRATION_START,
 
@@ -45,6 +45,5 @@ enum class LastUserActionType {
 
     REGISTRATION_CONFIRM_FULL_NAME,
 
-    REGISTRATION_CONFIRM_GROUP
-
+    REGISTRATION_CONFIRM_GROUP,
 }

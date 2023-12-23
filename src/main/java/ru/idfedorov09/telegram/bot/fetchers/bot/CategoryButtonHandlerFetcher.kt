@@ -2,6 +2,7 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import org.telegram.telegrambots.meta.api.objects.Update
@@ -77,6 +78,9 @@ class CategoryButtonHandlerFetcher(
 
             CallbackCommands.CATEGORY_IS_UNREMOVABLE.isMatch(callbackData) ->
                 clickIsUnremovable(requestData, CallbackCommands.params(callbackData))
+
+            CallbackCommands.CATEGORY_EXIT.isMatch(callbackData) ->
+                clickExit(requestData)
         }
         return requestData.userInfo
     }
@@ -326,6 +330,20 @@ class CategoryButtonHandlerFetcher(
             data,
             "✏️ Введите заголовок категории (до 64 символов):",
             CategoryKeyboards.inputCancel(),
+        )
+    }
+
+    private fun clickExit(data: RequestData) {
+        bot.execute(
+            data.userInfo.data?.let {
+                DeleteMessage(
+                    data.chatId,
+                    it.toInt(),
+                )
+            },
+        )
+        data.userInfo = data.userInfo.copy(
+            lastUserActionType = LastUserActionType.DEFAULT,
         )
     }
 

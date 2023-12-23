@@ -5,8 +5,8 @@ import org.springframework.context.annotation.Configuration
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUALIFIER_FLOW_TG_BOT
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.fetchers.bot.* // ktlint-disable no-wildcard-imports
-import ru.idfedorov09.telegram.bot.fetchers.bot.userfetchers.RegistrationFetcher
 import ru.idfedorov09.telegram.bot.fetchers.bot.userfetchers.RegistrationActionHandlerFetcher
+import ru.idfedorov09.telegram.bot.fetchers.bot.userfetchers.RegistrationFetcher
 import ru.mephi.sno.libs.flow.belly.FlowBuilder
 import ru.mephi.sno.libs.flow.belly.FlowContext
 
@@ -43,7 +43,7 @@ open class TelegramBotFlowConfiguration(
     private fun FlowBuilder.buildFlow() {
         sequence {
             fetch(actualizeUserInfoFetcher)
-            
+
             // registration block
             group(condition = { it.isByUser() && !it.isUserRegistered() }) {
                 fetch(userActionHandlerFetcher)
@@ -54,10 +54,10 @@ open class TelegramBotFlowConfiguration(
                 fetch(categoryCommandHandlerFetcher)
                 fetch(categoryButtonHandlerFetcher)
                 fetch(categoryActionTypeHandlerFetcher)
-                
+
                 fetch(roleDescriptionFetcher)
                 fetch(userInfoCommandFetcher)
-                
+
                 fetch(questStartFetcher)
                 fetch(questButtonHandlerFetcher)
                 fetch(dialogHandleFetcher)

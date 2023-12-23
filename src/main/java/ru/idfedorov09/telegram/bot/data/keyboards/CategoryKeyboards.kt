@@ -20,6 +20,11 @@ object CategoryKeyboards {
                         it.callbackData = CallbackCommands.CATEGORY_DELETE.data
                     },
                 ),
+                mutableListOf(
+                    InlineKeyboardButton("В меню ↩️").also {
+                        it.callbackData = CallbackCommands.CATEGORY_EXIT.data
+                    },
+                ),
             ),
         )
     }

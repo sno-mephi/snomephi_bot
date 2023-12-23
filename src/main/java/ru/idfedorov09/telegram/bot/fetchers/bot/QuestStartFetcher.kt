@@ -37,9 +37,11 @@ class QuestStartFetcher(
         if (!(update.hasMessage() && update.message.hasText())) return
 
         // создаем новый вопрос если пользователь сейчас не в активном диалоге
-        if (userActualizedInfo.activeQuest != null
-            || userActualizedInfo.lastUserActionType != LastUserActionType.DEFAULT
-        ) return
+        if (userActualizedInfo.activeQuest != null ||
+            userActualizedInfo.lastUserActionType != LastUserActionType.DEFAULT
+        ) {
+            return
+        }
 
         // если апдейт из беседы, то игнорим
         if (update.message.chatId.toString() != userActualizedInfo.tui) return
