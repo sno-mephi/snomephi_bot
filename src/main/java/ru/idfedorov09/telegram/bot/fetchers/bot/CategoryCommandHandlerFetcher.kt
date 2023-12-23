@@ -69,12 +69,18 @@ class CategoryCommandHandlerFetcher(
     }
 
     private fun sendMessage(data: RequestData, text: String) {
-        bot.execute(SendMessage(data.chatId, text)).messageId
+        val lastSent = bot.execute(SendMessage(data.chatId, text)).messageId
+        data.userInfo = data.userInfo.copy(
+            data = lastSent.toString(),
+        )
     }
 
     private fun sendMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup) {
         val msg = SendMessage(data.chatId, text)
         msg.replyMarkup = keyboard
-        bot.execute(msg).messageId
+        val lastSent = bot.execute(msg).messageId
+        data.userInfo = data.userInfo.copy(
+            data = lastSent.toString(),
+        )
     }
 }

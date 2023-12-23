@@ -51,5 +51,5 @@ data class User(
     val questDialogId: Long? = null,
 
     @Column(name = "is_registered")
-    val isRegistered: Boolean = false
+    val isRegistered: Boolean = false,
 )
