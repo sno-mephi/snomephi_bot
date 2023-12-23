@@ -69,7 +69,6 @@ class ActualizeUserInfoFetcher(
             fullName = userDataFromDatabase.fullName,
             studyGroup = userDataFromDatabase.studyGroup,
             categories = categories,
-            data = userDataFromDatabase.data,
             roles = userDataFromDatabase.roles,
             lastUserActionType = userDataFromDatabase.lastUserActionType,
             activeQuest = activeQuest,

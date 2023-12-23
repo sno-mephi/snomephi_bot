@@ -259,7 +259,7 @@ class CategoryButtonHandlerFetcher(
             ),
         )
         data.userInfo = data.userInfo.copy(
-            lastUserActionType = LastUserActionType.DEFAULT,
+            lastUserActionType = LastUserActionType.CATEGORY_ACTION_CHOOSING,
         )
     }
 
