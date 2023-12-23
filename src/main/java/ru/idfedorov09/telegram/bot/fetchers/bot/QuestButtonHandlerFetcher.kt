@@ -29,6 +29,7 @@ import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 import java.lang.NumberFormatException
+import kotlin.jvm.optionals.getOrNull
 
 /**
  * Фетчер, обрабатывающий случаи нажатия на кнопки для вопросов
@@ -42,6 +43,7 @@ class QuestButtonHandlerFetcher(
 ) : GeneralFetcher() {
 
     // TODO: обработать случай когда бот не может написать пользователю!
+    // TODO: нельзя отвечать самому себе
     @InjectData
     fun doFetch(
         update: Update,
@@ -50,13 +52,15 @@ class QuestButtonHandlerFetcher(
         if (!update.hasCallbackQuery()) return userActualizedInfo
         val callbackData = update.callbackQuery.data
         if (!Regex("^.*\\|\\d+$").matches(callbackData) ||
-            userActualizedInfo.lastUserActionType != LastUserActionType.DEFAULT
+            !userActualizedInfo.isRegistered
         ) {
             return userActualizedInfo
         }
 
+        val questByCallbackData = getQuestByCallbackData(callbackData) ?: return userActualizedInfo
+
         val requestData = RequestData(
-            getQuestByCallbackData(callbackData),
+            questByCallbackData,
             userActualizedInfo,
             update,
         )
@@ -233,9 +237,9 @@ class QuestButtonHandlerFetcher(
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) =
         InlineKeyboardMarkup().also { it.keyboard = keyboard }
 
-    private fun getQuestByCallbackData(callbackData: String): Quest {
+    private fun getQuestByCallbackData(callbackData: String): Quest? {
         val questId = parseQuestId(callbackData)
-        return questRepository.findById(questId).get()
+        return questRepository.findById(questId).getOrNull()
     }
 
     private fun parseQuestId(callbackData: String): Long {

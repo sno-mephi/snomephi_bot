@@ -38,7 +38,10 @@ class QuestStartFetcher(
 
         // создаем новый вопрос если пользователь сейчас не в активном диалоге
         if (userActualizedInfo.activeQuest != null ||
-            userActualizedInfo.lastUserActionType != LastUserActionType.DEFAULT
+            !(
+                userActualizedInfo.lastUserActionType == LastUserActionType.DEFAULT ||
+                    userActualizedInfo.lastUserActionType == LastUserActionType.ACT_QUEST_ANS_CLICK
+                )
         ) {
             return
         }
