@@ -153,6 +153,7 @@ class RegistrationActionHandlerFetcher(
                         lastUserActionType = LastUserActionType.DEFAULT,
                         studyGroup = userInfo.data,
                         data = null,
+                        isRegistered = true,
                     )
                 }
 

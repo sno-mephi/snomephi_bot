@@ -233,7 +233,7 @@ class CategoryButtonHandlerFetcher(
             lastUserActionType = LastUserActionType.DEFAULT,
         )
         val category = categoryRepository.findByChangedByTui(data.userInfo.tui) ?: return
-        categoryRepository.deleteById(category.id)
+        category.id?.let { categoryRepository.deleteById(it) }
         clickActionMenu(data, listOf("0"))
     }
 
