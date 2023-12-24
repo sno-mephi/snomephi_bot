@@ -230,7 +230,7 @@ class CategoryButtonHandlerFetcher(
 
     private fun clickInputCancel(data: RequestData) {
         data.userInfo = data.userInfo.copy(
-            lastUserActionType = LastUserActionType.DEFAULT,
+            lastUserActionType = LastUserActionType.CATEGORY_ACTION_CHOOSING,
         )
         val category = categoryRepository.findByChangedByTui(data.userInfo.tui) ?: return
         category.id?.let { categoryRepository.deleteById(it) }
