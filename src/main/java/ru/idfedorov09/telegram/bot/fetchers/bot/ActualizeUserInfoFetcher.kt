@@ -45,6 +45,7 @@ class ActualizeUserInfoFetcher(
                 tui = tgUser.id.toString(),
                 lastTgNick = tgUser.userName,
                 roles = mutableSetOf(UserRole.USER),
+                isRegistered = false,
             ).let { userRepository.save(it) }
 
         val categories = categoryRepository.findAllById(userDataFromDatabase.categories).toMutableSet()
