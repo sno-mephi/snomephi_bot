@@ -1,6 +1,7 @@
 package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
 import org.telegram.telegrambots.meta.api.methods.ForwardMessage
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
@@ -28,6 +29,7 @@ import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 import java.lang.NumberFormatException
+import kotlin.jvm.optionals.getOrNull
 
 /**
  * Фетчер, обрабатывающий случаи нажатия на кнопки для вопросов
@@ -41,6 +43,7 @@ class QuestButtonHandlerFetcher(
 ) : GeneralFetcher() {
 
     // TODO: обработать случай когда бот не может написать пользователю!
+    // TODO: нельзя отвечать самому себе
     @InjectData
     fun doFetch(
         update: Update,
@@ -48,14 +51,20 @@ class QuestButtonHandlerFetcher(
     ): UserActualizedInfo {
         if (!update.hasCallbackQuery()) return userActualizedInfo
         val callbackData = update.callbackQuery.data
-        if (!Regex("^.*\\|\\d+$").matches(callbackData)) return userActualizedInfo
+        if (!Regex("^.*\\|\\d+$").matches(callbackData) ||
+            !userActualizedInfo.isRegistered
+        ) {
+            return userActualizedInfo
+        }
+
+        val questByCallbackData = getQuestByCallbackData(callbackData) ?: return userActualizedInfo
 
         val requestData = RequestData(
-            getQuestByCallbackData(callbackData),
+            questByCallbackData,
             userActualizedInfo,
             update,
         )
-
+        bot.execute(AnswerCallbackQuery(update.callbackQuery.id))
         return when {
             QUEST_ANSWER.isMatch(callbackData) -> clickAnswer(requestData)
             QUEST_IGNORE.isMatch(callbackData) -> clickIgnore(requestData)
@@ -122,6 +131,7 @@ class QuestButtonHandlerFetcher(
             activeQuest = data.quest,
         )
     }
+
     private fun clickIgnore(data: RequestData): UserActualizedInfo {
         if (data.quest.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
 
@@ -227,9 +237,9 @@ class QuestButtonHandlerFetcher(
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) =
         InlineKeyboardMarkup().also { it.keyboard = keyboard }
 
-    private fun getQuestByCallbackData(callbackData: String): Quest {
+    private fun getQuestByCallbackData(callbackData: String): Quest? {
         val questId = parseQuestId(callbackData)
-        return questRepository.findById(questId).get()
+        return questRepository.findById(questId).getOrNull()
     }
 
     private fun parseQuestId(callbackData: String): Long {

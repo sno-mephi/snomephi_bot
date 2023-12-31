@@ -32,6 +32,10 @@ data class User(
     @Column(name = "categories")
     val categories: MutableSet<Long> = mutableSetOf(),
 
+    /** поле для временных данных юзера **/
+    @Column(name = "data", columnDefinition = "TEXT")
+    val data: String? = null,
+
     /** роли **/
     @Enumerated(EnumType.STRING)
     @Column(name = "roles")
@@ -46,10 +50,6 @@ data class User(
     @Column(name = "quest_dialog_id")
     val questDialogId: Long? = null,
 
-    /* Храним какие-то временные данные */
-    @Column(name = "data", columnDefinition = "TEXT")
-    val data: String? = null,
-
     @Column(name = "is_registered")
-    val isRegistered: Boolean = false
+    val isRegistered: Boolean = false,
 )

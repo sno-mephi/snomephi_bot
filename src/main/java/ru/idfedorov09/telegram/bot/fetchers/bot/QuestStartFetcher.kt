@@ -1,4 +1,3 @@
-
 package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
@@ -8,9 +7,7 @@ import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUEST_RESPONDENT_CHAT_ID
-import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_ANSWER
-import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_BAN
-import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_IGNORE
+import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.*
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
@@ -40,7 +37,14 @@ class QuestStartFetcher(
         if (!(update.hasMessage() && update.message.hasText())) return
 
         // создаем новый вопрос если пользователь сейчас не в активном диалоге
-        if (userActualizedInfo.activeQuest != null) return
+        if (userActualizedInfo.activeQuest != null ||
+            !(
+                userActualizedInfo.lastUserActionType == LastUserActionType.DEFAULT ||
+                    userActualizedInfo.lastUserActionType == LastUserActionType.ACT_QUEST_ANS_CLICK
+                )
+        ) {
+            return
+        }
 
         // если апдейт из беседы, то игнорим
         if (update.message.chatId.toString() != userActualizedInfo.tui) return
@@ -49,6 +53,7 @@ class QuestStartFetcher(
             // если была нажата кнопка на ожидание ответа, то значит следующим сообщением будет отправлен ответ
             userActualizedInfo.lastUserActionType == LastUserActionType.ACT_QUEST_ANS_CLICK ->
                 giveAnswer(update, userActualizedInfo)
+
             else -> ask(update, userActualizedInfo)
         }
     }

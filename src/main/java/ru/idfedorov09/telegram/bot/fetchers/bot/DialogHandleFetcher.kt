@@ -2,11 +2,9 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.ParseMode
-import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import org.telegram.telegrambots.meta.api.objects.Update
-import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove
 import ru.idfedorov09.telegram.bot.data.GlobalConstants
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
@@ -88,6 +86,7 @@ class DialogHandleFetcher(
         // TODO()
         return params.userActualizedInfo
     }
+
     private fun handleMessageText(params: Params): UserActualizedInfo {
         val quest = params.quest
         val isByQuestionAuthor = params.isByQuestionAuthor
@@ -116,6 +115,7 @@ class DialogHandleFetcher(
 
         return userActualizedInfo
     }
+
     private fun handleCommands(params: Params): UserActualizedInfo {
         return when (params.messageText) {
             TextCommands.QUEST_DIALOG_CLOSE.commandText -> closeDialog(params)
@@ -164,7 +164,7 @@ class DialogHandleFetcher(
         )
 
         return params.userActualizedInfo.copy(
-            lastUserActionType = null
+            lastUserActionType = null,
         )
     }
 

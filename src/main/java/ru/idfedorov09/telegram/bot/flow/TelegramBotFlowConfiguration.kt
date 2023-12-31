@@ -5,8 +5,8 @@ import org.springframework.context.annotation.Configuration
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUALIFIER_FLOW_TG_BOT
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.fetchers.bot.* // ktlint-disable no-wildcard-imports
-import ru.idfedorov09.telegram.bot.fetchers.bot.userfetchers.RegistrationFetcher
 import ru.idfedorov09.telegram.bot.fetchers.bot.userfetchers.RegistrationActionHandlerFetcher
+import ru.idfedorov09.telegram.bot.fetchers.bot.userfetchers.RegistrationFetcher
 import ru.mephi.sno.libs.flow.belly.FlowBuilder
 import ru.mephi.sno.libs.flow.belly.FlowContext
 
@@ -15,11 +15,15 @@ import ru.mephi.sno.libs.flow.belly.FlowContext
  */
 @Configuration
 open class TelegramBotFlowConfiguration(
+
     private val actualizeUserInfoFetcher: ActualizeUserInfoFetcher,
     private val questStartFetcher: QuestStartFetcher,
     private val updateDataFetcher: UpdateDataFetcher,
     private val questButtonHandlerFetcher: QuestButtonHandlerFetcher,
     private val dialogHandleFetcher: DialogHandleFetcher,
+    private val categoryButtonHandlerFetcher: CategoryButtonHandlerFetcher,
+    private val categoryCommandHandlerFetcher: CategoryCommandHandlerFetcher,
+    private val categoryActionTypeHandlerFetcher: CategoryActionTypeHandlerFetcher,
     private val registrationFetcher: RegistrationFetcher,
     private val userActionHandlerFetcher: RegistrationActionHandlerFetcher,
     private val roleDescriptionFetcher: RoleDescriptionFetcher,
@@ -47,13 +51,17 @@ open class TelegramBotFlowConfiguration(
             }
 
             group(condition = { it.isByUser() && it.isUserRegistered() }) {
+                fetch(categoryCommandHandlerFetcher)
+                fetch(categoryButtonHandlerFetcher)
+                fetch(categoryActionTypeHandlerFetcher)
+
                 fetch(roleDescriptionFetcher)
                 fetch(userInfoCommandFetcher)
+
                 fetch(questStartFetcher)
                 fetch(questButtonHandlerFetcher)
                 fetch(dialogHandleFetcher)
             }
-
             fetch(updateDataFetcher)
         }
     }

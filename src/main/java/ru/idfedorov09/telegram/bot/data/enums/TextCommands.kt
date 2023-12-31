@@ -10,17 +10,18 @@ enum class TextCommands(
     /** роли которым доступна эта команда **/
     private val allowedRoles: List<UserRole> = listOf(UserRole.USER),
 ) {
-    TEST_COMMAND_1(
-        "Тестовая команда 1",
-    ),
-
-    TEST_COMMAND_2(
-        "Тестовая команда 2",
-        listOf(UserRole.CATEGORY_BUILDER),
-    ),
 
     QUEST_DIALOG_CLOSE(
         "❌ Завершить диалог",
+    ),
+
+    /** Открыть меню категорий **/
+    CATEGORY_CHOOSE_ACTION(
+        "/category",
+        listOf(
+            UserRole.CATEGORY_BUILDER,
+            UserRole.ROOT,
+        ),
     ),
 
     USER_INFO(
