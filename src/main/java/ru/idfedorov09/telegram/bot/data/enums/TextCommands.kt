@@ -24,6 +24,14 @@ enum class TextCommands(
         ),
     ),
 
+    SETTING_MAIL(
+        "Настройка рассылки",
+    ),
+
+    TOGGLE(
+        "/toggle",
+    ),
+
     USER_INFO(
         "/userInfo",
         listOf(UserRole.ROOT),
