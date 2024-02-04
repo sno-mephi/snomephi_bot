@@ -17,5 +17,5 @@ interface CategoryRepository : JpaRepository<Category, Long> {
 
     fun findByChangedByTui(changingByTui: String): Category?
 
-    fun findAllBySuffix(suffix: String): List<Category>
+    fun findBySuffix(suffix: String): Category?
 }

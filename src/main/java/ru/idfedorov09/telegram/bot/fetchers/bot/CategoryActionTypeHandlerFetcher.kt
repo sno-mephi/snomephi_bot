@@ -114,7 +114,7 @@ class CategoryActionTypeHandlerFetcher(
             )
             return
         }
-        if (categoryRepository.findAllBySuffix(messageText).isNotEmpty()) {
+        if (categoryRepository.findBySuffix(messageText) != null) {
             sendMessage(
                 data,
                 "❗Категория с таким тэгом уже есть, попробуйте ввести другой",
