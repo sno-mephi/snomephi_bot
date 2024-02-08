@@ -1,0 +1,3 @@
+[submodule "flow-library"]
+	path = flow-library
+	url = git@github.com:sno-mephi/flow-library.git

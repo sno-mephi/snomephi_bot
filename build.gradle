@@ -14,10 +14,10 @@ java {
 
 repositories {
 	mavenCentral()
-	maven { url 'https://jitpack.io' }
 }
 
 dependencies {
+	implementation 'org.slf4j:slf4j-simple:2.0.9'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'org.postgresql:postgresql:42.6.0'
@@ -39,9 +39,7 @@ dependencies {
 	implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
 	implementation "org.jetbrains.kotlin:kotlin-reflect:1.9.10"
 
-	implementation('com.github.sno-mephi:flow-library:2.0.0-stable') {
-		exclude group: 'org.slf4j', module: 'slf4j-simple'
-	}
+	implementation project(':flow-library')
 }
 
 jar {
@@ -50,8 +48,4 @@ jar {
 
 bootJar {
 	archiveFileName = (System.getenv('BOT_APPLICATION_NAME') ?: 'bot-template-app').concat(".jar")
-}
-
-tasks.named('test') {
-	useJUnitPlatform()
 }
