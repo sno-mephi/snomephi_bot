@@ -13,6 +13,7 @@ enum class LastUserActionType {
     ACT_QUEST_DIALOG_CLOSE,
 
     /**Отправлена inline клавиатура выбора действия с категорией**/
+    @Deprecated("Раньше использовалось неправильно; устарело")
     CATEGORY_ACTION_CHOOSING,
 
     /**Отправлена inline клавиатура создания категории**/
