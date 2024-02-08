@@ -86,9 +86,6 @@ class CategoryButtonHandlerFetcher(
     }
 
     private fun clickActionMenu(data: RequestData, params: List<String>) {
-        data.userInfo = data.userInfo.copy(
-            lastUserActionType = LastUserActionType.CATEGORY_ACTION_CHOOSING,
-        )
         if (params[0].toLong() == 1L) {
             editMessage(
                 data,
@@ -229,9 +226,6 @@ class CategoryButtonHandlerFetcher(
     }
 
     private fun clickInputCancel(data: RequestData) {
-        data.userInfo = data.userInfo.copy(
-            lastUserActionType = LastUserActionType.CATEGORY_ACTION_CHOOSING,
-        )
         val category = categoryRepository.findByChangedByTui(data.userInfo.tui) ?: return
         category.id?.let { categoryRepository.deleteById(it) }
         clickActionMenu(data, listOf("0"))
@@ -261,9 +255,6 @@ class CategoryButtonHandlerFetcher(
                 CategoryKeyboards.confirmationDone(),
                 null,
             ),
-        )
-        data.userInfo = data.userInfo.copy(
-            lastUserActionType = LastUserActionType.CATEGORY_ACTION_CHOOSING,
         )
     }
 
