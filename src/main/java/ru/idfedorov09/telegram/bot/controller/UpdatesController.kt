@@ -35,6 +35,7 @@ class UpdatesController : UpdatesSender(), UpdatesHandler {
         flowBuilder.initAndRun(
             flowContext = flowContext,
             dispatcher = Dispatchers.Default,
+            wait = true,
             ExpContainer(), // экспы
             telegramBot,
             update,
