@@ -25,6 +25,7 @@ import ru.mephi.sno.libs.flow.belly.FlowContext
  */
 @Configuration
 open class TelegramBotFlowConfiguration(
+
     private val actualizeUserInfoFetcher: ActualizeUserInfoFetcher,
     private val questStartFetcher: QuestStartFetcher,
     private val updateDataFetcher: UpdateDataFetcher,

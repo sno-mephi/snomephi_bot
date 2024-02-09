@@ -49,6 +49,10 @@ dependencies {
 	}
 }
 
+configurations.configureEach {
+	exclude module: 'slf4j-simple'
+}
+
 jar {
 	enabled = false
 }
