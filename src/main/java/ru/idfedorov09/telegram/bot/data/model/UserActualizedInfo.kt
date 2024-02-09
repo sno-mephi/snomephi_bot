@@ -27,4 +27,6 @@ data class UserActualizedInfo(
     val data: String? = null,
 
     val isRegistered: Boolean,
+
+    var constructorData: ConstructorData? = null,
 )

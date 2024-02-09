@@ -42,6 +42,10 @@ dependencies {
 	implementation project(':flow-library')
 }
 
+configurations.configureEach {
+	exclude module: 'slf4j-simple'
+}
+
 jar {
 	enabled = false
 }

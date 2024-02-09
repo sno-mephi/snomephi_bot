@@ -3,14 +3,11 @@ package ru.idfedorov09.telegram.bot.data.enums
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 
 enum class TextCommands(
-
     /** текст команды **/
     val commandText: String,
-
     /** роли которым доступна эта команда **/
     private val allowedRoles: List<UserRole> = listOf(UserRole.USER),
 ) {
-
     QUEST_DIALOG_CLOSE(
         "❌ Завершить диалог",
     ),
@@ -33,6 +30,11 @@ enum class TextCommands(
         "/role",
         listOf(UserRole.ROOT),
     ),
+
+    BROADCAST_CONSTRUCTOR(
+        "Рассылка уведомлений",
+        listOf(UserRole.ROOT),
+    ),
     ;
 
     /** Проверяет, является ли текст командой **/
@@ -44,4 +46,6 @@ enum class TextCommands(
         if (user.roles.contains(UserRole.ROOT)) return true
         return user.roles.map { this.allowedRoles.contains(it) }.firstOrNull { it } ?: false
     }
+
+    operator fun invoke() = commandText
 }
