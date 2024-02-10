@@ -17,7 +17,7 @@ data class UserActualizedInfo(
     val studyGroup: String? = null,
     val categories: MutableSet<Category> = mutableSetOf(),
     val roles: MutableSet<UserRole> = mutableSetOf(),
-    val lastUserActionType: LastUserActionType? = null,
+    var lastUserActionType: LastUserActionType? = null,
 
     /** Последний активный вопрос, заданный пользователем **/
     // TODO: readme -> активный вопрос - вопрос с диалогом

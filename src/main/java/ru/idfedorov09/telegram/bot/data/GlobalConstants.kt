@@ -9,6 +9,8 @@ object GlobalConstants {
     const val QUALIFIER_FLOW_HEALTH_STATUS = "health_flow_builder"
     const val QUEUE_PRE_PREFIX = "frjekcs_ewer_idfed09_user_bot_que_"
 
+    const val MAX_MSG_LENGTH = 1024
+
     // id админского чата
     // TODO: поменять на айдишники (возможность делать несколько админских чатов!)
     const val QUEST_RESPONDENT_CHAT_ID = "-1002057270905"
