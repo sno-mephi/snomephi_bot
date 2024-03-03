@@ -24,7 +24,7 @@ data class UserActualizedInfo(
     val activeQuest: Quest?,
 
     /** Временные данные **/
-    val data: String? = null,
+    var data: String? = null,
 
     val isRegistered: Boolean,
 

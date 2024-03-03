@@ -86,6 +86,7 @@ class BroadcastConstructorFetcher(
                 startsWith("#bc_cancel") -> bcCancel(params)
                 startsWith("#bc_change_text") -> bcChangeTextMessage(params)
                 startsWith("#bc_action_cancel") -> bcCancelAction(params)
+                startsWith("#bc_preview") -> bcPreview(params)
             }
         }
     }
@@ -97,6 +98,16 @@ class BroadcastConstructorFetcher(
 
     private fun changeText(params: Params) {
         // TODO: назначить текст
+    }
+
+    private fun bcPreview(params: Params) {
+        // TODO: здесь отправка превью функцией Андрея
+        // params.userActualizedInfo.data = id отправленного msg
+
+        showBcConsole(
+            params = params,
+            showPreview = false
+        )
     }
 
     private fun bcChangeTextMessage(params: Params) {
@@ -171,9 +182,9 @@ class BroadcastConstructorFetcher(
         }
     }
 
-    private fun showBcConsole(params: Params) {
+    private fun showBcConsole(params: Params, showPreview: Boolean = true) {
         val bcData = params.userActualizedInfo.bcData
-        if (bcData == null) {
+        if (bcData == null || !showPreview) {
             params.userActualizedInfo.bcData = broadcastRepository.save(
                 Broadcast(authorId = params.userActualizedInfo.id)
             )
@@ -216,7 +227,7 @@ class BroadcastConstructorFetcher(
             val addButton = CallbackData(callbackData = "#bc_add_button", metaText = "Добавить кнопку").save()
 
             val changeDate = CallbackData(callbackData = "#bc_change_date", metaText = "Назначить дату").save()
-            val previewButton = CallbackData(callbackData = "#bc_add_button", metaText = "Предпросмотр").save()
+            val previewButton = CallbackData(callbackData = "#bc_preview", metaText = "Предпросмотр").save()
             val cancelButton = CallbackData(callbackData = "#bc_cancel", metaText = "Отмена").save()
 
             val keyboard = mutableListOf(
