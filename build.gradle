@@ -9,7 +9,7 @@ group = 'ru.idfedorov09.telegram.bot'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	sourceCompatibility = '17'
+	sourceCompatibility = '19'
 }
 
 wrapper {
