@@ -41,7 +41,7 @@ data class Broadcast(
 
     /** список категорий, по которым идет рассылка **/
     @Column(name = "categories_id")
-    val categoriesId: MutableList<Long> = mutableListOf(),
+    val categoriesId: MutableSet<Long> = mutableSetOf(),
 
     /** название рассылки **/
     @Column(name = "broadcast_name", columnDefinition = "TEXT")
