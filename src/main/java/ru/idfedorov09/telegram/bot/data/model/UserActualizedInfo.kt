@@ -28,5 +28,6 @@ data class UserActualizedInfo(
 
     val isRegistered: Boolean,
 
-    var constructorData: ConstructorData? = null,
+    /** Текущая создаваемая рассылка пользователя **/
+    var bcData: Broadcast? = null,
 )
