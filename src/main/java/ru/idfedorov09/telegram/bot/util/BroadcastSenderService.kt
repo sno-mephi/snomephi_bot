@@ -1,5 +1,4 @@
 package ru.idfedorov09.telegram.bot.util
-
 import org.jvnet.hk2.annotations.Service
 import org.springframework.scheduling.annotation.Scheduled
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
@@ -12,6 +11,8 @@ import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
 import ru.idfedorov09.telegram.bot.repo.ButtonRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 @Service
 class BroadcastSenderService(
@@ -32,7 +33,12 @@ class BroadcastSenderService(
                     )
         } ?: run {
             broadcastRepository.save(
-                firstActiveBroadcast.copy(isCompleted = true),
+                firstActiveBroadcast.copy(
+                    isCompleted = true,
+                    finishTime = LocalDateTime.now(
+                        ZoneId.of("Europe/Moscow"),
+                    ),
+                ),
             )
             return
         }
@@ -59,13 +65,13 @@ class BroadcastSenderService(
         InlineKeyboardMarkup().also { it.keyboard = keyboard }
     private fun createChooseKeyboard(firstActiveBroadcast: Broadcast): InlineKeyboardMarkup {
         val keyboardList = mutableListOf<List<InlineKeyboardButton>>()
-        buttonRepository.findAllById(firstActiveBroadcast.buttonsId).forEach {button ->
+        buttonRepository.findAllById(firstActiveBroadcast.buttonsId).forEach { button ->
             keyboardList.add(
                 listOf(
                     InlineKeyboardButton("${button.text}").also {
                         it.url = button.link
                         it.callbackData = button.callbackData
-                    }
+                    },
                 ),
             )
         }
