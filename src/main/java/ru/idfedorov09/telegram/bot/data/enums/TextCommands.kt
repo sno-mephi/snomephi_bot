@@ -25,7 +25,7 @@ enum class TextCommands(
     ),
 
     SETTING_MAIL(
-        "Настройка рассылки",
+        "Настройка уведомлений",
     ),
 
     TOGGLE(
