@@ -45,7 +45,7 @@ class SettingMailFetcher(
     }
 
     private fun sendSettingMessage(userActualizedInfo: UserActualizedInfo) {
-        val allCategoriesInfo = categoryRepository.findAll().map {
+        val allCategoriesInfo = categoryRepository.findAll().filter{it.isUnremovable == false }.map {
             "<b>• ${it.title}\n</b>" +
                 "<i>${it.description?.let { "$it\n" }}</i>" +
                 if (userActualizedInfo.categories.contains(it)) {
@@ -72,6 +72,7 @@ class SettingMailFetcher(
         val chatId = userActualizedInfo.tui
         val categorySuffix = messageText.substringAfter("/toggle_")
         val category = categoryRepository.findBySuffix(categorySuffix) ?: return
+        if (category.isUnremovable == true) return
         if (userActualizedInfo.categories.contains(category)) {
             userCategories.remove(category)
             bot.execute(
