@@ -48,9 +48,8 @@ class ActualizeUserInfoFetcher(
         val tui = tgUser.id.toString()
         // если не нашли в бд пользователя то сохраняем специального
 
-        if (update.message.chatId  == tui.toLong()){
-            expContainer.isPersonal = true
-        }
+        expContainer.isPersonal = update.message.chatId  == tui.toLong()
+
 
         val userDataFromDatabase = userRepository.findByTui(tui)
             ?: User(
@@ -69,7 +68,6 @@ class ActualizeUserInfoFetcher(
         if (userDataFromDatabase.lastTgNick != tgUser.userName) {
             userRepository.save(userDataFromDatabase.copy(lastTgNick = tgUser.userName))
         }
-
         return UserActualizedInfo(
             id = userDataFromDatabase.id,
             tui = tui,
