@@ -15,6 +15,7 @@ import ru.idfedorov09.telegram.bot.repo.ButtonRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import java.time.LocalDateTime
 import java.time.ZoneId
+import kotlin.jvm.optionals.getOrNull
 
 @Service
 class BroadcastSenderService(
@@ -34,14 +35,7 @@ class BroadcastSenderService(
                         firstActiveBroadcast.categoriesId.isEmpty()
                     )
         } ?: run {
-            broadcastRepository.save(
-                firstActiveBroadcast.copy(
-                    isCompleted = true,
-                    finishTime = LocalDateTime.now(
-                        ZoneId.of("Europe/Moscow"),
-                    ),
-                ),
-            )
+
             return
         }
         sendBroadcast(firstUser, firstActiveBroadcast)
@@ -67,6 +61,27 @@ class BroadcastSenderService(
             )
         }
         if (shouldAddToReceived) user.id?.let { broadcast.receivedUsersId.add(it) }
+    }
+    fun finishBroadcast(broadcast: Broadcast) {
+        broadcastRepository.save(
+            broadcast.copy(
+                isCompleted = true,
+                finishTime = LocalDateTime.now(
+                    ZoneId.of("Europe/Moscow"),
+                ),
+            ),
+        )
+        val author = broadcast.authorId?.let { userRepository.findById(it).getOrNull() } ?: return
+        val msgText = "Рассылка #${broadcast.id} успешно завершена\n" +
+                "Число пользователей, получивших сообщение: ${broadcast.receivedUsersId.size}\n" +
+                "Старт рассылки: ${broadcast.startTime}\n" +
+                "Конец рассылки: ${broadcast.finishTime}"
+        bot.execute(
+            SendMessage().also {
+                it.chatId = author.tui!!
+                it.text = msgText
+            }
+        )
     }
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) =
         InlineKeyboardMarkup().also { it.keyboard = keyboard }
