@@ -106,6 +106,7 @@ class BroadcastConstructorFetcher(
             )
         }
         showBcConsole(params)
+        params.userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
     }
 
     private fun bcSendNow(params: Params) {
@@ -150,6 +151,7 @@ class BroadcastConstructorFetcher(
      *  - Здесь используется нестандартная консоль (второе отправленное сообщение отмечается как console)
      */
     private fun bcPreview(params: Params) {
+        removeBcConsole(params)
         // TODO: здесь отправка превью функцией Андрея
         // params.userActualizedInfo.data = id отправленного msg, чтобы потом удалять его?
         // вопрос: нужно ли удалять предпросмотр при дальнейшем редактированни / отмены / рассылки..
@@ -229,12 +231,6 @@ class BroadcastConstructorFetcher(
     }
 
     private fun bcCancelAction(params: Params) {
-        params.bot.execute(
-            DeleteMessage().also {
-                it.chatId = params.userActualizedInfo.tui
-                it.messageId = params.update.callbackQuery.message.messageId
-            }
-        )
         params.userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
         showBcConsole(params)
     }
@@ -317,7 +313,7 @@ class BroadcastConstructorFetcher(
 
             val text = bcData.run {
                 val title = "<b>Конструктор рассылки</b>\n\n"
-                val text = text?.let { "Текст:\n<pre>${text}</pre>\n\n" } ?: ""
+                val text = text?.let { "Текст:\n${text}\n\n" } ?: ""
                 val end = "Выберите дальнейшее действие"
                 title+text+end
             }
@@ -326,28 +322,47 @@ class BroadcastConstructorFetcher(
 
             removeBcConsole(params)
 
-            val sent = when (bcData.imageHash) {
-                null -> params.bot.execute(
+            // TODO: добавить везде где есть предпросмотр ? хз
+            runCatching {
+                when (bcData.imageHash) {
+                    null -> params.bot.execute(
+                        SendMessage().also {
+                            it.chatId = params.userActualizedInfo.tui
+                            it.text = text
+                            it.replyMarkup = createKeyboard(keyboard)
+                            it.parseMode = ParseMode.HTML
+                        }
+                    )
+
+                    else -> params.bot.execute(
+                        SendPhoto().also {
+                            it.chatId = params.userActualizedInfo.tui
+                            it.caption = text
+                            it.replyMarkup = createKeyboard(keyboard)
+                            it.photo = InputFile(bcData.imageHash)
+                        }
+                    )
+                }
+            }.onFailure {
+                val failText = "\uD83D\uDE4A Ой! При отправке сообщения что-то пошло не так:\n" +
+                        "<pre language=\"error\">${
+                            it.message
+                                ?.replace("<", "&lt;")
+                                ?.replace(">", "&gt;")
+                        }</pre>\n\nПопробуй еще раз."
+
+                params.bot.execute(
                     SendMessage().also {
+                        it.text = failText
                         it.chatId = params.userActualizedInfo.tui
-                        it.text = text
-                        it.replyMarkup = createKeyboard(keyboard)
                         it.parseMode = ParseMode.HTML
                     }
                 )
-                else -> params.bot.execute(
-                    SendPhoto().also {
-                        it.chatId = params.userActualizedInfo.tui
-                        it.caption = text
-                        it.replyMarkup = createKeyboard(keyboard)
-                        it.photo = InputFile(bcData.imageHash)
-                    }
+            }.onSuccess {
+                params.userActualizedInfo.bcData = params.userActualizedInfo.bcData?.copy(
+                    lastConsoleMessageId = it.messageId
                 )
             }
-
-            params.userActualizedInfo.bcData = params.userActualizedInfo.bcData?.copy(
-                lastConsoleMessageId = sent.messageId
-            )
         }
     }
 
