@@ -35,7 +35,7 @@ class BroadcastSenderService(
                         firstActiveBroadcast.categoriesId.isEmpty()
                     )
         } ?: run {
-
+            finishBroadcast(firstActiveBroadcast)
             return
         }
         sendBroadcast(firstUser, firstActiveBroadcast)
@@ -73,14 +73,14 @@ class BroadcastSenderService(
         )
         val author = broadcast.authorId?.let { userRepository.findById(it).getOrNull() } ?: return
         val msgText = "Рассылка #${broadcast.id} успешно завершена\n" +
-                "Число пользователей, получивших сообщение: ${broadcast.receivedUsersId.size}\n" +
-                "Старт рассылки: ${broadcast.startTime}\n" +
-                "Конец рассылки: ${broadcast.finishTime}"
+            "Число пользователей, получивших сообщение: ${broadcast.receivedUsersId.size}\n" +
+            "Старт рассылки: ${broadcast.startTime}\n" +
+            "Конец рассылки: ${broadcast.finishTime}"
         bot.execute(
             SendMessage().also {
                 it.chatId = author.tui!!
                 it.text = msgText
-            }
+            },
         )
     }
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) =
