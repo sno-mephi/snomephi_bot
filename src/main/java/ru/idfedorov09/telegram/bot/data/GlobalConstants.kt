@@ -1,5 +1,7 @@
 package ru.idfedorov09.telegram.bot.data
 
+import java.time.ZoneId
+
 object GlobalConstants {
 
     const val HEALTH_PATH = "/is_alive"
@@ -10,6 +12,8 @@ object GlobalConstants {
     const val QUEUE_PRE_PREFIX = "frjekcs_ewer_idfed09_user_bot_que_"
 
     const val MAX_MSG_LENGTH = 1024
+
+    val BOT_TIME_ZONE = ZoneId.of("Europe/Moscow")
 
     // id админского чата
     // TODO: поменять на айдишники (возможность делать несколько админских чатов!)

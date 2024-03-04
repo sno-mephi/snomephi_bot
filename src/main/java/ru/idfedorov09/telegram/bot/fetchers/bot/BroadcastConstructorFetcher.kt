@@ -9,6 +9,7 @@ import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
+import ru.idfedorov09.telegram.bot.data.GlobalConstants.BOT_TIME_ZONE
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands.BROADCAST_CONSTRUCTOR
 import ru.idfedorov09.telegram.bot.data.model.Broadcast
@@ -19,6 +20,7 @@ import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
 import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
+import java.time.LocalDateTime
 import kotlin.jvm.optionals.getOrNull
 
 /**
@@ -87,6 +89,7 @@ class BroadcastConstructorFetcher(
                 startsWith("#bc_change_text") -> bcChangeTextMessage(params)
                 startsWith("#bc_action_cancel") -> bcCancelAction(params)
                 startsWith("#bc_preview") -> bcPreview(params)
+                startsWith("#bc_send_now") -> bcSendNow(params)
             }
         }
     }
@@ -97,16 +100,87 @@ class BroadcastConstructorFetcher(
     }
 
     private fun changeText(params: Params) {
-        // TODO: назначить текст
+        params.userActualizedInfo.apply {
+            bcData = bcData?.copy(
+                text = params.update.message.text
+            )
+        }
+        showBcConsole(params)
     }
 
+    private fun bcSendNow(params: Params) {
+        params.userActualizedInfo.apply {
+            bcData ?: return
+
+            // удаляем консоль, она больше не нужна
+            bcData?.lastConsoleMessageId?.let { consoleId ->
+                params.bot.execute(
+                    DeleteMessage().also {
+                        it.chatId = params.update.message.chatId.toString()
+                        it.messageId = consoleId
+                    }
+                )
+            }
+
+            broadcastRepository.save(
+                bcData!!.copy(
+                    lastConsoleMessageId = null,
+                    isBuilt = true,
+                    isScheduled = false,
+                    isCompleted = false,
+                    startTime = LocalDateTime.now().atZone(BOT_TIME_ZONE).toLocalDateTime()
+                )
+            )
+
+            val okayMessage = "☃\uFE0F Что ж, я пошел делать рассылку! Как только закончу, обязательно сообщу тебе!"
+
+            params.bot.execute(
+                SendMessage().also {
+                    it.chatId = params.update.message.chatId.toString()
+                    it.text = okayMessage
+                }
+            )
+        }
+    }
+
+    /**
+     * Превью рассылки
+     * ОСОБЕННОСТИ:
+     *  - Пользователь только после предпросмотра сможет разослать / запланировать рассылку
+     *  - Здесь используется нестандартная консоль (второе отправленное сообщение отмечается как console)
+     */
     private fun bcPreview(params: Params) {
         // TODO: здесь отправка превью функцией Андрея
-        // params.userActualizedInfo.data = id отправленного msg
+        // params.userActualizedInfo.data = id отправленного msg, чтобы потом удалять его?
+        // вопрос: нужно ли удалять предпросмотр при дальнейшем редактированни / отмены / рассылки..
 
-        showBcConsole(
-            params = params,
-            showPreview = false
+        val messageText = "<b>Конструктор рассылки</b>\n\nВыберите дальнейшее действие"
+        val sendNow = CallbackData(callbackData = "#bc_send_now", metaText = "Разослать сейчас").save()
+        val scheduleSending = CallbackData(
+            callbackData = "#bc_to_schedule_console",
+            metaText = "Запланировать рассылку"
+        ).save()
+        val backToBc = CallbackData(callbackData = "#bc_action_cancel", metaText = "Назад к конструктору").save()
+
+        val keyboard =
+            listOf(sendNow, scheduleSending, backToBc).map { button ->
+                InlineKeyboardButton().also {
+                    it.text = button.metaText!!
+                    it.callbackData = button.id?.toString()
+                }
+            }.map { listOf(it) }
+
+        val sent = params.bot.execute(
+            SendMessage().also {
+                it.text = messageText
+                it.parseMode = ParseMode.HTML
+                it.replyMarkup = createKeyboard(keyboard)
+                it.chatId = params.userActualizedInfo.tui
+            },
+        )
+
+        params.userActualizedInfo.bcData = params.userActualizedInfo.bcData?.copy(
+            lastConsoleMessageId = sent.messageId
         )
     }
 
@@ -192,11 +266,10 @@ class BroadcastConstructorFetcher(
             val newPhoto = CallbackData(callbackData = "#bc_change_photo", metaText = "Добавить фото").save()
             val addText = CallbackData(callbackData = "#bc_change_text", metaText = "Добавить текст").save()
             val addButton = CallbackData(callbackData = "#bc_add_button", metaText = "Добавить кнопку").save()
-            val changeDate = CallbackData(callbackData = "#bc_change_date", metaText = "Назначить дату").save()
             val cancelButton = CallbackData(callbackData = "#bc_cancel", metaText = "Отмена").save()
 
             val keyboard =
-                listOf(newPhoto, addText, addButton, changeDate, cancelButton).map { button ->
+                listOf(newPhoto, addText, addButton, cancelButton).map { button ->
                     InlineKeyboardButton().also {
                         it.text = button.metaText!!
                         it.callbackData = button.id?.toString()
@@ -226,14 +299,13 @@ class BroadcastConstructorFetcher(
             ).save()
             val addButton = CallbackData(callbackData = "#bc_add_button", metaText = "Добавить кнопку").save()
 
-            val changeDate = CallbackData(callbackData = "#bc_change_date", metaText = "Назначить дату").save()
             val previewButton = CallbackData(callbackData = "#bc_preview", metaText = "Предпросмотр").save()
             val cancelButton = CallbackData(callbackData = "#bc_cancel", metaText = "Отмена").save()
 
             val keyboard = mutableListOf(
-                photoProp, textProp, addButton, changeDate, previewButton, cancelButton
+                photoProp, textProp, addButton, previewButton, cancelButton
             ).apply {
-                // TODO: если кол-во кнопок >=5 то убрать кнопку 'добавление кнопки'
+                // TODO: если кол-во кнопок >=5 то здесь убрать кнопку 'добавление кнопки'
             }.map {  callbackData ->
                 listOf(
                     InlineKeyboardButton().also {
