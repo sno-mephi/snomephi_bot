@@ -6,7 +6,6 @@ import ru.idfedorov09.telegram.bot.data.model.Quest
 import ru.idfedorov09.telegram.bot.data.model.User
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
-import ru.idfedorov09.telegram.bot.repo.ConstructorDataRepository
 import ru.idfedorov09.telegram.bot.repo.QuestRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.mephi.sno.libs.flow.belly.InjectData
