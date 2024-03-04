@@ -1,12 +1,14 @@
 package ru.idfedorov09.telegram.bot.util
 import org.jvnet.hk2.annotations.Service
 import org.springframework.scheduling.annotation.Scheduled
+import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto
 import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.data.model.Broadcast
+import ru.idfedorov09.telegram.bot.data.model.User
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
 import ru.idfedorov09.telegram.bot.repo.ButtonRepository
@@ -42,24 +44,29 @@ class BroadcastSenderService(
             )
             return
         }
-        if (firstActiveBroadcast.imageHash == null) {
+        sendBroadcast(firstUser, firstActiveBroadcast)
+    }
+    fun sendBroadcast(user: User, broadcast: Broadcast, shouldAddToReceived: Boolean = true) {
+        if (broadcast.imageHash == null) {
             bot.execute(
                 SendMessage().also {
-                    it.chatId = firstUser.tui.toString()
-                    it.text = firstActiveBroadcast.text.toString()
-                    it.replyMarkup = createChooseKeyboard(firstActiveBroadcast)
+                    it.chatId = user.tui.toString()
+                    it.text = broadcast.text.toString()
+                    it.replyMarkup = createChooseKeyboard(broadcast)
+                    it.parseMode = ParseMode.HTML
                 },
             )
         } else {
             bot.execute(
                 SendPhoto().also {
-                    it.chatId = firstUser.tui.toString()
-                    it.photo = InputFile(firstActiveBroadcast.imageHash)
-                    it.replyMarkup = createChooseKeyboard(firstActiveBroadcast)
+                    it.chatId = user.tui.toString()
+                    it.photo = InputFile(broadcast.imageHash)
+                    it.replyMarkup = createChooseKeyboard(broadcast)
+                    it.parseMode = ParseMode.HTML
                 },
             )
         }
-        firstUser.id?.let { firstActiveBroadcast.receivedUsersId.add(it) }
+        if (shouldAddToReceived) user.id?.let { broadcast.receivedUsersId.add(it) }
     }
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) =
         InlineKeyboardMarkup().also { it.keyboard = keyboard }
