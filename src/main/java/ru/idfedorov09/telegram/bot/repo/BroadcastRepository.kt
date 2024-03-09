@@ -11,7 +11,7 @@ interface BroadcastRepository : JpaRepository<Broadcast, Long> {
             FROM broadcast_table
             WHERE 1=1
                 AND is_completed IS false
-                AND timezone('Europe/Moscow', CURRENT_TIMESTAMP) >= timezone('Europe/Moscow', broadcast_start_dttm)
+                AND TIMEZONE('Europe/Moscow', CURRENT_TIMESTAMP) >= TIMEZONE('Europe/Moscow', broadcast_start_dttm)
                 AND is_built IS true
             LIMIT 1
         """,
