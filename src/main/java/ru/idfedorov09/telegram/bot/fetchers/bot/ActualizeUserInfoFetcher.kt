@@ -40,6 +40,7 @@ class ActualizeUserInfoFetcher(
         if (update.callbackQuery != null) {
             bot.execute(AnswerCallbackQuery(update.callbackQuery.id))
         }
+
         val tgUser = updatesUtil.getUser(update)
         tgUser ?: run {
             expContainer.byUser = false
@@ -47,6 +48,9 @@ class ActualizeUserInfoFetcher(
         }
         val tui = tgUser.id.toString()
         // если не нашли в бд пользователя то сохраняем специального
+
+        expContainer.isPersonal = updatesUtil.getChatId(update) == tui
+
         val userDataFromDatabase = userRepository.findByTui(tui)
             ?: User(
                 tui = tgUser.id.toString(),
@@ -82,7 +86,7 @@ class ActualizeUserInfoFetcher(
             activeQuest = activeQuest,
             data = userDataFromDatabase.data,
             isRegistered = userDataFromDatabase.isRegistered,
-            bcData = bcData
+            bcData = bcData,
         )
     }
 }

@@ -4,17 +4,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUALIFIER_FLOW_TG_BOT
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
-import ru.idfedorov09.telegram.bot.fetchers.bot.ActualizeUserInfoFetcher
-import ru.idfedorov09.telegram.bot.fetchers.bot.BroadcastConstructorFetcher
-import ru.idfedorov09.telegram.bot.fetchers.bot.CategoryActionTypeHandlerFetcher
-import ru.idfedorov09.telegram.bot.fetchers.bot.CategoryButtonHandlerFetcher
-import ru.idfedorov09.telegram.bot.fetchers.bot.CategoryCommandHandlerFetcher
-import ru.idfedorov09.telegram.bot.fetchers.bot.DialogHandleFetcher
-import ru.idfedorov09.telegram.bot.fetchers.bot.QuestButtonHandlerFetcher
-import ru.idfedorov09.telegram.bot.fetchers.bot.QuestStartFetcher
-import ru.idfedorov09.telegram.bot.fetchers.bot.RoleDescriptionFetcher
-import ru.idfedorov09.telegram.bot.fetchers.bot.UpdateDataFetcher
-import ru.idfedorov09.telegram.bot.fetchers.bot.UserInfoCommandFetcher
+import ru.idfedorov09.telegram.bot.fetchers.bot.*
 import ru.idfedorov09.telegram.bot.fetchers.bot.userfetchers.RegistrationActionHandlerFetcher
 import ru.idfedorov09.telegram.bot.fetchers.bot.userfetchers.RegistrationFetcher
 import ru.mephi.sno.libs.flow.belly.FlowBuilder
@@ -38,8 +28,10 @@ open class TelegramBotFlowConfiguration(
     private val userActionHandlerFetcher: RegistrationActionHandlerFetcher,
     private val roleDescriptionFetcher: RoleDescriptionFetcher,
     private val userInfoCommandFetcher: UserInfoCommandFetcher,
+    private val settingMailFetcher: SettingMailFetcher,
     private val broadcastConstructorFetcher: BroadcastConstructorFetcher,
 ) {
+
     /**
      * Возвращает построенный граф; выполняется только при запуске приложения
      */
@@ -55,7 +47,7 @@ open class TelegramBotFlowConfiguration(
             fetch(actualizeUserInfoFetcher)
 
             // registration block
-            group(condition = { it.isByUser() && !it.isUserRegistered() }) {
+            group(condition = { it.isByUser() && !it.isUserRegistered() && it.isPersonalUpdate() }) {
                 fetch(userActionHandlerFetcher)
                 fetch(registrationFetcher)
             }
@@ -67,6 +59,8 @@ open class TelegramBotFlowConfiguration(
 
                 fetch(roleDescriptionFetcher)
                 fetch(userInfoCommandFetcher)
+
+                fetch(settingMailFetcher)
 
                 fetch(questStartFetcher)
                 fetch(questButtonHandlerFetcher)
@@ -80,4 +74,6 @@ open class TelegramBotFlowConfiguration(
     private fun FlowContext.isByUser() = get<ExpContainer>()?.byUser ?: false
 
     private fun FlowContext.isUserRegistered() = get<UserActualizedInfo>()?.isRegistered ?: false
+
+    private fun FlowContext.isPersonalUpdate() = get<ExpContainer>()?.isPersonal ?: false
 }

@@ -12,4 +12,5 @@ data class ExpContainer(
 
     /** флаг, который говорит, что апдейт пришел от пользователя **/
     var byUser: Boolean = true,
+    var isPersonal: Boolean = false,
 )
