@@ -118,6 +118,8 @@ class BroadcastConstructorFetcher(
                 imageHash = params.update.message.photo.firstOrNull()?.fileId,
             )
         }
+        showBcConsole(params)
+        params.userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
     }
 
     private fun bcSendNow(params: Params) {
@@ -341,8 +343,9 @@ class BroadcastConstructorFetcher(
                 previewButton,
                 cancelButton,
             ).apply {
-                if (!params.update.message.hasText() && !params.update.message.hasPhoto())
+                if (!params.update.message.hasText() && !params.update.message.hasPhoto()) {
                     remove(previewButton)
+                }
                 // TODO: если кол-во кнопок >=5 то здесь убрать кнопку 'добавление кнопки'
             }.map { callbackData ->
                 listOf(
