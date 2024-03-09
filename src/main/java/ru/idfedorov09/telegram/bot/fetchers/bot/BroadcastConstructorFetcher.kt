@@ -87,6 +87,7 @@ class BroadcastConstructorFetcher(
             when {
                 startsWith("#bc_cancel") -> bcCancel(params)
                 startsWith("#bc_change_text") -> bcChangeTextMessage(params)
+                startsWith("#bc_change_photo") -> bcChangePhoto(params)
                 startsWith("#bc_action_cancel") -> bcCancelAction(params)
                 startsWith("#bc_preview") -> bcPreview(params)
                 startsWith("#bc_send_now") -> bcSendNow(params)
@@ -94,19 +95,29 @@ class BroadcastConstructorFetcher(
         }
     }
 
-
     private fun photoHandler(update: Update, params: Params) {
-
+        when (params.userActualizedInfo.lastUserActionType) {
+            LastUserActionType.BC_PHOTO_TYPE -> changePhoto(params)
+            else -> return
+        }
     }
 
     private fun changeText(params: Params) {
         params.userActualizedInfo.apply {
             bcData = bcData?.copy(
-                text = params.update.message.text
+                text = params.update.message.text,
             )
         }
         showBcConsole(params)
         params.userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
+    }
+
+    private fun changePhoto(params: Params) {
+        params.userActualizedInfo.apply {
+            bcData = bcData?.copy(
+                imageHash = params.update.message.photo.firstOrNull()?.fileId,
+            )
+        }
     }
 
     private fun bcSendNow(params: Params) {
@@ -119,7 +130,7 @@ class BroadcastConstructorFetcher(
                     DeleteMessage().also {
                         it.chatId = params.update.message.chatId.toString()
                         it.messageId = consoleId
-                    }
+                    },
                 )
             }
 
@@ -129,8 +140,8 @@ class BroadcastConstructorFetcher(
                     isBuilt = true,
                     isScheduled = false,
                     isCompleted = false,
-                    startTime = LocalDateTime.now().atZone(BOT_TIME_ZONE).toLocalDateTime()
-                )
+                    startTime = LocalDateTime.now().atZone(BOT_TIME_ZONE).toLocalDateTime(),
+                ),
             )
 
             val okayMessage = "☃\uFE0F Что ж, я пошел делать рассылку! Как только закончу, обязательно сообщу тебе!"
@@ -139,7 +150,7 @@ class BroadcastConstructorFetcher(
                 SendMessage().also {
                     it.chatId = params.update.message.chatId.toString()
                     it.text = okayMessage
-                }
+                },
             )
         }
     }
@@ -160,7 +171,7 @@ class BroadcastConstructorFetcher(
         val sendNow = CallbackData(callbackData = "#bc_send_now", metaText = "Разослать сейчас").save()
         val scheduleSending = CallbackData(
             callbackData = "#bc_to_schedule_console",
-            metaText = "Запланировать рассылку"
+            metaText = "Запланировать рассылку",
         ).save()
         val backToBc = CallbackData(callbackData = "#bc_action_cancel", metaText = "Назад к конструктору").save()
 
@@ -182,19 +193,19 @@ class BroadcastConstructorFetcher(
         )
 
         params.userActualizedInfo.bcData = params.userActualizedInfo.bcData?.copy(
-            lastConsoleMessageId = sent.messageId
+            lastConsoleMessageId = sent.messageId,
         )
     }
 
     private fun bcChangeTextMessage(params: Params) {
         removeBcConsole(params)
         val msgText = "*Напишите текст уведомления*\\.\n\nПравила оформления:\n" +
-                "<b\\>текст</b\\> \\- жирный текст\n" +
-                "<i\\>текст</i\\> \\- выделение курсивом\n" +
-                "<u\\>текст</u\\> \\- подчеркнутый текст\n" +
-                "<s\\>текст</s\\> \\- зачеркнутый текст\n" +
-                "<code\\>текст</code\\> \\- выделенный текст \\(с копированием по клику\\)\n" +
-                "<pre language\\=\"c\\+\\+\"\\>текст</pre\\> \\- исходный код или любой другой текст"
+            "<b\\>текст</b\\> \\- жирный текст\n" +
+            "<i\\>текст</i\\> \\- выделение курсивом\n" +
+            "<u\\>текст</u\\> \\- подчеркнутый текст\n" +
+            "<s\\>текст</s\\> \\- зачеркнутый текст\n" +
+            "<code\\>текст</code\\> \\- выделенный текст \\(с копированием по клику\\)\n" +
+            "<pre language\\=\"c\\+\\+\"\\>текст</pre\\> \\- исходный код или любой другой текст"
 
         val cancelButton = CallbackData(callbackData = "#bc_action_cancel", metaText = "Отмена").save()
 
@@ -209,13 +220,38 @@ class BroadcastConstructorFetcher(
                             InlineKeyboardButton().also {
                                 it.text = cancelButton.metaText!!
                                 it.callbackData = cancelButton.id?.toString()
-                            }
-                        )
-                    )
+                            },
+                        ),
+                    ),
                 )
-            }
+            },
         )
         params.userActualizedInfo.lastUserActionType = LastUserActionType.BC_TEXT_TYPE
+    }
+
+    private fun bcChangePhoto(params: Params) {
+        removeBcConsole(params)
+        val msgText = "Отправте фотографию, которую вы хотите прикрепить к рассылке"
+        val cancelButton = CallbackData(callbackData = "#bc_action_cancel", metaText = "Отмена").save()
+
+        params.bot.execute(
+            SendMessage().also {
+                it.text = msgText
+                it.chatId = params.userActualizedInfo.tui
+                it.parseMode = ParseMode.MARKDOWNV2
+                it.replyMarkup = createKeyboard(
+                    listOf(
+                        listOf(
+                            InlineKeyboardButton().also {
+                                it.text = cancelButton.metaText!!
+                                it.callbackData = cancelButton.id?.toString()
+                            },
+                        ),
+                    ),
+                )
+            },
+        )
+        params.userActualizedInfo.lastUserActionType = LastUserActionType.BC_PHOTO_TYPE
     }
 
     private fun bcCancel(params: Params) {
@@ -223,8 +259,8 @@ class BroadcastConstructorFetcher(
         params.userActualizedInfo.bcData?.let {
             broadcastRepository.save(
                 it.copy(
-                    isDeleted = true
-                )
+                    isDeleted = true,
+                ),
             )
         }
         params.userActualizedInfo.bcData = null
@@ -244,10 +280,10 @@ class BroadcastConstructorFetcher(
                 DeleteMessage().also {
                     it.chatId = tui
                     it.messageId = bcData?.lastConsoleMessageId!!
-                }
+                },
             )
             bcData = bcData?.copy(
-                lastConsoleMessageId = null
+                lastConsoleMessageId = null,
             )
         }
     }
@@ -256,7 +292,7 @@ class BroadcastConstructorFetcher(
         val bcData = params.userActualizedInfo.bcData
         if (bcData == null || !showPreview) {
             params.userActualizedInfo.bcData = broadcastRepository.save(
-                Broadcast(authorId = params.userActualizedInfo.id)
+                Broadcast(authorId = params.userActualizedInfo.id),
             )
             val messageText = "<b>Конструктор рассылки</b>\n\nВыберите дальнейшее действие"
             val newPhoto = CallbackData(callbackData = "#bc_change_photo", metaText = "Добавить фото").save()
@@ -282,16 +318,16 @@ class BroadcastConstructorFetcher(
             )
 
             params.userActualizedInfo.bcData = params.userActualizedInfo.bcData?.copy(
-                lastConsoleMessageId = sent.messageId
+                lastConsoleMessageId = sent.messageId,
             )
         } else {
             val photoProp = CallbackData(
                 callbackData = "#bc_change_photo",
-                metaText = bcData.imageHash?.let { "Изменить фото" } ?: "Добавить фото"
+                metaText = bcData.imageHash?.let { "Изменить фото" } ?: "Добавить фото",
             ).save()
             val textProp = CallbackData(
                 callbackData = "#bc_change_text",
-                metaText = bcData.text?.let { "Изменить текст" } ?: "Добавить текст"
+                metaText = bcData.text?.let { "Изменить текст" } ?: "Добавить текст",
             ).save()
             val addButton = CallbackData(callbackData = "#bc_add_button", metaText = "Добавить кнопку").save()
 
@@ -299,15 +335,19 @@ class BroadcastConstructorFetcher(
             val cancelButton = CallbackData(callbackData = "#bc_cancel", metaText = "Отмена").save()
 
             val keyboard = mutableListOf(
-                photoProp, textProp, addButton, previewButton, cancelButton
+                photoProp,
+                textProp,
+                addButton,
+                previewButton,
+                cancelButton,
             ).apply {
                 // TODO: если кол-во кнопок >=5 то здесь убрать кнопку 'добавление кнопки'
-            }.map {  callbackData ->
+            }.map { callbackData ->
                 listOf(
                     InlineKeyboardButton().also {
                         it.text = callbackData.metaText!!
                         it.callbackData = callbackData.id?.toString()
-                    }
+                    },
                 )
             }
 
@@ -315,7 +355,7 @@ class BroadcastConstructorFetcher(
                 val title = "<b>Конструктор рассылки</b>\n\n"
                 val text = text?.let { "Текст:\n${text}\n\n" } ?: ""
                 val end = "Выберите дальнейшее действие"
-                title+text+end
+                title + text + end
             }
 
             // TODO: кнопки
@@ -331,7 +371,7 @@ class BroadcastConstructorFetcher(
                             it.text = text
                             it.replyMarkup = createKeyboard(keyboard)
                             it.parseMode = ParseMode.HTML
-                        }
+                        },
                     )
 
                     else -> params.bot.execute(
@@ -340,34 +380,34 @@ class BroadcastConstructorFetcher(
                             it.caption = text
                             it.replyMarkup = createKeyboard(keyboard)
                             it.photo = InputFile(bcData.imageHash)
-                        }
+                        },
                     )
                 }
             }.onFailure {
                 val failText = "\uD83D\uDE4A Ой! При отправке сообщения что-то пошло не так:\n" +
-                        "<pre language=\"error\">${
-                            it.message
-                                ?.replace("<", "&lt;")
-                                ?.replace(">", "&gt;")
-                        }</pre>\n\nПопробуй еще раз."
+                    "<pre language=\"error\">${
+                        it.message
+                            ?.replace("<", "&lt;")
+                            ?.replace(">", "&gt;")
+                    }</pre>\n\nПопробуй еще раз."
 
                 params.bot.execute(
                     SendMessage().also {
                         it.text = failText
                         it.chatId = params.userActualizedInfo.tui
                         it.parseMode = ParseMode.HTML
-                    }
+                    },
                 )
             }.onSuccess {
                 params.userActualizedInfo.bcData = params.userActualizedInfo.bcData?.copy(
-                    lastConsoleMessageId = it.messageId
+                    lastConsoleMessageId = it.messageId,
                 )
             }
         }
     }
 
-    private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>)
-        = InlineKeyboardMarkup().also { it.keyboard = keyboard }
+    private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) =
+        InlineKeyboardMarkup().also { it.keyboard = keyboard }
 
     private fun CallbackData.save() = callbackDataRepository.save(this)
 
