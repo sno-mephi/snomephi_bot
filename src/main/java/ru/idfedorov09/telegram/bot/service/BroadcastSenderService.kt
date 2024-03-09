@@ -1,6 +1,6 @@
-package ru.idfedorov09.telegram.bot.util
-import org.jvnet.hk2.annotations.Service
+package ru.idfedorov09.telegram.bot.service
 import org.springframework.scheduling.annotation.Scheduled
+import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto
@@ -27,18 +27,14 @@ class BroadcastSenderService(
     @Scheduled(fixedDelay = 1000)
     fun broadcastSender() {
         val firstActiveBroadcast = broadcastRepository.findFirstActiveBroadcast() ?: return
-        val firstUser = userRepository.findAll().firstOrNull {
-            it.id !in firstActiveBroadcast.receivedUsersId &&
-                (
-                    it.categories.intersect(firstActiveBroadcast.categoriesId).isEmpty() ||
-                        firstActiveBroadcast.categoriesId.isEmpty()
-                    )
-        } ?: run {
+        if (firstActiveBroadcast.receivedUsersId.isEmpty()) startBroadcast(firstActiveBroadcast)
+        val firstUser = userRepository.findAll().firstOrNull { checkValidUser(it, firstActiveBroadcast) } ?: run {
             finishBroadcast(firstActiveBroadcast)
             return
         }
         sendBroadcast(firstUser, firstActiveBroadcast)
     }
+
     fun sendBroadcast(user: User, broadcast: Broadcast, shouldAddToReceived: Boolean = true) {
         if (broadcast.imageHash == null) {
             bot.execute(
@@ -59,8 +55,25 @@ class BroadcastSenderService(
                 },
             )
         }
-        if (shouldAddToReceived) user.id?.let { broadcast.receivedUsersId.add(it) }
+        if (shouldAddToReceived) {
+            user.id?.let {
+                broadcast.receivedUsersId.add(it)
+                broadcastRepository.save(broadcast)
+            }
+        }
     }
+
+    private fun startBroadcast(broadcast: Broadcast) {
+        val author = broadcast.authorId?.let { userRepository.findById(it).getOrNull() } ?: return
+        val msg = "Рассылка №${broadcast.id} успешно запущена"
+        bot.execute(
+            SendMessage().also {
+                it.chatId = author.tui!!
+                it.text = msg
+            },
+        )
+    }
+
     fun finishBroadcast(broadcast: Broadcast) {
         broadcastRepository.save(
             broadcast.copy(
@@ -71,7 +84,7 @@ class BroadcastSenderService(
             ),
         )
         val author = broadcast.authorId?.let { userRepository.findById(it).getOrNull() } ?: return
-        val msgText = "Рассылка #${broadcast.id} успешно завершена\n" +
+        val msgText = "Рассылка №${broadcast.id} успешно завершена\n" +
             "Число пользователей, получивших сообщение: ${broadcast.receivedUsersId.size}\n" +
             "Старт рассылки: ${broadcast.startTime}\n" +
             "Конец рассылки: ${broadcast.finishTime}"
@@ -82,8 +95,17 @@ class BroadcastSenderService(
             },
         )
     }
+
+    private fun checkValidUser(user: User, broadcast: Broadcast): Boolean {
+        return user.id !in broadcast.receivedUsersId && (
+            user.categories.intersect(broadcast.categoriesId).isNotEmpty() ||
+                broadcast.categoriesId.isEmpty()
+            )
+    }
+
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) =
         InlineKeyboardMarkup().also { it.keyboard = keyboard }
+
     private fun createChooseKeyboard(firstActiveBroadcast: Broadcast): InlineKeyboardMarkup {
         val keyboardList = mutableListOf<List<InlineKeyboardButton>>()
         buttonRepository.findAllById(firstActiveBroadcast.buttonsId).forEach { button ->
