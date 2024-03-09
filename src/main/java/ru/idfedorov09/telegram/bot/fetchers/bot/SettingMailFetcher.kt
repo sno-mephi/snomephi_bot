@@ -83,6 +83,7 @@ class SettingMailFetcher(
             )
         } else {
             userCategories.add(category)
+
             bot.execute(
                 SendMessage().also {
                     it.chatId = chatId
