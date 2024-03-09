@@ -341,6 +341,8 @@ class BroadcastConstructorFetcher(
                 previewButton,
                 cancelButton,
             ).apply {
+                if (!params.update.message.hasText() && !params.update.message.hasPhoto())
+                    remove(previewButton)
                 // TODO: если кол-во кнопок >=5 то здесь убрать кнопку 'добавление кнопки'
             }.map { callbackData ->
                 listOf(
