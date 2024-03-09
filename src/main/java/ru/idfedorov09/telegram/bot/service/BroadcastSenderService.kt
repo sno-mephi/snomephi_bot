@@ -23,6 +23,7 @@ class BroadcastSenderService(
     private val userRepository: UserRepository,
     private val buttonRepository: ButtonRepository,
     private val bot: Executor,
+
 ) {
     @Scheduled(fixedDelay = 1000)
     fun broadcastSender() {
