@@ -282,7 +282,7 @@ class BroadcastConstructorFetcher(
 
     private fun bcChangePhoto(params: Params) {
         removeBcConsole(params)
-        val msgText = "Отправьте фотографию, которую вы хотите прикрепить к рассылке"
+        val msgText = "Отправте фотографию, которую вы хотите прикрепить к рассылке"
         val cancelButton = CallbackData(callbackData = "#bc_action_cancel", metaText = "Отмена").save()
         val deletePhoto = CallbackData(callbackData = "#bc_delete_photo", metaText = "Удалить фото").save()
 
@@ -314,8 +314,7 @@ class BroadcastConstructorFetcher(
 
     private fun bcChangeStartTime(params: Params, prefix: String? = null) {
         removeBcConsole(params)
-        val msgStart = prefix?.let { "$prefix\n" } ?: ""
-        val msgText = msgStart + "Отправьте время запуска рассылки в формате 'дд.мм.гггг чч:мм'"
+        val msgText = prefix + "Отправте время запуска рассылки в формате 'гггг-мм-дд чч-мм-сс'"
         val cancelButton = CallbackData(callbackData = "#bc_action_cancel", metaText = "Отмена").save()
         val sent = params.bot.execute(
             SendMessage().also {
