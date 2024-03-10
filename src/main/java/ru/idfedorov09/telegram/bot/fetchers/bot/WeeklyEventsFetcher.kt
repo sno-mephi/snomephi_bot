@@ -55,7 +55,7 @@ class WeeklyEventsFetcher(
         }
 
         broadcastSenderService.sendBroadcast(
-            user = userRepository.findById(userActualizedInfo.id!!).get(),
+            userId = userActualizedInfo.id!!,
             broadcast = firstActiveWeeklyBroadcast,
             shouldAddToReceived = false
         )
