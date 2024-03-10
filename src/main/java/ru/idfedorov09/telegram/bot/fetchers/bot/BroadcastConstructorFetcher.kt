@@ -27,6 +27,7 @@ import ru.idfedorov09.telegram.bot.service.BroadcastSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.jvm.optionals.getOrNull
 
@@ -37,7 +38,7 @@ import kotlin.jvm.optionals.getOrNull
 @Component
 class BroadcastConstructorFetcher(
     private val callbackDataRepository: CallbackDataRepository,
-    private val categoryRepository: CategoryRepository
+    private val categoryRepository: CategoryRepository,
     private val broadcastRepository: BroadcastRepository,
     private val buttonRepository: ButtonRepository,
     private val broadcastSenderService: BroadcastSenderService,
@@ -143,7 +144,7 @@ class BroadcastConstructorFetcher(
 
             val backToBc = CallbackData(
                 callbackData = "#bc_action_show_btn_console",
-                metaText = "К настройкам кнопки"
+                metaText = "К настройкам кнопки",
             ).save()
 
             // TODO: такую штуку в отдельный метод, много дублируется
@@ -160,10 +161,10 @@ class BroadcastConstructorFetcher(
                     it.text = "\uD83D\uDCDD Отправь мне текст коллбэка"
                     it.chatId = tui
                     it.replyMarkup = createKeyboard(keyboard)
-                }
+                },
             )
             bcData = bcData?.copy(
-                lastConsoleMessageId = sentMessage.messageId
+                lastConsoleMessageId = sentMessage.messageId,
             )
             lastUserActionType = LastUserActionType.BC_BUTTON_CALLBACK_TYPING
         }
@@ -234,13 +235,13 @@ class BroadcastConstructorFetcher(
         params.userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
     }
 
-    private fun changeCategories(params: Params){
+    private fun changeCategories(params: Params) {
         params.userActualizedInfo.apply {
             val categorySuffix = params.update.message.text.substringAfter("/toggle_")
             val category = categoryRepository.findBySuffix(categorySuffix) ?: return
-            if (bcData?.categoriesId?.contains(category.id) == true){
+            if (bcData?.categoriesId?.contains(category.id) == true) {
                 bcData?.categoriesId?.remove(category.id)
-            } else{
+            } else {
                 category.id?.let { bcData?.categoriesId?.add(it) }
             }
             bcChangeCategories(params)
@@ -283,7 +284,7 @@ class BroadcastConstructorFetcher(
     private fun removeButton(params: Params) {
         params.userActualizedInfo.apply {
             val button = buttonRepository.getLastModifiedButtonByUserId(id!!)?.copy(
-                text = null
+                text = null,
             ) ?: return
             buttonRepository.save(button)
             showBcConsole(params)
@@ -300,7 +301,7 @@ class BroadcastConstructorFetcher(
         buttonRepository.save(
             button.copy(
                 lastModifyTime = LocalDateTime.now(ZoneId.of("Europe/Moscow")),
-            )
+            ),
         )
         showChangeButtonConsole(params)
     }
@@ -313,7 +314,7 @@ class BroadcastConstructorFetcher(
                     SendMessage().also {
                         it.text = "☠\uFE0F Ты добавил слишком много кнопок. Отредактируй или удали лишние плиз"
                         it.chatId = tui
-                    }
+                    },
                 )
                 return
             }
@@ -321,8 +322,8 @@ class BroadcastConstructorFetcher(
             val newButton = buttonRepository.save(
                 Button(
                     authorId = id,
-                    broadcastId = bcData?.id
-                )
+                    broadcastId = bcData?.id,
+                ),
             )
 
             changeButtonCaptionMessage(params, true)
@@ -333,7 +334,7 @@ class BroadcastConstructorFetcher(
         params.userActualizedInfo.apply {
             val backToConsole = CallbackData(
                 callbackData = if (backToDefaultConsole) "#bc_action_cancel" else "#bc_action_show_btn_console",
-                metaText = if (backToDefaultConsole) "Отменить создание кнопки" else "К настройкам кнопки"
+                metaText = if (backToDefaultConsole) "Отменить создание кнопки" else "К настройкам кнопки",
             ).save()
 
             // TODO: такую штуку в отдельный метод, много дублируется
@@ -351,10 +352,10 @@ class BroadcastConstructorFetcher(
                     it.text = "\uD83D\uDCDD Отправь мне текст, который будет отображаться на кнопке"
                     it.chatId = tui
                     it.replyMarkup = createKeyboard(keyboard)
-                }
+                },
             )
             bcData = bcData?.copy(
-                lastConsoleMessageId = sentMessage.messageId
+                lastConsoleMessageId = sentMessage.messageId,
             )
             lastUserActionType = LastUserActionType.BC_BUTTON_CAPTION_TYPE
         }
@@ -364,7 +365,7 @@ class BroadcastConstructorFetcher(
         params.userActualizedInfo.apply {
             val backToBc = CallbackData(
                 callbackData = "#bc_action_show_btn_console",
-                metaText = "К настройкам кнопки"
+                metaText = "К настройкам кнопки",
             ).save()
 
             // TODO: такую штуку в отдельный метод, много дублируется
@@ -382,10 +383,10 @@ class BroadcastConstructorFetcher(
                     it.text = "\uD83D\uDCDD Отправь мне текст с нужной ссылкой"
                     it.chatId = tui
                     it.replyMarkup = createKeyboard(keyboard)
-                }
+                },
             )
             bcData = bcData?.copy(
-                lastConsoleMessageId = sentMessage.messageId
+                lastConsoleMessageId = sentMessage.messageId,
             )
             lastUserActionType = LastUserActionType.BC_BUTTON_LINK_TYPE
         }
@@ -395,8 +396,8 @@ class BroadcastConstructorFetcher(
         val caption = params.update.message.text
         if (caption.length >= 32) {
             val backToBc = CallbackData(
-                    callbackData = "#bc_action_show_btn_console",
-                    metaText = "К настройкам кнопки"
+                callbackData = "#bc_action_show_btn_console",
+                metaText = "К настройкам кнопки",
             ).save()
 
             // TODO: такую штуку в отдельный метод, много дублируется
@@ -411,11 +412,11 @@ class BroadcastConstructorFetcher(
             params.bot.execute(
                 SendMessage().also {
                     it.text = "\uD83E\uDD21 Слишком длинная надпись для кнопки! " +
-                            "Ограничение на длину символов: 32. Повтори попытку.\n\n" +
-                            "\uD83D\uDCDD Отправь мне текст, который будет отображаться на кнопке"
+                        "Ограничение на длину символов: 32. Повтори попытку.\n\n" +
+                        "\uD83D\uDCDD Отправь мне текст, который будет отображаться на кнопке"
                     it.chatId = params.userActualizedInfo.tui
                     it.replyMarkup = createKeyboard(keyboard)
-                }
+                },
             )
             return
         }
@@ -463,27 +464,27 @@ class BroadcastConstructorFetcher(
 
             val changeButtonCaption = CallbackData(
                 callbackData = "#bc_change_button_caption",
-                metaText = button.text?.let { "Изменить текст" } ?: "Добавить текст"
+                metaText = button.text?.let { "Изменить текст" } ?: "Добавить текст",
             ).save()
 
             val changeButtonLink = CallbackData(
                 callbackData = "#bc_change_button_link",
-                metaText = button.link?.let { "Изменить ссылку" } ?: "Добавить ссылку"
+                metaText = button.link?.let { "Изменить ссылку" } ?: "Добавить ссылку",
             ).save()
 
             val changeButtonCallback = CallbackData(
                 callbackData = "#bc_change_button_callback",
-                metaText = button.callbackData?.let { "Изменить коллбэк" } ?: "Добавить коллбэк"
+                metaText = button.callbackData?.let { "Изменить коллбэк" } ?: "Добавить коллбэк",
             ).save()
 
             val removeButton = CallbackData(
                 callbackData = "#bc_button_remove",
-                metaText = "Удалить кнопку"
+                metaText = "Удалить кнопку",
             ).save()
 
             val backToBc = CallbackData(
                 callbackData = "#bc_action_cancel",
-                metaText = "Назад к конструктору"
+                metaText = "Назад к конструктору",
             ).save()
 
             // TODO: такую штуку в отдельный метод, много дублируется
@@ -500,17 +501,17 @@ class BroadcastConstructorFetcher(
             val sentMessage = params.bot.execute(
                 SendMessage().also {
                     it.text = "Настройки кнопки:\n\n" +
-                            "Надпись на кнопке: $caption\n" +
-                            "Ссылка: $urlTextCode $urlTextLink\n" +
-                            "Коллбэк: $callbackDataText"
+                        "Надпись на кнопке: $caption\n" +
+                        "Ссылка: $urlTextCode $urlTextLink\n" +
+                        "Коллбэк: $callbackDataText"
                     it.chatId = tui
                     it.parseMode = ParseMode.HTML
                     it.replyMarkup = createKeyboard(keyboard)
-                }
+                },
             )
 
             bcData = bcData?.copy(
-                lastConsoleMessageId = sentMessage.messageId
+                lastConsoleMessageId = sentMessage.messageId,
             )
             lastUserActionType = LastUserActionType.DEFAULT
         }
@@ -529,7 +530,7 @@ class BroadcastConstructorFetcher(
         broadcastSenderService.sendBroadcast(
             userId = params.userActualizedInfo.id!!,
             broadcast = params.userActualizedInfo.bcData!!,
-            shouldAddToReceived = false
+            shouldAddToReceived = false,
         )
 
         val messageText = "<b>Конструктор рассылки</b>\n\nВыберите дальнейшее действие"
@@ -571,7 +572,7 @@ class BroadcastConstructorFetcher(
             "<s\\>текст</s\\> \\- зачеркнутый текст\n" +
             "<code\\>текст</code\\> \\- выделенный текст \\(с копированием по клику\\)\n" +
             "<pre language\\=\"c\\+\\+\"\\>текст</pre\\> \\- исходный код или любой другой текст\n" +
-                "<a href\\='https://sno\\.mephi\\.ru/'\\>Сайт СНО</a\\> \\- ссылка"
+            "<a href\\='https://sno\\.mephi\\.ru/'\\>Сайт СНО</a\\> \\- ссылка"
 
         val cancelButton = CallbackData(callbackData = "#bc_action_cancel", metaText = "Отмена").save()
 
@@ -671,15 +672,15 @@ class BroadcastConstructorFetcher(
         params.userActualizedInfo.apply {
             val allCategoriesInfo = categoryRepository.findAll().map {
                 "<b>• ${it.title}\n</b>" +
-                        "<i>${it.description?.let { "$it\n" }}</i>" +
-                        if (bcData?.categoriesId?.contains(it.id) == true) {
-                            "<b>Включено</b>"
-                        } else {
-                            "<b>Выключено</b>"
-                        } + " - /toggle_${it.suffix}"
+                    "<i>${it.description?.let { "$it\n" }}</i>" +
+                    if (bcData?.categoriesId?.contains(it.id) == true) {
+                        "<b>Включено</b>"
+                    } else {
+                        "<b>Выключено</b>"
+                    } + " - /toggle_${it.suffix}"
             }.joinToString(separator = "\n") { it }
             val msgText = "<b>Настройка категорий</b>\n\nВыберите категории рассылки (если все выключены, " +
-                    "то рассылка будет по всем пользователям):\n\n$allCategoriesInfo"
+                "то рассылка будет по всем пользователям):\n\n$allCategoriesInfo"
             params.bot.execute(
                 SendMessage().also {
                     it.chatId = tui
@@ -787,15 +788,15 @@ class BroadcastConstructorFetcher(
                 photoProp,
                 textProp,
                 addButton,
-                previewButton
+                previewButton,
             ).apply {
                 addAll(
                     buttonRepository.findAllValidButtonsForBroadcast(bcData.id!!).map {
                         CallbackData(
                             callbackData = "#bc_change_button_with_id=${it.id}",
-                            metaText = it.text
+                            metaText = it.text,
                         ).save()
-                    }
+                    },
                 )
             }
             keyboardList.add(cancelButton)
