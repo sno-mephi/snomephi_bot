@@ -57,6 +57,7 @@ class BroadcastSenderService(
             bot.execute(
                 SendPhoto().also {
                     it.chatId = user.tui.toString()
+                    it.caption = broadcast.text.toString()
                     it.photo = InputFile(broadcast.imageHash)
                     it.replyMarkup = createChooseKeyboard(broadcast)
                     it.parseMode = ParseMode.HTML
