@@ -188,27 +188,25 @@ class BroadcastConstructorFetcher(
             bcData?.lastConsoleMessageId?.let { consoleId ->
                 params.bot.execute(
                     DeleteMessage().also {
-                        it.chatId = params.update.message.chatId.toString()
+                        it.chatId = tui
                         it.messageId = consoleId
                     },
                 )
             }
 
-            broadcastRepository.save(
-                bcData!!.copy(
-                    lastConsoleMessageId = null,
-                    isBuilt = true,
-                    isScheduled = false,
-                    isCompleted = false,
-                    startTime = LocalDateTime.now().atZone(BOT_TIME_ZONE).toLocalDateTime(),
-                ),
+            bcData = bcData!!.copy(
+                lastConsoleMessageId = null,
+                isBuilt = true,
+                isScheduled = false,
+                isCompleted = false,
+                startTime = LocalDateTime.now().atZone(BOT_TIME_ZONE).toLocalDateTime(),
             )
 
             val okayMessage = "☃\uFE0F Что ж, я пошел делать рассылку! Как только закончу, обязательно сообщу тебе!"
 
             params.bot.execute(
                 SendMessage().also {
-                    it.chatId = params.update.message.chatId.toString()
+                    it.chatId = tui
                     it.text = okayMessage
                 },
             )
