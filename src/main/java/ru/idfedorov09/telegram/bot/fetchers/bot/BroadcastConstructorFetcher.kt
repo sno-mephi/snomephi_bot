@@ -157,8 +157,8 @@ class BroadcastConstructorFetcher(
 
     private fun changeStartTime(params: Params) {
         val msgText = params.update.message.text
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-        if (!msgText.matches(Regex("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}"))) {
+        val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
+        if (!msgText.matches(Regex("\\d{2}.\\d{2}.\\d{4} \\d{2}:\\d{2}"))) {
             bcChangeStartTime(params, prefix = "Неверный формат даты и времени")
         }
         val startTime = LocalDateTime.parse(msgText, formatter)
@@ -282,7 +282,7 @@ class BroadcastConstructorFetcher(
 
     private fun bcChangePhoto(params: Params) {
         removeBcConsole(params)
-        val msgText = "Отправте фотографию, которую вы хотите прикрепить к рассылке"
+        val msgText = "Отправьте фотографию, которую вы хотите прикрепить к рассылке"
         val cancelButton = CallbackData(callbackData = "#bc_action_cancel", metaText = "Отмена").save()
         val deletePhoto = CallbackData(callbackData = "#bc_delete_photo", metaText = "Удалить фото").save()
 
@@ -314,7 +314,7 @@ class BroadcastConstructorFetcher(
 
     private fun bcChangeStartTime(params: Params, prefix: String? = null) {
         removeBcConsole(params)
-        val msgText = prefix + "Отправте время запуска рассылки в формате 'гггг-мм-дд чч-мм-сс'"
+        val msgText = prefix + "Отправьте время запуска рассылки в формате 'дд.ммюгггг чч:мм'"
         val cancelButton = CallbackData(callbackData = "#bc_action_cancel", metaText = "Отмена").save()
         val sent = params.bot.execute(
             SendMessage().also {
