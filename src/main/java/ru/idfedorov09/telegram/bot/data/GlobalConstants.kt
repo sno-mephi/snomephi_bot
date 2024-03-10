@@ -18,4 +18,9 @@ object GlobalConstants {
     // id админского чата
     // TODO: поменять на айдишники (возможность делать несколько админских чатов!)
     const val QUEST_RESPONDENT_CHAT_ID = "-1002057270905"
+
+    const val MAX_BROADCAST_BUTTONS_COUNT = 5
+
+    /** беседа куда отправляется всякий треш**/
+    const val TRASH_CHAT_ID = "-1002057270905"
 }

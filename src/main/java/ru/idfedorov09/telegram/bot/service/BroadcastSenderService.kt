@@ -1,4 +1,5 @@
 package ru.idfedorov09.telegram.bot.service
+import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.methods.ParseMode
@@ -8,10 +9,12 @@ import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.data.model.Broadcast
+import ru.idfedorov09.telegram.bot.data.model.CallbackData
 import ru.idfedorov09.telegram.bot.data.model.User
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
 import ru.idfedorov09.telegram.bot.repo.ButtonRepository
+import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -23,20 +26,35 @@ class BroadcastSenderService(
     private val userRepository: UserRepository,
     private val buttonRepository: ButtonRepository,
     private val bot: Executor,
-
+    private val callbackDataRepository: CallbackDataRepository
 ) {
-    @Scheduled(fixedDelay = 1000)
-    fun broadcastSender() {
-        val firstActiveBroadcast = broadcastRepository.findFirstActiveBroadcast() ?: return
-        if (firstActiveBroadcast.receivedUsersId.isEmpty()) startBroadcast(firstActiveBroadcast)
-        val firstUser = userRepository.findAll().firstOrNull { checkValidUser(it, firstActiveBroadcast) } ?: run {
-            finishBroadcast(firstActiveBroadcast)
-            return
-        }
-        sendBroadcast(firstUser, firstActiveBroadcast)
+
+    companion object {
+        private val log = LoggerFactory.getLogger(BroadcastSenderService::class.java)
     }
 
-    fun sendBroadcast(user: User, broadcast: Broadcast, shouldAddToReceived: Boolean = true) {
+    @Scheduled(fixedDelay = 1000)
+    fun broadcastSender() {
+        runCatching {
+            val firstActiveBroadcast = broadcastRepository.findFirstActiveBroadcast() ?: return
+            if (firstActiveBroadcast.receivedUsersId.isEmpty()) startBroadcast(firstActiveBroadcast)
+            val firstUser = userRepository.findAll().firstOrNull { checkValidUser(it, firstActiveBroadcast) } ?: run {
+                finishBroadcast(firstActiveBroadcast)
+                return
+            }
+            sendBroadcast(firstUser, firstActiveBroadcast)
+        }.onFailure {  e ->
+            log.warn("Ошибка при работе broadcastSender: $e")
+            log.debug(e.stackTrace.toString())
+        }
+    }
+
+    fun sendBroadcast(userId: Long, broadcast: Broadcast, shouldAddToReceived: Boolean = true) {
+        val user = userRepository.findById(userId).getOrNull() ?: return
+        sendBroadcast(user, broadcast, shouldAddToReceived)
+    }
+
+    private fun sendBroadcast(user: User, broadcast: Broadcast, shouldAddToReceived: Boolean = true) {
         if (broadcast.imageHash == null) {
             bot.execute(
                 SendMessage().also {
@@ -50,6 +68,7 @@ class BroadcastSenderService(
             bot.execute(
                 SendPhoto().also {
                     it.chatId = user.tui.toString()
+                    it.caption = broadcast.text
                     it.photo = InputFile(broadcast.imageHash)
                     it.replyMarkup = createChooseKeyboard(broadcast)
                     it.parseMode = ParseMode.HTML
@@ -76,19 +95,22 @@ class BroadcastSenderService(
     }
 
     fun finishBroadcast(broadcast: Broadcast) {
-        broadcastRepository.save(
-            broadcast.copy(
-                isCompleted = true,
-                finishTime = LocalDateTime.now(
-                    ZoneId.of("Europe/Moscow"),
-                ),
+        val finalBroadcast = broadcast.copy(
+            isCompleted = true,
+            finishTime = LocalDateTime.now(
+                ZoneId.of("Europe/Moscow"),
             ),
         )
-        val author = broadcast.authorId?.let { userRepository.findById(it).getOrNull() } ?: return
-        val msgText = "Рассылка №${broadcast.id} успешно завершена\n" +
-            "Число пользователей, получивших сообщение: ${broadcast.receivedUsersId.size}\n" +
-            "Старт рассылки: ${broadcast.startTime}\n" +
-            "Конец рассылки: ${broadcast.finishTime}"
+
+        broadcastRepository.save(finalBroadcast)
+        val author = finalBroadcast.authorId?.let { userRepository.findById(it).getOrNull() } ?: return
+
+        // TODO: нормальный формат вывода времени
+        val msgText = "Рассылка №${finalBroadcast.id} успешно завершена\n" +
+            "Число пользователей, получивших сообщение: ${finalBroadcast.receivedUsersId.size}\n" +
+            "Старт рассылки: ${finalBroadcast.startTime}\n" +
+            "Конец рассылки: ${finalBroadcast.finishTime}"
+
         bot.execute(
             SendMessage().also {
                 it.chatId = author.tui!!
@@ -108,17 +130,28 @@ class BroadcastSenderService(
         InlineKeyboardMarkup().also { it.keyboard = keyboard }
 
     private fun createChooseKeyboard(firstActiveBroadcast: Broadcast): InlineKeyboardMarkup {
-        val keyboardList = mutableListOf<List<InlineKeyboardButton>>()
-        buttonRepository.findAllById(firstActiveBroadcast.buttonsId).forEach { button ->
-            keyboardList.add(
-                listOf(
-                    InlineKeyboardButton("${button.text}").also {
-                        it.url = button.link
-                        it.callbackData = button.callbackData
-                    },
-                ),
+        val keyboardList = buttonRepository
+            .findAllValidButtonsForBroadcast(firstActiveBroadcast.id!!)
+            .map {
+                CallbackData(
+                    callbackData = it.callbackData,
+                    metaText = it.text,
+                    metaUrl = it.link
+                ).save()
+            }
+
+        val keyboard = keyboardList.map { callbackData ->
+            listOf(
+                InlineKeyboardButton().also {
+                    it.text = callbackData.metaText!!
+                    it.callbackData = callbackData.id?.toString()
+                    it.url = callbackData.metaUrl
+                },
             )
         }
-        return createKeyboard(keyboardList)
+
+        return createKeyboard(keyboard)
     }
+
+    private fun CallbackData.save() = callbackDataRepository.save(this)
 }

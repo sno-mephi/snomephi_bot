@@ -1,6 +1,7 @@
 package ru.idfedorov09.telegram.bot.data.model
 
 import jakarta.persistence.Column
+import jakarta.persistence.Convert
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -9,7 +10,10 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
+import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
+import ru.idfedorov09.telegram.bot.data.model.converter.LastUserActionTypeConverter
+import ru.idfedorov09.telegram.bot.data.model.converter.UserKeyboardTypeConverter
 
 @Entity
 @Table(name = "users_table")
@@ -49,8 +53,8 @@ data class User(
     val roles: MutableSet<UserRole> = mutableSetOf(),
 
     /** тип предыдущего действия пользователя **/
-    @Enumerated(EnumType.STRING)
-    @Column(name = "last_action_type")
+    @Column(name = "last_action_type", columnDefinition = "TEXT")
+    @Convert(converter = LastUserActionTypeConverter::class)
     val lastUserActionType: LastUserActionType? = null,
 
     /** айди диалога (quest), который сейчас идет **/
@@ -62,4 +66,9 @@ data class User(
 
     @Column(name = "last_constructor_id")
     val constructorId: Long? = null,
+
+    /** тип текущей инлайн клавиатуры **/
+    @Column(name = "current_keyboard_type", columnDefinition = "TEXT")
+    @Convert(converter = UserKeyboardTypeConverter::class)
+    val currentKeyboardType: UserKeyboardType = UserKeyboardType.WITHOUT_KEYBOARD,
 )

@@ -1,6 +1,7 @@
 package ru.idfedorov09.telegram.bot.data.model
 
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
+import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.mephi.sno.libs.flow.belly.Mutable
 
@@ -30,4 +31,7 @@ data class UserActualizedInfo(
 
     /** Текущая создаваемая рассылка пользователя **/
     var bcData: Broadcast? = null,
+
+    /** Текущая выставленная юзеру клавиатура **/
+    val currentKeyboardType: UserKeyboardType
 )

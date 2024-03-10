@@ -1,14 +1,12 @@
 package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
-import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
-import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.BroadcastSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
@@ -19,8 +17,7 @@ import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 @Component
 class WeeklyEventsFetcher(
     private val broadcastRepository: BroadcastRepository,
-    private val broadcastSenderService: BroadcastSenderService,
-    private val userRepository: UserRepository,
+    private val broadcastSenderService: BroadcastSenderService
 ) : GeneralFetcher() {
 
 
@@ -34,14 +31,13 @@ class WeeklyEventsFetcher(
         val messageText = update.message.text
 
         if (messageText.startsWith(TextCommands.WEEKLY_EVENTS.commandText))
-            sendWeeklyEvents(bot, userActualizedInfo, update)
+            sendWeeklyEvents(bot, userActualizedInfo)
     }
 
 
     private fun sendWeeklyEvents(
         bot: Executor,
-        userActualizedInfo: UserActualizedInfo,
-        update: Update
+        userActualizedInfo: UserActualizedInfo
     ) {
         val firstActiveWeeklyBroadcast = broadcastRepository.findFirstActiveWeeklyBroadcast()
         firstActiveWeeklyBroadcast ?: run {
@@ -55,7 +51,7 @@ class WeeklyEventsFetcher(
         }
 
         broadcastSenderService.sendBroadcast(
-            user = userRepository.findById(userActualizedInfo.id!!).get(),
+            userId = userActualizedInfo.id!!,
             broadcast = firstActiveWeeklyBroadcast,
             shouldAddToReceived = false
         )

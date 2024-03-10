@@ -51,10 +51,6 @@ data class Broadcast(
     @Column(name = "is_scheduled")
     val isScheduled: Boolean = false,
 
-    /** список кнопок в рассылке **/
-    @Column(name = "buttons_id")
-    val buttonsId: MutableList<Long> = mutableListOf(),
-
     /** флаг завершения рассылки **/
     @Column(name = "is_built")
     val isBuilt: Boolean = false,
