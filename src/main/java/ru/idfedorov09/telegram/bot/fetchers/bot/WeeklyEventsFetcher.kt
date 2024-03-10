@@ -19,8 +19,7 @@ import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 @Component
 class WeeklyEventsFetcher(
     private val broadcastRepository: BroadcastRepository,
-    private val broadcastSenderService: BroadcastSenderService,
-    private val userRepository: UserRepository,
+    private val broadcastSenderService: BroadcastSenderService
 ) : GeneralFetcher() {
 
 
@@ -34,14 +33,13 @@ class WeeklyEventsFetcher(
         val messageText = update.message.text
 
         if (messageText.startsWith(TextCommands.WEEKLY_EVENTS.commandText))
-            sendWeeklyEvents(bot, userActualizedInfo, update)
+            sendWeeklyEvents(bot, userActualizedInfo)
     }
 
 
     private fun sendWeeklyEvents(
         bot: Executor,
-        userActualizedInfo: UserActualizedInfo,
-        update: Update
+        userActualizedInfo: UserActualizedInfo
     ) {
         val firstActiveWeeklyBroadcast = broadcastRepository.findFirstActiveWeeklyBroadcast()
         firstActiveWeeklyBroadcast ?: run {

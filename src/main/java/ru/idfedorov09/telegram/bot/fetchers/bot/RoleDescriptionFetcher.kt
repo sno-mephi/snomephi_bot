@@ -40,7 +40,7 @@ class RoleDescriptionFetcher(
             return
         }
 
-        val text = UserRole.values().joinToString("\n\n") {
+        val text = UserRole.entries.joinToString("\n\n") {
             "- ${it}\n\t${it.description}"
         }
         bot.execute(SendMessage(chatId, text))
