@@ -21,6 +21,7 @@ import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
 import ru.idfedorov09.telegram.bot.repo.ButtonRepository
 import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
+import ru.idfedorov09.telegram.bot.service.BroadcastSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 import java.time.LocalDateTime
@@ -36,6 +37,7 @@ class BroadcastConstructorFetcher(
     private val callbackDataRepository: CallbackDataRepository,
     private val broadcastRepository: BroadcastRepository,
     private val buttonRepository: ButtonRepository,
+    private val broadcastSenderService: BroadcastSenderService,
 ) : GeneralFetcher() {
 
     @InjectData
@@ -395,9 +397,13 @@ class BroadcastConstructorFetcher(
      */
     private fun bcPreview(params: Params) {
         removeBcConsole(params)
-        // TODO: здесь отправка превью функцией Андрея
-        // params.userActualizedInfo.data = id отправленного msg, чтобы потом удалять его?
-        // вопрос: нужно ли удалять предпросмотр при дальнейшем редактированни / отмены / рассылки..
+
+        // TODO: обработка ошибок
+        broadcastSenderService.sendBroadcast(
+            userId = params.userActualizedInfo.id!!,
+            broadcast = params.userActualizedInfo.bcData!!,
+            shouldAddToReceived = false
+        )
 
         val messageText = "<b>Конструктор рассылки</b>\n\nВыберите дальнейшее действие"
         val sendNow = CallbackData(callbackData = "#bc_send_now", metaText = "Разослать сейчас").save()

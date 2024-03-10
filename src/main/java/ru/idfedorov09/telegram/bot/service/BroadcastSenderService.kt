@@ -8,10 +8,12 @@ import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.data.model.Broadcast
+import ru.idfedorov09.telegram.bot.data.model.CallbackData
 import ru.idfedorov09.telegram.bot.data.model.User
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
 import ru.idfedorov09.telegram.bot.repo.ButtonRepository
+import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -23,7 +25,7 @@ class BroadcastSenderService(
     private val userRepository: UserRepository,
     private val buttonRepository: ButtonRepository,
     private val bot: Executor,
-
+    private val callbackDataRepository: CallbackDataRepository
 ) {
     @Scheduled(fixedDelay = 1000)
     fun broadcastSender() {
@@ -36,7 +38,12 @@ class BroadcastSenderService(
         sendBroadcast(firstUser, firstActiveBroadcast)
     }
 
-    fun sendBroadcast(user: User, broadcast: Broadcast, shouldAddToReceived: Boolean = true) {
+    fun sendBroadcast(userId: Long, broadcast: Broadcast, shouldAddToReceived: Boolean = true) {
+        val user = userRepository.findById(userId).getOrNull() ?: return
+        sendBroadcast(user, broadcast, shouldAddToReceived)
+    }
+
+    private fun sendBroadcast(user: User, broadcast: Broadcast, shouldAddToReceived: Boolean = true) {
         if (broadcast.imageHash == null) {
             bot.execute(
                 SendMessage().also {
@@ -108,19 +115,28 @@ class BroadcastSenderService(
         InlineKeyboardMarkup().also { it.keyboard = keyboard }
 
     private fun createChooseKeyboard(firstActiveBroadcast: Broadcast): InlineKeyboardMarkup {
-        val keyboardList = mutableListOf<List<InlineKeyboardButton>>()
-
-        buttonRepository.findAllValidButtonsForBroadcast(firstActiveBroadcast.id!!)
-            .forEach { button ->
-                keyboardList.add(
-                    listOf(
-                        InlineKeyboardButton("${button.text}").also {
-                            it.url = button.link
-                            it.callbackData = button.callbackData
-                        },
-                    ),
-                )
+        val keyboardList = buttonRepository
+            .findAllValidButtonsForBroadcast(firstActiveBroadcast.id!!)
+            .map {
+                CallbackData(
+                    callbackData = it.callbackData,
+                    metaText = it.text,
+                    metaUrl = it.link
+                ).save()
             }
-        return createKeyboard(keyboardList)
+
+        val keyboard = keyboardList.map { callbackData ->
+            listOf(
+                InlineKeyboardButton().also {
+                    it.text = callbackData.metaText!!
+                    it.callbackData = callbackData.id?.toString()
+                    it.url = callbackData.metaUrl
+                },
+            )
+        }
+
+        return createKeyboard(keyboard)
     }
+
+    private fun CallbackData.save() = callbackDataRepository.save(this)
 }
