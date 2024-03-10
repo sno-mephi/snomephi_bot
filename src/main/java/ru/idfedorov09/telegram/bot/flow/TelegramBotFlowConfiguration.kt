@@ -48,7 +48,7 @@ open class TelegramBotFlowConfiguration(
             fetch(actualizeUserInfoFetcher)
 
             // registration block
-            group(condition = { it.isByUser() && !it.isUserRegistered() && it.isPersonalUpdate() }) {
+            sequence(condition = { it.isByUser() && !it.isUserRegistered() && it.isPersonalUpdate() }) {
                 fetch(userActionHandlerFetcher)
                 fetch(registrationFetcher)
             }
