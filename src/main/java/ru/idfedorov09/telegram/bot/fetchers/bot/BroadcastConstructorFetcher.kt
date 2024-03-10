@@ -21,6 +21,7 @@ import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import kotlin.jvm.optionals.getOrNull
 
 /**
@@ -51,14 +52,14 @@ class BroadcastConstructorFetcher(
         )
 
         when {
-            update.hasMessage() && update.message.hasText() -> textCommandsHandler(update, params)
+            update.hasMessage() && update.message.hasText() -> textCommandsHandler(params)
             update.hasCallbackQuery() -> callbackQueryHandler(update, params)
-            update.hasMessage() && update.message.hasPhoto() -> photoHandler(update, params)
+            update.hasMessage() && update.message.hasPhoto() -> photoHandler(params)
         }
     }
 
-    private fun textCommandsHandler(update: Update, params: Params) {
-        val text = update.message.text
+    private fun textCommandsHandler(params: Params) {
+        val text = params.update.message.text
 
         text.apply {
             when {
@@ -74,6 +75,7 @@ class BroadcastConstructorFetcher(
     private fun commonTextHandler(params: Params) {
         when (params.userActualizedInfo.lastUserActionType) {
             LastUserActionType.BC_TEXT_TYPE -> changeText(params)
+            LastUserActionType.BC_CHANGE_START_TIME -> changeStartTime(params)
             else -> return
         }
     }
@@ -88,6 +90,7 @@ class BroadcastConstructorFetcher(
                 startsWith("#bc_cancel") -> bcCancel(params)
                 startsWith("#bc_change_text") -> bcChangeTextMessage(params)
                 startsWith("#bc_change_photo") -> bcChangePhoto(params)
+                startsWith("bc_to_schedule_console") -> bcChangeStartTime(params)
                 startsWith("#bc_action_cancel") -> bcCancelAction(params)
                 startsWith("#bc_preview") -> bcPreview(params)
                 startsWith("#bc_send_now") -> bcSendNow(params)
@@ -95,7 +98,7 @@ class BroadcastConstructorFetcher(
         }
     }
 
-    private fun photoHandler(update: Update, params: Params) {
+    private fun photoHandler(params: Params) {
         when (params.userActualizedInfo.lastUserActionType) {
             LastUserActionType.BC_PHOTO_TYPE -> changePhoto(params)
             else -> return
@@ -116,6 +119,22 @@ class BroadcastConstructorFetcher(
         params.userActualizedInfo.apply {
             bcData = bcData?.copy(
                 imageHash = params.update.message.photo.firstOrNull()?.fileId,
+            )
+        }
+        showBcConsole(params)
+        params.userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
+    }
+
+    private fun changeStartTime(params: Params) {
+        val msgText = params.update.message.text
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+        if (!msgText.matches(Regex("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}"))) {
+            bcChangeStartTime(params, prefix = "Неверный формат даты и времени")
+        }
+        val startTime = LocalDateTime.parse(msgText, formatter)
+        params.userActualizedInfo.apply {
+            bcData = bcData?.copy(
+                startTime = startTime,
             )
         }
         showBcConsole(params)
@@ -254,6 +273,33 @@ class BroadcastConstructorFetcher(
             },
         )
         params.userActualizedInfo.lastUserActionType = LastUserActionType.BC_PHOTO_TYPE
+    }
+
+    private fun bcChangeStartTime(params: Params, prefix: String? = null) {
+        removeBcConsole(params)
+        val msgText = prefix + "Отправте время запуска рассылки в формате 'гггг-мм-дд чч-мм-сс'"
+        val cancelButton = CallbackData(callbackData = "#bc_action_cancel", metaText = "Отмена").save()
+        val sent = params.bot.execute(
+            SendMessage().also {
+                it.text = msgText
+                it.chatId = params.userActualizedInfo.tui
+                it.parseMode = ParseMode.MARKDOWNV2
+                it.replyMarkup = createKeyboard(
+                    listOf(
+                        listOf(
+                            InlineKeyboardButton().also {
+                                it.text = cancelButton.metaText!!
+                                it.callbackData = cancelButton.id?.toString()
+                            },
+                        ),
+                    ),
+                )
+            },
+        )
+        params.userActualizedInfo.bcData = params.userActualizedInfo.bcData?.copy(
+            lastConsoleMessageId = sent.messageId,
+        )
+        params.userActualizedInfo.lastUserActionType = LastUserActionType.BC_CHANGE_START_TIME
     }
 
     private fun bcCancel(params: Params) {
