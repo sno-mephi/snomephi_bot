@@ -193,7 +193,7 @@ class BroadcastConstructorFetcher(
 
     private fun changePhoto(params: Params) {
         params.userActualizedInfo.apply {
-            if (bcData?.text?.length!! > 900) {
+            if ((bcData?.text?.length ?: 0) > 900) {
                 params.bot.execute(
                     SendMessage().also {
                         it.text = "Ошибка! Невозможно добавить фотографию, длина текста " +
