@@ -13,6 +13,7 @@ interface BroadcastRepository : JpaRepository<Broadcast, Long> {
                 AND is_completed IS false
                 AND TIMEZONE('Europe/Moscow', CURRENT_TIMESTAMP) >= TIMEZONE('Europe/Moscow', broadcast_start_dttm)
                 AND is_built IS true
+                AND is_deleted IS false
             LIMIT 1
         """,
         nativeQuery = true,
@@ -35,10 +36,10 @@ interface BroadcastRepository : JpaRepository<Broadcast, Long> {
             FROM broadcast_table
             WHERE 1=1
                 AND is_weekly IS true
-                AND TIMEZONE('Europe/Moscow', CURRENT_TIMESTAMP) <= TIMEZONE('Europe/Moscow', broadcast_start_dttm + INTERVAL '1 WEEK')
+                AND TIMEZONE('Europe/Moscow', CURRENT_TIMESTAMP) <= TIMEZONE('Europe/Moscow', broadcast_start_dttm + INTERVAL '8 DAYS')
                 AND is_built IS true 
+                AND is_deleted IS false
             ORDER BY broadcast_start_dttm DESC
-
             LIMIT 1
         """,
         nativeQuery = true,
