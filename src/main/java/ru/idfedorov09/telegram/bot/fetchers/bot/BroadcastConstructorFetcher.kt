@@ -314,7 +314,8 @@ class BroadcastConstructorFetcher(
 
     private fun bcChangeStartTime(params: Params, prefix: String? = null) {
         removeBcConsole(params)
-        val msgText = prefix + "Отправьте время запуска рассылки в формате 'дд.ммюгггг чч:мм'"
+        val msgStart = prefix?.let { "$prefix\n" } ?: ""
+        val msgText = msgStart + "Отправьте время запуска рассылки в формате 'дд.мм.гггг чч:мм'"
         val cancelButton = CallbackData(callbackData = "#bc_action_cancel", metaText = "Отмена").save()
         val sent = params.bot.execute(
             SendMessage().also {
