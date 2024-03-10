@@ -26,4 +26,8 @@ enum class UserRole(
     CATEGORY_BUILDER(
         "возможность добавлять новые категории рассылки",
     ),
+
+    SNO_TEAM(
+        "член совета СНО",
+    ),
 }

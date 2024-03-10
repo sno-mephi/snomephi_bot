@@ -14,6 +14,7 @@ import ru.idfedorov09.telegram.bot.data.GlobalConstants.MAX_BROADCAST_BUTTONS_CO
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.TRASH_CHAT_ID
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands.BROADCAST_CONSTRUCTOR
+import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.data.model.Broadcast
 import ru.idfedorov09.telegram.bot.data.model.Button
 import ru.idfedorov09.telegram.bot.data.model.CallbackData
@@ -55,7 +56,9 @@ class BroadcastConstructorFetcher(
             userActualizedInfo,
             update,
         )
-
+        params.userActualizedInfo.apply {
+            if (UserRole.ROOT !in roles && UserRole.MAILER !in roles) return
+        }
         when {
             update.hasMessage() && update.message.hasText() -> textCommandsHandler(params)
             update.hasCallbackQuery() -> callbackQueryHandler(update, params)
