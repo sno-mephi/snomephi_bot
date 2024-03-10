@@ -26,7 +26,7 @@ class BroadcastSenderService(
     private val userRepository: UserRepository,
     private val buttonRepository: ButtonRepository,
     private val bot: Executor,
-    private val callbackDataRepository: CallbackDataRepository
+    private val callbackDataRepository: CallbackDataRepository,
 ) {
 
     companion object {
@@ -43,7 +43,7 @@ class BroadcastSenderService(
                 return
             }
             sendBroadcast(firstUser, firstActiveBroadcast)
-        }.onFailure {  e ->
+        }.onFailure { e ->
             log.warn("Ошибка при работе broadcastSender: $e")
             log.debug(e.stackTrace.toString())
         }
@@ -135,7 +135,7 @@ class BroadcastSenderService(
                 CallbackData(
                     callbackData = it.callbackData,
                     metaText = it.text,
-                    metaUrl = it.link
+                    metaUrl = it.link,
                 ).save()
             }
 
