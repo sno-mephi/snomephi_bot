@@ -58,6 +58,15 @@ enum class LastUserActionType {
     /** ввод фото рассылки **/
     BC_PHOTO_TYPE,
 
+    /** Ввод текста кнопки **/
+    BC_BUTTON_CAPTION_TYPE,
+
+    /** Ввод ссылки кнопки **/
+    BC_BUTTON_LINK_TYPE,
+
+    /** Ввод текста коллбэка кнопки **/
+    BC_BUTTON_CALLBACK_TYPING,
+
     /** ввод времени начала рассылки **/
     BC_CHANGE_START_TIME,
 
