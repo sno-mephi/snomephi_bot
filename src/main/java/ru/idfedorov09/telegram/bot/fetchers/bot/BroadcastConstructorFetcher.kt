@@ -10,6 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.BOT_TIME_ZONE
+import ru.idfedorov09.telegram.bot.data.GlobalConstants.TRASH_CHAT_ID
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands.BROADCAST_CONSTRUCTOR
 import ru.idfedorov09.telegram.bot.data.model.Broadcast
@@ -90,7 +91,8 @@ class BroadcastConstructorFetcher(
                 startsWith("#bc_cancel") -> bcCancel(params)
                 startsWith("#bc_change_text") -> bcChangeTextMessage(params)
                 startsWith("#bc_change_photo") -> bcChangePhoto(params)
-                startsWith("bc_to_schedule_console") -> bcChangeStartTime(params)
+                startsWith("#bc_to_schedule_console") -> bcChangeStartTime(params)
+                startsWith("#bc_delete_photo") -> bcDeletePhoto(params)
                 startsWith("#bc_action_cancel") -> bcCancelAction(params)
                 startsWith("#bc_preview") -> bcPreview(params)
                 startsWith("#bc_send_now") -> bcSendNow(params)
@@ -107,22 +109,50 @@ class BroadcastConstructorFetcher(
 
     private fun changeText(params: Params) {
         params.userActualizedInfo.apply {
-            bcData = bcData?.copy(
-                text = params.update.message.text,
-            )
+            if (bcData?.imageHash != null && params.update.message.text.length > 900) {
+                params.bot.execute(
+                    SendMessage().also {
+                        it.text = "Ошибка! Невозможно добавить текст длины" +
+                            " ${params.update.message.text.length} > 900 если приложена фотография. " +
+                            "Измените текст или удалите фотографию."
+                        it.chatId = tui
+                    },
+                )
+            } else {
+                bcData = bcData?.copy(
+                    text = params.update.message.text,
+                )
+            }
+            showBcConsole(params)
+            lastUserActionType = LastUserActionType.DEFAULT
         }
-        showBcConsole(params)
-        params.userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
     }
 
     private fun changePhoto(params: Params) {
         params.userActualizedInfo.apply {
-            bcData = bcData?.copy(
-                imageHash = params.update.message.photo.firstOrNull()?.fileId,
-            )
+            if (bcData?.text?.length!! > 900) {
+                params.bot.execute(
+                    SendMessage().also {
+                        it.text = "Ошибка! Невозможно добавить фотографию, длина текста " +
+                            "${bcData?.text?.length} > 900. Измените текст или не " +
+                            "прикладывайте фотографию"
+                        it.chatId = tui
+                    },
+                )
+            } else {
+                val photoBroadcast = params.bot.execute(
+                    SendPhoto().also {
+                        it.chatId = TRASH_CHAT_ID
+                        it.photo = InputFile(params.update.message.photo.last().fileId)
+                    },
+                ).photo.firstOrNull()?.fileId
+                bcData = bcData?.copy(
+                    imageHash = photoBroadcast,
+                )
+            }
+            showBcConsole(params)
+            lastUserActionType = LastUserActionType.DEFAULT
         }
-        showBcConsole(params)
-        params.userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
     }
 
     private fun changeStartTime(params: Params) {
@@ -254,6 +284,7 @@ class BroadcastConstructorFetcher(
         removeBcConsole(params)
         val msgText = "Отправьте фотографию, которую вы хотите прикрепить к рассылке"
         val cancelButton = CallbackData(callbackData = "#bc_action_cancel", metaText = "Отмена").save()
+        val deletePhoto = CallbackData(callbackData = "#bc_delete_photo", metaText = "Удалить фото").save()
 
         params.bot.execute(
             SendMessage().also {
@@ -266,6 +297,12 @@ class BroadcastConstructorFetcher(
                             InlineKeyboardButton().also {
                                 it.text = cancelButton.metaText!!
                                 it.callbackData = cancelButton.id?.toString()
+                            },
+                        ),
+                        listOf(
+                            InlineKeyboardButton().also {
+                                it.text = deletePhoto.metaText!!
+                                it.callbackData = deletePhoto.id?.toString()
                             },
                         ),
                     ),
@@ -301,6 +338,16 @@ class BroadcastConstructorFetcher(
             lastConsoleMessageId = sent.messageId,
         )
         params.userActualizedInfo.lastUserActionType = LastUserActionType.BC_CHANGE_START_TIME
+    }
+
+    private fun bcDeletePhoto(params: Params) {
+        removeBcConsole(params)
+        params.userActualizedInfo.apply {
+            bcData = bcData?.copy(
+                imageHash = null,
+            )
+        }
+        params.userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
     }
 
     private fun bcCancel(params: Params) {
@@ -390,7 +437,7 @@ class BroadcastConstructorFetcher(
                 previewButton,
                 cancelButton,
             ).apply {
-                if (!params.update.message.hasText() && !params.update.message.hasPhoto()) {
+                if (bcData.imageHash == null && bcData.text == null) {
                     remove(previewButton)
                 }
                 // TODO: если кол-во кнопок >=5 то здесь убрать кнопку 'добавление кнопки'
