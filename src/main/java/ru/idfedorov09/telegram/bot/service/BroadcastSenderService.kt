@@ -83,19 +83,22 @@ class BroadcastSenderService(
     }
 
     fun finishBroadcast(broadcast: Broadcast) {
-        broadcastRepository.save(
-            broadcast.copy(
-                isCompleted = true,
-                finishTime = LocalDateTime.now(
-                    ZoneId.of("Europe/Moscow"),
-                ),
+        val finalBroadcast = broadcast.copy(
+            isCompleted = true,
+            finishTime = LocalDateTime.now(
+                ZoneId.of("Europe/Moscow"),
             ),
         )
-        val author = broadcast.authorId?.let { userRepository.findById(it).getOrNull() } ?: return
-        val msgText = "Рассылка №${broadcast.id} успешно завершена\n" +
-            "Число пользователей, получивших сообщение: ${broadcast.receivedUsersId.size}\n" +
-            "Старт рассылки: ${broadcast.startTime}\n" +
-            "Конец рассылки: ${LocalDateTime.now(ZoneId.of("Europe/Moscow"))}"
+
+        broadcastRepository.save(finalBroadcast)
+        val author = finalBroadcast.authorId?.let { userRepository.findById(it).getOrNull() } ?: return
+
+        // TODO: нормальный формат вывода времени
+        val msgText = "Рассылка №${finalBroadcast.id} успешно завершена\n" +
+            "Число пользователей, получивших сообщение: ${finalBroadcast.receivedUsersId.size}\n" +
+            "Старт рассылки: ${finalBroadcast.startTime}\n" +
+            "Конец рассылки: ${finalBroadcast.finishTime}"
+
         bot.execute(
             SendMessage().also {
                 it.chatId = author.tui!!
