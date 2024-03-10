@@ -290,6 +290,7 @@ class BroadcastConstructorFetcher(
                     it.text = okayMessage
                 },
             )
+            lastUserActionType = LastUserActionType.DEFAULT
         }
     }
 
