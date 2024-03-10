@@ -109,16 +109,18 @@ class BroadcastSenderService(
 
     private fun createChooseKeyboard(firstActiveBroadcast: Broadcast): InlineKeyboardMarkup {
         val keyboardList = mutableListOf<List<InlineKeyboardButton>>()
-        buttonRepository.findAllById(firstActiveBroadcast.buttonsId).forEach { button ->
-            keyboardList.add(
-                listOf(
-                    InlineKeyboardButton("${button.text}").also {
-                        it.url = button.link
-                        it.callbackData = button.callbackData
-                    },
-                ),
-            )
-        }
+
+        buttonRepository.findAllValidButtonsForBroadcast(firstActiveBroadcast.id!!)
+            .forEach { button ->
+                keyboardList.add(
+                    listOf(
+                        InlineKeyboardButton("${button.text}").also {
+                            it.url = button.link
+                            it.callbackData = button.callbackData
+                        },
+                    ),
+                )
+            }
         return createKeyboard(keyboardList)
     }
 }
