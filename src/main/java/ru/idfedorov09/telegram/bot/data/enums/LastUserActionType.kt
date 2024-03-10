@@ -63,4 +63,7 @@ enum class LastUserActionType {
 
     /** Ввод ссылки кнопки **/
     BC_BUTTON_LINK_TYPE,
+
+    /** Ввод текста коллбэка кнопки **/
+    BC_BUTTON_CALLBACK_TYPING,
 }

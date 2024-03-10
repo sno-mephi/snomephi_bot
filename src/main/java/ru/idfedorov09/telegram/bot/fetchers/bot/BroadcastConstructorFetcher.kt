@@ -78,6 +78,7 @@ class BroadcastConstructorFetcher(
             LastUserActionType.BC_TEXT_TYPE -> changeText(params)
             LastUserActionType.BC_BUTTON_CAPTION_TYPE -> changeButtonCaption(params)
             LastUserActionType.BC_BUTTON_LINK_TYPE -> changeButtonLink(params)
+            LastUserActionType.BC_BUTTON_CALLBACK_TYPING -> changeButtonCallback(params)
             else -> return
         }
     }
@@ -101,6 +102,7 @@ class BroadcastConstructorFetcher(
                 startsWith("#bc_action_show_btn_console") -> showChangeButtonConsole(params)
                 startsWith("#bc_change_button_with_id") -> editButton(params)
                 startsWith("#bc_button_remove") -> removeButton(params)
+                startsWith("#bc_change_button_callback") -> changeButtonCallbackDataMessage(params)
             }
         }
     }
@@ -109,6 +111,52 @@ class BroadcastConstructorFetcher(
         when (params.userActualizedInfo.lastUserActionType) {
             LastUserActionType.BC_PHOTO_TYPE -> changePhoto(params)
             else -> return
+        }
+    }
+
+    private fun changeButtonCallback(params: Params) {
+        val newCallbackDataText = params.update.message.text
+
+        params.userActualizedInfo.apply {
+            id ?: return
+            val button = buttonRepository.getLastModifiedButtonByUserId(id)?.copy(
+                callbackData = newCallbackDataText,
+                lastModifyTime = LocalDateTime.now(ZoneId.of("Europe/Moscow")),
+            ) ?: return // TODO: если тут ретурн то чота сломалось
+            buttonRepository.save(button)
+            showChangeButtonConsole(params)
+        }
+    }
+
+    private fun changeButtonCallbackDataMessage(params: Params) {
+        params.userActualizedInfo.apply {
+            removeBcConsole(params)
+
+            val backToBc = CallbackData(
+                callbackData = "#bc_action_show_btn_console",
+                metaText = "К настройкам кнопки"
+            ).save()
+
+            // TODO: такую штуку в отдельный метод, много дублируется
+            val keyboard =
+                listOf(backToBc).map { button ->
+                    InlineKeyboardButton().also {
+                        it.text = button.metaText!!
+                        it.callbackData = button.id?.toString()
+                    }
+                }.map { listOf(it) }
+
+            val sentMessage = params.bot.execute(
+                SendMessage().also {
+                    it.text = "\uD83D\uDCDD Отправь мне текст коллбэка"
+                    it.chatId = tui
+                    it.replyMarkup = createKeyboard(keyboard)
+                }
+            )
+            bcData = bcData?.copy(
+                lastConsoleMessageId = sentMessage.messageId
+            )
+            lastUserActionType = LastUserActionType.BC_BUTTON_CALLBACK_TYPING
         }
     }
 
@@ -249,14 +297,14 @@ class BroadcastConstructorFetcher(
 
     private fun changeButtonLinkMessage(params: Params) {
         params.userActualizedInfo.apply {
-            val backToConsole = CallbackData(
-                callbackData = "#bc_action_cancel",
-                metaText = "Назад к конструктору"
+            val backToBc = CallbackData(
+                callbackData = "#bc_action_show_btn_console",
+                metaText = "К настройкам кнопки"
             ).save()
 
             // TODO: такую штуку в отдельный метод, много дублируется
             val keyboard =
-                listOf(backToConsole).map { button ->
+                listOf(backToBc).map { button ->
                     InlineKeyboardButton().also {
                         it.text = button.metaText!!
                         it.callbackData = button.id?.toString()
@@ -281,7 +329,10 @@ class BroadcastConstructorFetcher(
     private fun changeButtonCaption(params: Params) {
         val caption = params.update.message.text
         if (caption.length >= 32) {
-            val backToBc = CallbackData(callbackData = "#bc_action_cancel", metaText = "Назад к конструктору").save()
+            val backToBc = CallbackData(
+                    callbackData = "#bc_action_show_btn_console",
+                    metaText = "К настройкам кнопки"
+            ).save()
 
             // TODO: такую штуку в отдельный метод, много дублируется
             val keyboard =
@@ -340,7 +391,10 @@ class BroadcastConstructorFetcher(
 
             val urlTextCode = button.link?.let { "<code>$it</code>" } ?: "пусто"
             val urlTextLink = button.link?.let { "(<a href='$it'>попробовать перейти</a>)" } ?: ""
+
             val caption = button.text?.let { "<code>$it</code>" } ?: "<b>текст не установлен!</b>"
+
+            val callbackDataText = button.callbackData?.let { "<code>$it</code>" } ?: "<b>коллбэк не установлен</b>"
 
             val changeButtonCaption = CallbackData(
                 callbackData = "#bc_change_button_caption",
@@ -350,6 +404,11 @@ class BroadcastConstructorFetcher(
             val changeButtonLink = CallbackData(
                 callbackData = "#bc_change_button_link",
                 metaText = button.link?.let { "Изменить ссылку" } ?: "Добавить ссылку"
+            ).save()
+
+            val changeButtonCallback = CallbackData(
+                callbackData = "#bc_change_button_callback",
+                metaText = button.callbackData?.let { "Изменить коллбэк" } ?: "Добавить коллбэк"
             ).save()
 
             val removeButton = CallbackData(
@@ -364,18 +423,21 @@ class BroadcastConstructorFetcher(
 
             // TODO: такую штуку в отдельный метод, много дублируется
             val keyboard =
-                listOf(changeButtonCaption, changeButtonLink, removeButton, backToBc).map { keyboardButton ->
-                    InlineKeyboardButton().also {
-                        it.text = keyboardButton.metaText!!
-                        it.callbackData = keyboardButton.id?.toString()
+                listOf(changeButtonCaption, changeButtonLink, changeButtonCallback, removeButton, backToBc)
+                    .map { keyboardButton ->
+                        InlineKeyboardButton().also {
+                            it.text = keyboardButton.metaText!!
+                            it.callbackData = keyboardButton.id?.toString()
+                        }
                     }
-                }.map { listOf(it) }
+                    .map { listOf(it) }
 
             val sentMessage = params.bot.execute(
                 SendMessage().also {
                     it.text = "Настройки кнопки:\n\n" +
                             "Надпись на кнопке: $caption\n" +
-                            "Ссылка: $urlTextCode $urlTextLink"
+                            "Ссылка: $urlTextCode $urlTextLink\n" +
+                            "Коллбэк: $callbackDataText"
                     it.chatId = tui
                     it.parseMode = ParseMode.HTML
                     it.replyMarkup = createKeyboard(keyboard)
