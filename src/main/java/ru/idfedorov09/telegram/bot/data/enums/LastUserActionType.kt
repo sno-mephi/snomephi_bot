@@ -57,4 +57,7 @@ enum class LastUserActionType {
 
     /** ввод фото рассылки **/
     BC_PHOTO_TYPE,
+
+    /** ввод времени начала рассылки **/
+    BC_CHANGE_START_TIME,
 }
