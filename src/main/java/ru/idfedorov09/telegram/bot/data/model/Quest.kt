@@ -2,6 +2,7 @@ package ru.idfedorov09.telegram.bot.data.model
 
 import jakarta.persistence.*
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
+import ru.idfedorov09.telegram.bot.data.model.converter.QuestionStatusConverter
 
 @Entity
 @Table(name = "questions_table")
@@ -26,6 +27,7 @@ data class Quest(
     @Column(name = "dialog_history")
     val dialogHistory: MutableList<Long> = mutableListOf(),
 
-    @Column(name = "question_status")
+    @Column(name = "question_status", columnDefinition = "TEXT")
+    @Convert(converter = QuestionStatusConverter::class)
     val questionStatus: QuestionStatus = QuestionStatus.WAIT,
 )

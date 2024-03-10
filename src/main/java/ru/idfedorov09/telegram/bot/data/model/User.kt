@@ -1,6 +1,8 @@
 package ru.idfedorov09.telegram.bot.data.model
 
 import jakarta.persistence.Column
+import jakarta.persistence.Convert
+import jakarta.persistence.Converter
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -10,6 +12,8 @@ import jakarta.persistence.Id
 import jakarta.persistence.Table
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
+import ru.idfedorov09.telegram.bot.data.model.converter.LastUserActionTypeConverter
+import ru.idfedorov09.telegram.bot.data.model.converter.QuestionStatusConverter
 
 @Entity
 @Table(name = "users_table")
@@ -49,8 +53,8 @@ data class User(
     val roles: MutableSet<UserRole> = mutableSetOf(),
 
     /** тип предыдущего действия пользователя **/
-    @Enumerated(EnumType.STRING)
-    @Column(name = "last_action_type")
+    @Column(name = "last_action_type", columnDefinition = "TEXT")
+    @Convert(converter = LastUserActionTypeConverter::class)
     val lastUserActionType: LastUserActionType? = null,
 
     /** айди диалога (quest), который сейчас идет **/
