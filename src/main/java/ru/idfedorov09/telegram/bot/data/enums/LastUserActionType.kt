@@ -60,4 +60,7 @@ enum class LastUserActionType {
 
     /** ввод времени начала рассылки **/
     BC_CHANGE_START_TIME,
+
+    /** изменение категорий рассылки **/
+    BC_CHANGE_CATEGORIES,
 }

@@ -18,6 +18,7 @@ import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
 import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
+import ru.idfedorov09.telegram.bot.repo.CategoryRepository
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 import java.time.LocalDateTime
@@ -31,6 +32,7 @@ import kotlin.jvm.optionals.getOrNull
 @Component
 class BroadcastConstructorFetcher(
     private val callbackDataRepository: CallbackDataRepository,
+    private val categoryRepository: CategoryRepository
     private val broadcastRepository: BroadcastRepository,
 ) : GeneralFetcher() {
 
@@ -76,6 +78,7 @@ class BroadcastConstructorFetcher(
         when (params.userActualizedInfo.lastUserActionType) {
             LastUserActionType.BC_TEXT_TYPE -> changeText(params)
             LastUserActionType.BC_CHANGE_START_TIME -> changeStartTime(params)
+            LastUserActionType.BC_CHANGE_CATEGORIES -> changeCategories(params)
             else -> return
         }
     }
@@ -91,6 +94,7 @@ class BroadcastConstructorFetcher(
                 startsWith("#bc_change_text") -> bcChangeTextMessage(params)
                 startsWith("#bc_change_photo") -> bcChangePhoto(params)
                 startsWith("bc_to_schedule_console") -> bcChangeStartTime(params)
+                startsWith("#bc_change_categories") -> bcChangeCategories(params)
                 startsWith("#bc_action_cancel") -> bcCancelAction(params)
                 startsWith("#bc_preview") -> bcPreview(params)
                 startsWith("#bc_send_now") -> bcSendNow(params)
@@ -130,6 +134,7 @@ class BroadcastConstructorFetcher(
         val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
         if (!msgText.matches(Regex("\\d{2}.\\d{2}.\\d{4} \\d{2}:\\d{2}"))) {
             bcChangeStartTime(params, prefix = "Неверный формат даты и времени")
+            return
         }
         val startTime = LocalDateTime.parse(msgText, formatter)
         params.userActualizedInfo.apply {
@@ -139,6 +144,19 @@ class BroadcastConstructorFetcher(
         }
         showBcConsole(params)
         params.userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
+    }
+
+    private fun changeCategories(params: Params){
+        params.userActualizedInfo.apply {
+            val categorySuffix = params.update.message.text.substringAfter("/toggle_")
+            val category = categoryRepository.findBySuffix(categorySuffix) ?: return
+            if (bcData?.categoriesId?.contains(category.id) == true){
+                bcData?.categoriesId?.remove(category.id)
+            } else{
+                category.id?.let { bcData?.categoriesId?.add(it) }
+            }
+            bcChangeCategories(params)
+        }
     }
 
     private fun bcSendNow(params: Params) {
@@ -301,6 +319,42 @@ class BroadcastConstructorFetcher(
             lastConsoleMessageId = sent.messageId,
         )
         params.userActualizedInfo.lastUserActionType = LastUserActionType.BC_CHANGE_START_TIME
+    }
+
+    private fun bcChangeCategories(params: Params) {
+        removeBcConsole(params)
+        val cancelButton = CallbackData(callbackData = "#bc_action_cancel", metaText = "Отмена").save()
+        params.userActualizedInfo.apply {
+            val allCategoriesInfo = categoryRepository.findAll().map {
+                "<b>• ${it.title}\n</b>" +
+                        "<i>${it.description?.let { "$it\n" }}</i>" +
+                        if (bcData?.categoriesId?.contains(it.id) == true) {
+                            "<b>Включено</b>"
+                        } else {
+                            "<b>Выключено</b>"
+                        } + " - /toggle_${it.suffix}"
+            }.joinToString(separator = "\n") { it }
+            val msgText = "<b>Настройка категорий</b>\n\nВыберите категории рассылки (если все выключены, " +
+                    "то рассылка будет по всем пользователям):\n\n$allCategoriesInfo"
+            params.bot.execute(
+                SendMessage().also {
+                    it.chatId = tui
+                    it.text = msgText
+                    it.parseMode = ParseMode.HTML
+                    it.replyMarkup = createKeyboard(
+                        listOf(
+                            listOf(
+                                InlineKeyboardButton().also {
+                                    it.text = cancelButton.metaText!!
+                                    it.callbackData = cancelButton.id?.toString()
+                                },
+                            ),
+                        ),
+                    )
+                },
+            )
+            lastUserActionType = LastUserActionType.BC_CHANGE_CATEGORIES
+        }
     }
 
     private fun bcCancel(params: Params) {
