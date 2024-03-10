@@ -103,20 +103,40 @@ class BroadcastConstructorFetcher(
     }
 
     private fun changeText(params: Params) {
-        params.userActualizedInfo.apply {
-            bcData = bcData?.copy(
-                text = params.update.message.text,
+        if (params.userActualizedInfo.bcData?.imageHash != null && params.update.message.text.length > 1024) {
+            params.bot.execute(
+                SendMessage().also {
+                    it.text = "Ошибка! Невозможно добавить текст длины" +
+                            "${params.userActualizedInfo.bcData?.text?.length} > 1024 если приложена фотография. " +
+                            "Измените текст или не удалите фотографию."
+                },
             )
+        } else {
+            params.userActualizedInfo.apply {
+                bcData = bcData?.copy(
+                    text = params.update.message.text,
+                )
+            }
         }
         showBcConsole(params)
         params.userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
     }
 
     private fun changePhoto(params: Params) {
-        params.userActualizedInfo.apply {
-            bcData = bcData?.copy(
-                imageHash = params.update.message.photo.firstOrNull()?.fileId,
+        if (params.userActualizedInfo.bcData?.text?.length!! > 1024) {
+            params.bot.execute(
+                SendMessage().also {
+                    it.text = "Ошибка! Невозможно добавить фотографию, длина текста " +
+                        "${params.userActualizedInfo.bcData?.text?.length} > 1024. Измените текст или не " +
+                        "прикладывайте фотографию"
+                },
             )
+        } else {
+            params.userActualizedInfo.apply {
+                bcData = bcData?.copy(
+                    imageHash = params.update.message.photo.firstOrNull()?.fileId,
+                )
+            }
         }
         showBcConsole(params)
         params.userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
