@@ -7,8 +7,8 @@ import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 @Converter(autoApply = true)
 class LastUserActionTypeConverter : AttributeConverter<LastUserActionType, String> {
 
-    override fun convertToDatabaseColumn(attribute: LastUserActionType?): String? {
-        return attribute?.name
+    override fun convertToDatabaseColumn(attribute: LastUserActionType?): String {
+        return attribute?.name ?: LastUserActionType.DEFAULT.name
     }
 
     override fun convertToEntityAttribute(dbData: String?): LastUserActionType? {

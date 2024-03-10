@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
+import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.data.model.User
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
@@ -57,6 +58,7 @@ class ActualizeUserInfoFetcher(
                 lastTgNick = tgUser.userName,
                 roles = mutableSetOf(UserRole.USER),
                 isRegistered = false,
+                currentKeyboardType = UserKeyboardType.WITHOUT_KEYBOARD // изачально без выбранной клавиатуры
             ).let { userRepository.save(it) }
 
         val categories = categoryRepository.findAllById(userDataFromDatabase.categories).toMutableSet()
@@ -74,19 +76,22 @@ class ActualizeUserInfoFetcher(
             broadcastRepository.findLatestUnbuiltBroadcastByAuthor(it)
         }
 
-        return UserActualizedInfo(
-            id = userDataFromDatabase.id,
-            tui = tui,
-            lastTgNick = tgUser.userName,
-            fullName = userDataFromDatabase.fullName,
-            studyGroup = userDataFromDatabase.studyGroup,
-            categories = categories,
-            roles = userDataFromDatabase.roles,
-            lastUserActionType = userDataFromDatabase.lastUserActionType,
-            activeQuest = activeQuest,
-            data = userDataFromDatabase.data,
-            isRegistered = userDataFromDatabase.isRegistered,
-            bcData = bcData,
-        )
+        userDataFromDatabase.apply {
+            return UserActualizedInfo(
+                id = id,
+                tui = tui,
+                lastTgNick = tgUser.userName,
+                fullName = fullName,
+                studyGroup = studyGroup,
+                categories = categories,
+                roles = roles,
+                lastUserActionType = lastUserActionType,
+                activeQuest = activeQuest,
+                data = data,
+                isRegistered = isRegistered,
+                bcData = bcData,
+                currentKeyboardType = currentKeyboardType
+            )
+        }
     }
 }
