@@ -9,6 +9,7 @@ import ru.idfedorov09.telegram.bot.data.model.User
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.flow.ExpContainer
+import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository
 import ru.idfedorov09.telegram.bot.repo.QuestRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
@@ -24,6 +25,7 @@ class ActualizeUserInfoFetcher(
     private val userRepository: UserRepository,
     private val categoryRepository: CategoryRepository,
     private val questRepository: QuestRepository,
+    private val broadcastRepository: BroadcastRepository,
 ) : GeneralFetcher() {
 
     companion object {
@@ -38,7 +40,6 @@ class ActualizeUserInfoFetcher(
         if (update.callbackQuery != null) {
             bot.execute(AnswerCallbackQuery(update.callbackQuery.id))
         }
-
 
         val tgUser = updatesUtil.getUser(update)
         tgUser ?: run {
@@ -67,6 +68,12 @@ class ActualizeUserInfoFetcher(
         if (userDataFromDatabase.lastTgNick != tgUser.userName) {
             userRepository.save(userDataFromDatabase.copy(lastTgNick = tgUser.userName))
         }
+
+        // Ищем дату о последнем создаваемом репозитории
+        val bcData = userDataFromDatabase.id?.let {
+            broadcastRepository.findLatestUnbuiltBroadcastByAuthor(it)
+        }
+
         return UserActualizedInfo(
             id = userDataFromDatabase.id,
             tui = tui,
@@ -79,6 +86,7 @@ class ActualizeUserInfoFetcher(
             activeQuest = activeQuest,
             data = userDataFromDatabase.data,
             isRegistered = userDataFromDatabase.isRegistered,
+            bcData = bcData,
         )
     }
 }

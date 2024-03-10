@@ -47,4 +47,14 @@ enum class LastUserActionType {
     REGISTRATION_CONFIRM_FULL_NAME,
 
     REGISTRATION_CONFIRM_GROUP,
+
+    /**
+     * Конструктор рассылки
+     */
+
+    /** ввод текста рассылки **/
+    BC_TEXT_TYPE,
+
+    /** ввод фото рассылки **/
+    BC_PHOTO_TYPE,
 }

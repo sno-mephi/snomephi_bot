@@ -5,6 +5,7 @@ import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.model.Quest
 import ru.idfedorov09.telegram.bot.data.model.User
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
+import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
 import ru.idfedorov09.telegram.bot.repo.QuestRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.mephi.sno.libs.flow.belly.InjectData
@@ -18,6 +19,7 @@ import kotlin.jvm.optionals.getOrNull
 class UpdateDataFetcher(
     private val userRepository: UserRepository,
     private val questRepository: QuestRepository,
+    private val broadcastRepository: BroadcastRepository,
 ) : GeneralFetcher() {
 
     @InjectData
@@ -44,8 +46,13 @@ class UpdateDataFetcher(
                     questDialogId = getQuestDialogId(activeQuest),
                     data = data,
                     isRegistered = isRegistered,
+                    constructorId = bcData?.id
                 ),
             )
+
+            bcData?.let {
+                broadcastRepository.save(it)
+            }
         }
     }
 

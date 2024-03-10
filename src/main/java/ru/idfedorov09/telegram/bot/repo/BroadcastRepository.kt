@@ -18,4 +18,14 @@ interface BroadcastRepository : JpaRepository<Broadcast, Long> {
         nativeQuery = true,
     )
     fun findFirstActiveBroadcast(): Broadcast?
+
+    @Query(
+        """
+        SELECT b FROM Broadcast b
+        WHERE b.authorId = :authorId AND b.isBuilt = false AND b.isDeleted = false
+        ORDER BY b.id DESC
+        LIMIT 1
+    """,
+    )
+    fun findLatestUnbuiltBroadcastByAuthor(authorId: Long): Broadcast?
 }

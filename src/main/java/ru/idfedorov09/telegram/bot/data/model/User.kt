@@ -1,6 +1,13 @@
 package ru.idfedorov09.telegram.bot.data.model
 
-import jakarta.persistence.*
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.Table
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
 
@@ -52,4 +59,7 @@ data class User(
 
     @Column(name = "is_registered")
     val isRegistered: Boolean = false,
+
+    @Column(name = "last_constructor_id")
+    val constructorId: Long? = null,
 )

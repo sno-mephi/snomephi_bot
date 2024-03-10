@@ -17,14 +17,17 @@ data class UserActualizedInfo(
     val studyGroup: String? = null,
     val categories: MutableSet<Category> = mutableSetOf(),
     val roles: MutableSet<UserRole> = mutableSetOf(),
-    val lastUserActionType: LastUserActionType? = null,
+    var lastUserActionType: LastUserActionType? = null,
 
     /** Последний активный вопрос, заданный пользователем **/
     // TODO: readme -> активный вопрос - вопрос с диалогом
     val activeQuest: Quest?,
 
     /** Временные данные **/
-    val data: String? = null,
+    var data: String? = null,
 
     val isRegistered: Boolean,
+
+    /** Текущая создаваемая рассылка пользователя **/
+    var bcData: Broadcast? = null,
 )
