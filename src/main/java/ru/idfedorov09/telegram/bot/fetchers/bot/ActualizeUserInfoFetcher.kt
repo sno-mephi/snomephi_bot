@@ -55,7 +55,7 @@ class ActualizeUserInfoFetcher(
             ?: User(
                 tui = tgUser.id.toString(),
                 lastTgNick = tgUser.userName,
-                roles = mutableSetOf(UserRole.USER, UserRole.ROOT),
+                roles = mutableSetOf(UserRole.USER),
                 isRegistered = false,
             ).let { userRepository.save(it) }
 

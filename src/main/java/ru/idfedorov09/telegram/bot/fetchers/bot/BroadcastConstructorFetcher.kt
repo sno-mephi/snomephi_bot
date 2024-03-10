@@ -615,8 +615,6 @@ class BroadcastConstructorFetcher(
                 title + text + end
             }
 
-            // TODO: кнопки
-
             removeBcConsole(params)
 
             // TODO: добавить везде где есть предпросмотр ? хз
@@ -661,6 +659,7 @@ class BroadcastConstructorFetcher(
                 )
             }
         }
+        params.userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
     }
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) =
