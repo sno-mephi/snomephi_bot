@@ -105,51 +105,51 @@ class BroadcastConstructorFetcher(
     }
 
     private fun changeText(params: Params) {
-        if (params.userActualizedInfo.bcData?.imageHash != null && params.update.message.text.length > 900) {
-            params.bot.execute(
-                SendMessage().also {
-                    it.text = "Ошибка! Невозможно добавить текст длины" +
-                        " ${params.update.message.text.length} > 900 если приложена фотография. " +
-                        "Измените текст или не удалите фотографию."
-                    it.chatId = params.userActualizedInfo.tui
-                },
-            )
-        } else {
-            params.userActualizedInfo.apply {
+        params.userActualizedInfo.apply {
+            if (bcData?.imageHash != null && params.update.message.text.length > 900) {
+                params.bot.execute(
+                    SendMessage().also {
+                        it.text = "Ошибка! Невозможно добавить текст длины" +
+                            " ${params.update.message.text.length} > 900 если приложена фотография. " +
+                            "Измените текст или удалите фотографию."
+                        it.chatId = tui
+                    },
+                )
+            } else {
                 bcData = bcData?.copy(
                     text = params.update.message.text,
                 )
             }
+            showBcConsole(params)
+            lastUserActionType = LastUserActionType.DEFAULT
         }
-        showBcConsole(params)
-        params.userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
     }
 
     private fun changePhoto(params: Params) {
-        if (params.userActualizedInfo.bcData?.text?.length!! > 900) {
-            params.bot.execute(
-                SendMessage().also {
-                    it.text = "Ошибка! Невозможно добавить фотографию, длина текста " +
-                        "${params.userActualizedInfo.bcData?.text?.length} > 900. Измените текст или не " +
-                        "прикладывайте фотографию"
-                    it.chatId = params.userActualizedInfo.tui
-                },
-            )
-        } else {
-            val photoBroadcast = params.bot.execute(
-                SendPhoto().also {
-                    it.chatId = TRASH_CHAT_ID
-                    it.photo = InputFile(params.update.message.photo.last().fileId)
-                },
-            ).photo.firstOrNull()?.fileId
-            params.userActualizedInfo.apply {
+        params.userActualizedInfo.apply {
+            if (bcData?.text?.length!! > 900) {
+                params.bot.execute(
+                    SendMessage().also {
+                        it.text = "Ошибка! Невозможно добавить фотографию, длина текста " +
+                            "${bcData?.text?.length} > 900. Измените текст или не " +
+                            "прикладывайте фотографию"
+                        it.chatId = tui
+                    },
+                )
+            } else {
+                val photoBroadcast = params.bot.execute(
+                    SendPhoto().also {
+                        it.chatId = TRASH_CHAT_ID
+                        it.photo = InputFile(params.update.message.photo.last().fileId)
+                    },
+                ).photo.firstOrNull()?.fileId
                 bcData = bcData?.copy(
                     imageHash = photoBroadcast,
                 )
             }
+            showBcConsole(params)
+            lastUserActionType = LastUserActionType.DEFAULT
         }
-        showBcConsole(params)
-        params.userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
     }
 
     private fun bcSendNow(params: Params) {
@@ -293,7 +293,7 @@ class BroadcastConstructorFetcher(
         params.userActualizedInfo.lastUserActionType = LastUserActionType.BC_PHOTO_TYPE
     }
 
-    private fun bcDeletePhoto(params: Params){
+    private fun bcDeletePhoto(params: Params) {
         removeBcConsole(params)
         params.userActualizedInfo.apply {
             bcData = bcData?.copy(
