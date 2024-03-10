@@ -54,21 +54,22 @@ open class TelegramBotFlowConfiguration(
             }
 
             group(condition = { it.isByUser() && it.isUserRegistered() }) {
-                fetch(categoryCommandHandlerFetcher)
-                fetch(categoryButtonHandlerFetcher)
-                fetch(categoryActionTypeHandlerFetcher)
+
+                sequence {
+                    fetch(categoryCommandHandlerFetcher)
+                    fetch(categoryButtonHandlerFetcher)
+                    fetch(categoryActionTypeHandlerFetcher)
+                    fetch(settingMailFetcher)
+                    fetch(questButtonHandlerFetcher)
+                    fetch(dialogHandleFetcher)
+                    fetch(broadcastConstructorFetcher)
+
+                }
 
                 fetch(roleDescriptionFetcher)
                 fetch(userInfoCommandFetcher)
-
-                fetch(settingMailFetcher)
-
                 fetch(weeklyEventsFetcher)
-
                 fetch(questStartFetcher)
-                fetch(questButtonHandlerFetcher)
-                fetch(dialogHandleFetcher)
-                fetch(broadcastConstructorFetcher)
             }
             fetch(updateDataFetcher)
         }
