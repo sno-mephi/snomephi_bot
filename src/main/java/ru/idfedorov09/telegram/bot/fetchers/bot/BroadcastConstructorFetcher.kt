@@ -101,7 +101,6 @@ class BroadcastConstructorFetcher(
                 startsWith("#bc_change_photo") -> bcChangePhoto(params)
                 startsWith("#bc_to_schedule_console") -> bcChangeStartTime(params)
                 startsWith("#bc_delete_photo") -> bcDeletePhoto(params)
-                startsWith("bc_to_schedule_console") -> bcChangeStartTime(params)
                 startsWith("#bc_change_categories") -> bcChangeCategories(params)
                 startsWith("#bc_action_cancel") -> bcCancelAction(params)
                 startsWith("#bc_preview") -> bcPreview(params)
@@ -113,6 +112,7 @@ class BroadcastConstructorFetcher(
                 startsWith("#bc_change_button_with_id") -> editButton(params)
                 startsWith("#bc_button_remove") -> removeButton(params)
                 startsWith("#bc_change_button_callback") -> changeButtonCallbackDataMessage(params)
+                startsWith("#bc_complete") -> bcComplete(params)
             }
         }
     }
@@ -231,8 +231,9 @@ class BroadcastConstructorFetcher(
                 startTime = startTime,
             )
         }
-        showBcConsole(params)
+
         params.userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
+        bcChangeCategories(params)
     }
 
     private fun changeCategories(params: Params) {
@@ -261,16 +262,26 @@ class BroadcastConstructorFetcher(
                     },
                 )
             }
-
-            bcData = bcData!!.copy(
+            bcData = bcData?.copy(
                 lastConsoleMessageId = null,
-                isBuilt = true,
                 isScheduled = false,
                 isCompleted = false,
-                startTime = LocalDateTime.now().atZone(BOT_TIME_ZONE).toLocalDateTime(),
             )
+            bcChangeCategories(params)
+        }
+    }
 
-            val okayMessage = "☃\uFE0F Что ж, я пошел делать рассылку! Как только закончу, обязательно сообщу тебе!"
+    private fun bcComplete(params: Params) {
+        params.userActualizedInfo.apply {
+            bcData = bcData?.copy(
+                isBuilt = true,
+            )
+            bcData?.startTime ?: run {
+                bcData = bcData?.copy(
+                    startTime = LocalDateTime.now().atZone(BOT_TIME_ZONE).toLocalDateTime(),
+                )
+            }
+            val okayMessage = "☃\uFE0F Рассылка успешно создана! Обязательно сообщу, когда рассылка будет завершена!"
 
             params.bot.execute(
                 SendMessage().also {
@@ -637,7 +648,7 @@ class BroadcastConstructorFetcher(
             SendMessage().also {
                 it.text = msgText
                 it.chatId = params.userActualizedInfo.tui
-                it.parseMode = ParseMode.MARKDOWNV2
+                it.parseMode = ParseMode.HTML
                 it.replyMarkup = createKeyboard(
                     listOf(
                         listOf(
@@ -668,7 +679,8 @@ class BroadcastConstructorFetcher(
 
     private fun bcChangeCategories(params: Params) {
         removeBcConsole(params)
-        val cancelButton = CallbackData(callbackData = "#bc_action_cancel", metaText = "Отмена").save()
+        val backToBc = CallbackData(callbackData = "#bc_action_cancel", metaText = "Назад к конструктору").save()
+        val cancelButton = CallbackData(callbackData = "#bc_complete", metaText = "Подтвердить рассылку").save()
         params.userActualizedInfo.apply {
             val allCategoriesInfo = categoryRepository.findAll().map {
                 "<b>• ${it.title}\n</b>" +
@@ -692,6 +704,12 @@ class BroadcastConstructorFetcher(
                                 InlineKeyboardButton().also {
                                     it.text = cancelButton.metaText!!
                                     it.callbackData = cancelButton.id?.toString()
+                                },
+                            ),
+                            listOf(
+                                InlineKeyboardButton().also {
+                                    it.text = backToBc.metaText!!
+                                    it.callbackData = backToBc.id?.toString()
                                 },
                             ),
                         ),
@@ -741,9 +759,11 @@ class BroadcastConstructorFetcher(
     private fun showBcConsole(params: Params, showPreview: Boolean = true) {
         val bcData = params.userActualizedInfo.bcData
         if (bcData == null || !showPreview) {
-            params.userActualizedInfo.bcData = broadcastRepository.save(
-                Broadcast(authorId = params.userActualizedInfo.id),
-            )
+            bcData ?: run {
+                params.userActualizedInfo.bcData = broadcastRepository.save(
+                    Broadcast(authorId = params.userActualizedInfo.id),
+                )
+            }
             val messageText = "<b>Конструктор рассылки</b>\n\nВыберите дальнейшее действие"
             val newPhoto = CallbackData(callbackData = "#bc_change_photo", metaText = "Добавить фото").save()
             val addText = CallbackData(callbackData = "#bc_change_text", metaText = "Добавить текст").save()
@@ -840,6 +860,7 @@ class BroadcastConstructorFetcher(
                         SendPhoto().also {
                             it.chatId = params.userActualizedInfo.tui
                             it.caption = text
+                            it.parseMode = ParseMode.HTML
                             it.replyMarkup = createKeyboard(keyboard)
                             it.photo = InputFile(bcData.imageHash)
                         },

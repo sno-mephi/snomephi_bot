@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
+import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.model.Category
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
@@ -72,6 +73,7 @@ class SettingMailFetcher(
         val chatId = userActualizedInfo.tui
         val categorySuffix = messageText.substringAfter("/toggle_")
         val category = categoryRepository.findBySuffix(categorySuffix) ?: return
+        if (userActualizedInfo.lastUserActionType == LastUserActionType.BC_CHANGE_CATEGORIES) return
         if (category.isUnremovable == true) return
         if (userActualizedInfo.categories.contains(category)) {
             userCategories.remove(category)
