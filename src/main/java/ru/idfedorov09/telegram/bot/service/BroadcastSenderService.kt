@@ -88,7 +88,7 @@ class BroadcastSenderService(
         val msgText = "Рассылка №${broadcast.id} успешно завершена\n" +
             "Число пользователей, получивших сообщение: ${broadcast.receivedUsersId.size}\n" +
             "Старт рассылки: ${broadcast.startTime}\n" +
-            "Конец рассылки: ${broadcast.finishTime}"
+            "Конец рассылки: ${LocalDateTime.now(ZoneId.of("Europe/Moscow"))}"
         bot.execute(
             SendMessage().also {
                 it.chatId = author.tui!!
