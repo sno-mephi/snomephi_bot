@@ -66,4 +66,7 @@ enum class LastUserActionType {
 
     /** Ввод текста коллбэка кнопки **/
     BC_BUTTON_CALLBACK_TYPING,
+
+    /** ввод времени начала рассылки **/
+    BC_CHANGE_START_TIME,
 }

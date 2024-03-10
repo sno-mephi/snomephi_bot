@@ -11,6 +11,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.BOT_TIME_ZONE
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.MAX_BROADCAST_BUTTONS_COUNT
+import ru.idfedorov09.telegram.bot.data.GlobalConstants.TRASH_CHAT_ID
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands.BROADCAST_CONSTRUCTOR
 import ru.idfedorov09.telegram.bot.data.model.Broadcast
@@ -26,6 +27,7 @@ import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import kotlin.jvm.optionals.getOrNull
 
 /**
@@ -53,14 +55,14 @@ class BroadcastConstructorFetcher(
         )
 
         when {
-            update.hasMessage() && update.message.hasText() -> textCommandsHandler(update, params)
+            update.hasMessage() && update.message.hasText() -> textCommandsHandler(params)
             update.hasCallbackQuery() -> callbackQueryHandler(update, params)
-            update.hasMessage() && update.message.hasPhoto() -> photoHandler(update, params)
+            update.hasMessage() && update.message.hasPhoto() -> photoHandler(params)
         }
     }
 
-    private fun textCommandsHandler(update: Update, params: Params) {
-        val text = update.message.text
+    private fun textCommandsHandler(params: Params) {
+        val text = params.update.message.text
 
         text.apply {
             when {
@@ -79,6 +81,7 @@ class BroadcastConstructorFetcher(
             LastUserActionType.BC_BUTTON_CAPTION_TYPE -> changeButtonCaption(params)
             LastUserActionType.BC_BUTTON_LINK_TYPE -> changeButtonLink(params)
             LastUserActionType.BC_BUTTON_CALLBACK_TYPING -> changeButtonCallback(params)
+            LastUserActionType.BC_CHANGE_START_TIME -> changeStartTime(params)
             else -> return
         }
     }
@@ -93,6 +96,8 @@ class BroadcastConstructorFetcher(
                 startsWith("#bc_cancel") -> bcCancel(params)
                 startsWith("#bc_change_text") -> bcChangeTextMessage(params)
                 startsWith("#bc_change_photo") -> bcChangePhoto(params)
+                startsWith("#bc_to_schedule_console") -> bcChangeStartTime(params)
+                startsWith("#bc_delete_photo") -> bcDeletePhoto(params)
                 startsWith("#bc_action_cancel") -> bcCancelAction(params)
                 startsWith("#bc_preview") -> bcPreview(params)
                 startsWith("#bc_send_now") -> bcSendNow(params)
@@ -107,7 +112,7 @@ class BroadcastConstructorFetcher(
         }
     }
 
-    private fun photoHandler(update: Update, params: Params) {
+    private fun photoHandler(params: Params) {
         when (params.userActualizedInfo.lastUserActionType) {
             LastUserActionType.BC_PHOTO_TYPE -> changePhoto(params)
             else -> return
@@ -162,18 +167,62 @@ class BroadcastConstructorFetcher(
 
     private fun changeText(params: Params) {
         params.userActualizedInfo.apply {
-            bcData = bcData?.copy(
-                text = params.update.message.text,
-            )
+            if (bcData?.imageHash != null && params.update.message.text.length > 900) {
+                params.bot.execute(
+                    SendMessage().also {
+                        it.text = "Ошибка! Невозможно добавить текст длины" +
+                            " ${params.update.message.text.length} > 900 если приложена фотография. " +
+                            "Измените текст или удалите фотографию."
+                        it.chatId = tui
+                    },
+                )
+            } else {
+                bcData = bcData?.copy(
+                    text = params.update.message.text,
+                )
+            }
+            showBcConsole(params)
+            lastUserActionType = LastUserActionType.DEFAULT
         }
-        showBcConsole(params)
-        params.userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
     }
 
     private fun changePhoto(params: Params) {
         params.userActualizedInfo.apply {
+            if (bcData?.text?.length!! > 900) {
+                params.bot.execute(
+                    SendMessage().also {
+                        it.text = "Ошибка! Невозможно добавить фотографию, длина текста " +
+                            "${bcData?.text?.length} > 900. Измените текст или не " +
+                            "прикладывайте фотографию"
+                        it.chatId = tui
+                    },
+                )
+            } else {
+                val photoBroadcast = params.bot.execute(
+                    SendPhoto().also {
+                        it.chatId = TRASH_CHAT_ID
+                        it.photo = InputFile(params.update.message.photo.last().fileId)
+                    },
+                ).photo.firstOrNull()?.fileId
+                bcData = bcData?.copy(
+                    imageHash = photoBroadcast,
+                )
+            }
+            showBcConsole(params)
+            lastUserActionType = LastUserActionType.DEFAULT
+        }
+    }
+
+    private fun changeStartTime(params: Params) {
+        val msgText = params.update.message.text
+        val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
+        if (!msgText.matches(Regex("\\d{2}.\\d{2}.\\d{4} \\d{2}:\\d{2}"))) {
+            bcChangeStartTime(params, prefix = "Неверный формат даты и времени")
+        }
+        val startTime = LocalDateTime.parse(msgText, formatter)
+        params.userActualizedInfo.apply {
             bcData = bcData?.copy(
-                imageHash = params.update.message.photo.firstOrNull()?.fileId,
+                startTime = startTime,
             )
         }
         showBcConsole(params)
@@ -530,10 +579,42 @@ class BroadcastConstructorFetcher(
 
     private fun bcChangePhoto(params: Params) {
         removeBcConsole(params)
-        val msgText = "Отправте фотографию, которую вы хотите прикрепить к рассылке"
+        val msgText = "Отправьте фотографию, которую вы хотите прикрепить к рассылке"
         val cancelButton = CallbackData(callbackData = "#bc_action_cancel", metaText = "Отмена").save()
+        val deletePhoto = CallbackData(callbackData = "#bc_delete_photo", metaText = "Удалить фото").save()
 
         params.bot.execute(
+            SendMessage().also {
+                it.text = msgText
+                it.chatId = params.userActualizedInfo.tui
+                it.parseMode = ParseMode.MARKDOWNV2
+                it.replyMarkup = createKeyboard(
+                    listOf(
+                        listOf(
+                            InlineKeyboardButton().also {
+                                it.text = cancelButton.metaText!!
+                                it.callbackData = cancelButton.id?.toString()
+                            },
+                        ),
+                        listOf(
+                            InlineKeyboardButton().also {
+                                it.text = deletePhoto.metaText!!
+                                it.callbackData = deletePhoto.id?.toString()
+                            },
+                        ),
+                    ),
+                )
+            },
+        )
+        params.userActualizedInfo.lastUserActionType = LastUserActionType.BC_PHOTO_TYPE
+    }
+
+    private fun bcChangeStartTime(params: Params, prefix: String? = null) {
+        removeBcConsole(params)
+        val msgStart = prefix?.let { "$prefix\n" } ?: ""
+        val msgText = msgStart + "Отправьте время запуска рассылки в формате 'дд.мм.гггг чч:мм'"
+        val cancelButton = CallbackData(callbackData = "#bc_action_cancel", metaText = "Отмена").save()
+        val sent = params.bot.execute(
             SendMessage().also {
                 it.text = msgText
                 it.chatId = params.userActualizedInfo.tui
@@ -550,7 +631,20 @@ class BroadcastConstructorFetcher(
                 )
             },
         )
-        params.userActualizedInfo.lastUserActionType = LastUserActionType.BC_PHOTO_TYPE
+        params.userActualizedInfo.bcData = params.userActualizedInfo.bcData?.copy(
+            lastConsoleMessageId = sent.messageId,
+        )
+        params.userActualizedInfo.lastUserActionType = LastUserActionType.BC_CHANGE_START_TIME
+    }
+
+    private fun bcDeletePhoto(params: Params) {
+        removeBcConsole(params)
+        params.userActualizedInfo.apply {
+            bcData = bcData?.copy(
+                imageHash = null,
+            )
+        }
+        params.userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
     }
 
     private fun bcCancel(params: Params) {
@@ -650,9 +744,7 @@ class BroadcastConstructorFetcher(
                     }
                 )
             }
-
             keyboardList.add(cancelButton)
-
 
             val keyboard = keyboardList.apply {
                 if (bcData.imageHash == null && bcData.text == null) {
