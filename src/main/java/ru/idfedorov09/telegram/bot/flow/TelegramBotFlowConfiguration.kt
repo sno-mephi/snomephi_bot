@@ -17,6 +17,7 @@ import ru.mephi.sno.libs.flow.belly.FlowContext
 open class TelegramBotFlowConfiguration(
 
     private val actualizeUserInfoFetcher: ActualizeUserInfoFetcher,
+    private val weeklyEventsFetcher: WeeklyEventsFetcher,
     private val questStartFetcher: QuestStartFetcher,
     private val updateDataFetcher: UpdateDataFetcher,
     private val questButtonHandlerFetcher: QuestButtonHandlerFetcher,
@@ -61,6 +62,8 @@ open class TelegramBotFlowConfiguration(
                 fetch(userInfoCommandFetcher)
 
                 fetch(settingMailFetcher)
+
+                fetch(weeklyEventsFetcher)
 
                 fetch(questStartFetcher)
                 fetch(questButtonHandlerFetcher)

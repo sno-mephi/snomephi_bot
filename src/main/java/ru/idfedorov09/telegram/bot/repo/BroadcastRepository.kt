@@ -28,4 +28,21 @@ interface BroadcastRepository : JpaRepository<Broadcast, Long> {
     """,
     )
     fun findLatestUnbuiltBroadcastByAuthor(authorId: Long): Broadcast?
+
+    @Query(
+        """
+            SELECT * 
+            FROM broadcast_table
+            WHERE 1=1
+                AND is_weekly IS true
+                AND TIMEZONE('Europe/Moscow', CURRENT_TIMESTAMP) <= TIMEZONE('Europe/Moscow', DATE_ADD(broadcast_start_dttm, INTERVAL 1 WEEK))
+                AND is_built IS true 
+            ORDER BY broadcast_start_dttm DESC
+            LIMIT 1
+        """,
+        nativeQuery = true,
+    )
+    fun findFirstActiveWeeklyBroadcast(): Broadcast?
+
+
 }

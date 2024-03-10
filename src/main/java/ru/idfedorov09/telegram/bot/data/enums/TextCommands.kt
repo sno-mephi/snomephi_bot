@@ -43,6 +43,10 @@ enum class TextCommands(
         "Рассылка уведомлений",
         listOf(UserRole.ROOT),
     ),
+
+    WEEKLY_EVENTS(
+        "Мероприятия недели",
+    ),
     ;
 
     /** Проверяет, является ли текст командой **/
