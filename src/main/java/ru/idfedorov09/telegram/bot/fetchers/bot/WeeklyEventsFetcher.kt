@@ -8,6 +8,8 @@ import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
+import ru.idfedorov09.telegram.bot.repo.UserRepository
+import ru.idfedorov09.telegram.bot.service.BroadcastSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 
@@ -17,6 +19,8 @@ import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 @Component
 class WeeklyEventsFetcher(
     private val broadcastRepository: BroadcastRepository,
+    private val broadcastSenderService: BroadcastSenderService,
+    private val userRepository: UserRepository,
 ) : GeneralFetcher() {
 
 
@@ -29,46 +33,33 @@ class WeeklyEventsFetcher(
         if (!(update.hasMessage() && update.message.hasText())) return
         val messageText = update.message.text
 
-        val params = Params(
-            bot,
-            userActualizedInfo,
-            update,
-        )
-        messageText.apply {
-            when {
-                startsWith(TextCommands.WEEKLY_EVENTS.commandText) -> sendWeeklyEvents(params)
-            }
-        }
+        if (messageText.startsWith(TextCommands.WEEKLY_EVENTS.commandText))
+            sendWeeklyEvents(bot, userActualizedInfo, update)
     }
 
 
-    private fun sendWeeklyEvents(params: Params) {
+    private fun sendWeeklyEvents(
+        bot: Executor,
+        userActualizedInfo: UserActualizedInfo,
+        update: Update
+    ) {
         val firstActiveWeeklyBroadcast = broadcastRepository.findFirstActiveWeeklyBroadcast()
-        if (firstActiveWeeklyBroadcast == null) {
-            params.bot.execute(
+        firstActiveWeeklyBroadcast ?: run {
+            bot.execute(
                 SendMessage().also {
-                    it.chatId = params.userActualizedInfo.tui
+                    it.chatId = userActualizedInfo.tui
                     it.text = "Мероприятия недели пока не заполнены."
-                    it.parseMode = ParseMode.HTML
                 },
             )
+            return
         }
-        else{
-            params.bot.execute(
-                SendMessage().also {
-                    it.chatId = params.userActualizedInfo.tui
-                    it.text =  firstActiveWeeklyBroadcast.text.toString()
-                    it.parseMode = ParseMode.HTML
-                },
-            )
-        }
+
+        broadcastSenderService.sendBroadcast(
+            user = userRepository.findById(userActualizedInfo.id!!).get(),
+            broadcast = firstActiveWeeklyBroadcast,
+            shouldAddToReceived = false
+        )
     }
 
-    private data class Params(
-        val bot: Executor,
-        val userActualizedInfo: UserActualizedInfo,
-        val update: Update,
-    )
-
-    }
+}
 
