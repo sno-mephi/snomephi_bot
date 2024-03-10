@@ -46,7 +46,8 @@ class UpdateDataFetcher(
                     questDialogId = getQuestDialogId(activeQuest),
                     data = data,
                     isRegistered = isRegistered,
-                    constructorId = bcData?.id
+                    constructorId = bcData?.id,
+                    currentKeyboardType = currentKeyboardType
                 ),
             )
 
