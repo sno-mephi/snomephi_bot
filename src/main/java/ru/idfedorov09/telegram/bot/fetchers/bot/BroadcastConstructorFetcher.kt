@@ -243,7 +243,7 @@ class BroadcastConstructorFetcher(
                 )
             }
 
-            bcData = bcData!!.copy(
+            bcData = bcData?.copy(
                 lastConsoleMessageId = null,
                 isBuilt = true,
                 isScheduled = false,
@@ -557,7 +557,7 @@ class BroadcastConstructorFetcher(
 
         val cancelButton = CallbackData(callbackData = "#bc_action_cancel", metaText = "Отмена").save()
 
-        params.bot.execute(
+        val sent = params.bot.execute(
             SendMessage().also {
                 it.text = msgText
                 it.chatId = params.userActualizedInfo.tui
@@ -573,6 +573,9 @@ class BroadcastConstructorFetcher(
                     ),
                 )
             },
+        )
+        params.userActualizedInfo.bcData = params.userActualizedInfo.bcData?.copy(
+            lastConsoleMessageId = sent.messageId
         )
         params.userActualizedInfo.lastUserActionType = LastUserActionType.BC_TEXT_TYPE
     }
@@ -652,8 +655,8 @@ class BroadcastConstructorFetcher(
         params.userActualizedInfo.bcData?.let {
             broadcastRepository.save(
                 it.copy(
-                    isDeleted = true,
-                ),
+                    isDeleted = true
+                )
             )
         }
         params.userActualizedInfo.bcData = null
@@ -665,153 +668,155 @@ class BroadcastConstructorFetcher(
     }
 
     private fun removeBcConsole(params: Params) {
-        runCatching {
-            params.userActualizedInfo.apply {
-                bcData ?: return
-                bcData?.lastConsoleMessageId ?: return
+        params.userActualizedInfo.apply {
+            bcData ?: return
+            bcData?.lastConsoleMessageId ?: return
 
-                params.bot.execute(
-                    DeleteMessage().also {
-                        it.chatId = tui
-                        it.messageId = bcData?.lastConsoleMessageId!!
-                    },
-                )
-                bcData = bcData?.copy(
-                    lastConsoleMessageId = null,
-                )
-            }
+            params.bot.execute(
+                DeleteMessage().also {
+                    it.chatId = tui
+                    it.messageId = bcData?.lastConsoleMessageId!!
+                },
+            )
+            bcData = bcData?.copy(
+                lastConsoleMessageId = null
+            )
         }
     }
 
     private fun showBcConsole(params: Params, showPreview: Boolean = true) {
-        val bcData = params.userActualizedInfo.bcData
-        if (bcData == null || !showPreview) {
-            params.userActualizedInfo.bcData = broadcastRepository.save(
-                Broadcast(authorId = params.userActualizedInfo.id),
-            )
-            val messageText = "<b>Конструктор рассылки</b>\n\nВыберите дальнейшее действие"
-            val newPhoto = CallbackData(callbackData = "#bc_change_photo", metaText = "Добавить фото").save()
-            val addText = CallbackData(callbackData = "#bc_change_text", metaText = "Добавить текст").save()
-            val addButton = CallbackData(callbackData = "#bc_add_button", metaText = "Добавить кнопку").save()
-            val cancelButton = CallbackData(callbackData = "#bc_cancel", metaText = "Отмена").save()
-
-            val keyboard =
-                listOf(newPhoto, addText, addButton, cancelButton).map { button ->
-                    InlineKeyboardButton().also {
-                        it.text = button.metaText!!
-                        it.callbackData = button.id?.toString()
-                    }
-                }.map { listOf(it) }
-
-            val sent = params.bot.execute(
-                SendMessage().also {
-                    it.text = messageText
-                    it.parseMode = ParseMode.HTML
-                    it.replyMarkup = createKeyboard(keyboard)
-                    it.chatId = params.userActualizedInfo.tui
-                },
-            )
-
-            params.userActualizedInfo.bcData = params.userActualizedInfo.bcData?.copy(
-                lastConsoleMessageId = sent.messageId,
-            )
-        } else {
-            val photoProp = CallbackData(
-                callbackData = "#bc_change_photo",
-                metaText = bcData.imageHash?.let { "Изменить фото" } ?: "Добавить фото",
-            ).save()
-            val textProp = CallbackData(
-                callbackData = "#bc_change_text",
-                metaText = bcData.text?.let { "Изменить текст" } ?: "Добавить текст",
-            ).save()
-            val addButton = CallbackData(callbackData = "#bc_add_button", metaText = "Добавить кнопку").save()
-
-            val previewButton = CallbackData(callbackData = "#bc_preview", metaText = "Предпросмотр").save()
-            val cancelButton = CallbackData(callbackData = "#bc_cancel", metaText = "Отмена").save()
-
-            val keyboardList = mutableListOf(
-                photoProp,
-                textProp,
-                addButton,
-                previewButton
-            ).apply {
-                addAll(
-                    buttonRepository.findAllValidButtonsForBroadcast(bcData.id!!).map {
-                        CallbackData(
-                            callbackData = "#bc_change_button_with_id=${it.id}",
-                            metaText = it.text
-                        ).save()
-                    }
-                )
-            }
-            keyboardList.add(cancelButton)
-
-            val keyboard = keyboardList.apply {
-                if (bcData.imageHash == null && bcData.text == null) {
-                    remove(previewButton)
+        params.userActualizedInfo.apply {
+            if (bcData == null || !showPreview) {
+                bcData ?: run {
+                    bcData = broadcastRepository.save(
+                        Broadcast(authorId = params.userActualizedInfo.id),
+                    )
                 }
-                // TODO: если кол-во кнопок >=5 то здесь убрать кнопку 'добавление кнопки'
-            }.map { callbackData ->
-                listOf(
-                    InlineKeyboardButton().also {
-                        it.text = callbackData.metaText!!
-                        it.callbackData = callbackData.id?.toString()
+                val messageText = "<b>Конструктор рассылки</b>\n\nВыберите дальнейшее действие"
+                val newPhoto = CallbackData(callbackData = "#bc_change_photo", metaText = "Добавить фото").save()
+                val addText = CallbackData(callbackData = "#bc_change_text", metaText = "Добавить текст").save()
+                val addButton = CallbackData(callbackData = "#bc_add_button", metaText = "Добавить кнопку").save()
+                val cancelButton = CallbackData(callbackData = "#bc_cancel", metaText = "Отмена").save()
+
+                val keyboard =
+                    listOf(newPhoto, addText, addButton, cancelButton).map { button ->
+                        InlineKeyboardButton().also {
+                            it.text = button.metaText!!
+                            it.callbackData = button.id?.toString()
+                        }
+                    }.map { listOf(it) }
+
+                val sent = params.bot.execute(
+                    SendMessage().also {
+                        it.text = messageText
+                        it.parseMode = ParseMode.HTML
+                        it.replyMarkup = createKeyboard(keyboard)
+                        it.chatId = params.userActualizedInfo.tui
                     },
                 )
-            }
 
-            val text = bcData.run {
-                val title = "<b>Конструктор рассылки</b>\n\n"
-                val text = text?.let { "Текст:\n${text}\n\n" } ?: ""
-                val end = "Выберите дальнейшее действие"
-                title + text + end
-            }
+                bcData = bcData?.copy(
+                    lastConsoleMessageId = sent.messageId,
+                )
+            } else {
+                removeBcConsole(params)
+                bcData = params.userActualizedInfo.bcData
 
-            removeBcConsole(params)
+                val photoProp = CallbackData(
+                    callbackData = "#bc_change_photo",
+                    metaText = bcData!!.imageHash?.let { "Изменить фото" } ?: "Добавить фото",
+                ).save()
+                val textProp = CallbackData(
+                    callbackData = "#bc_change_text",
+                    metaText = bcData!!.text?.let { "Изменить текст" } ?: "Добавить текст",
+                ).save()
+                val addButton = CallbackData(callbackData = "#bc_add_button", metaText = "Добавить кнопку").save()
 
-            // TODO: добавить везде где есть предпросмотр ? хз
-            runCatching {
-                when (bcData.imageHash) {
-                    null -> params.bot.execute(
+                val previewButton = CallbackData(callbackData = "#bc_preview", metaText = "Предпросмотр").save()
+                val cancelButton = CallbackData(callbackData = "#bc_cancel", metaText = "Отмена").save()
+
+                val keyboardList = mutableListOf(
+                    photoProp,
+                    textProp,
+                    addButton,
+                    previewButton
+                ).apply {
+                    addAll(
+                        buttonRepository.findAllValidButtonsForBroadcast(bcData!!.id!!).map {
+                            CallbackData(
+                                callbackData = "#bc_change_button_with_id=${it.id}",
+                                metaText = it.text
+                            ).save()
+                        }
+                    )
+                }
+                keyboardList.add(cancelButton)
+
+                val keyboard = keyboardList.apply {
+                    if (bcData!!.imageHash == null && bcData!!.text == null) {
+                        remove(previewButton)
+                    }
+                    // TODO: если кол-во кнопок >=5 то здесь убрать кнопку 'добавление кнопки'
+                }.map { callbackData ->
+                    listOf(
+                        InlineKeyboardButton().also {
+                            it.text = callbackData.metaText!!
+                            it.callbackData = callbackData.id?.toString()
+                        },
+                    )
+                }
+
+                val text = bcData?.run {
+                    val title = "<b>Конструктор рассылки</b>\n\n"
+                    val text = text?.let { "Текст:\n${text}\n\n" } ?: ""
+                    val end = "Выберите дальнейшее действие"
+                    title + text + end
+                } ?: "Error!!!"
+
+                // TODO: добавить везде где есть предпросмотр ? хз
+                runCatching {
+                    when (bcData?.imageHash) {
+                        null -> params.bot.execute(
+                            SendMessage().also {
+                                it.chatId = params.userActualizedInfo.tui
+                                it.text = text
+                                it.replyMarkup = createKeyboard(keyboard)
+                                it.parseMode = ParseMode.HTML
+                            },
+                        )
+
+                        else -> params.bot.execute(
+                            SendPhoto().also {
+                                it.chatId = params.userActualizedInfo.tui
+                                it.caption = text
+                                it.replyMarkup = createKeyboard(keyboard)
+                                it.photo = InputFile(bcData?.imageHash)
+                            },
+                        )
+                    }
+                }.onFailure {
+                    val failText = "\uD83D\uDE4A Ой! При отправке сообщения что-то пошло не так:\n" +
+                            "<pre language=\"error\">${
+                                it.message
+                                    ?.replace("<", "&lt;")
+                                    ?.replace(">", "&gt;")
+                            }</pre>\n\nПопробуй еще раз."
+
+                    params.bot.execute(
                         SendMessage().also {
+                            it.text = failText
                             it.chatId = params.userActualizedInfo.tui
-                            it.text = text
-                            it.replyMarkup = createKeyboard(keyboard)
                             it.parseMode = ParseMode.HTML
                         },
                     )
-
-                    else -> params.bot.execute(
-                        SendPhoto().also {
-                            it.chatId = params.userActualizedInfo.tui
-                            it.caption = text
-                            it.replyMarkup = createKeyboard(keyboard)
-                            it.photo = InputFile(bcData.imageHash)
-                        },
+                }.onSuccess {
+                    bcData = bcData?.copy(
+                        lastConsoleMessageId = it.messageId,
                     )
                 }
-            }.onFailure {
-                val failText = "\uD83D\uDE4A Ой! При отправке сообщения что-то пошло не так:\n" +
-                    "<pre language=\"error\">${
-                        it.message
-                            ?.replace("<", "&lt;")
-                            ?.replace(">", "&gt;")
-                    }</pre>\n\nПопробуй еще раз."
-
-                params.bot.execute(
-                    SendMessage().also {
-                        it.text = failText
-                        it.chatId = params.userActualizedInfo.tui
-                        it.parseMode = ParseMode.HTML
-                    },
-                )
-            }.onSuccess {
-                params.userActualizedInfo.bcData = params.userActualizedInfo.bcData?.copy(
-                    lastConsoleMessageId = it.messageId,
-                )
             }
+            params.userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
         }
-        params.userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
     }
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) =
@@ -821,7 +826,7 @@ class BroadcastConstructorFetcher(
 
     private data class Params(
         val bot: Executor,
-        val userActualizedInfo: UserActualizedInfo,
+        var userActualizedInfo: UserActualizedInfo,
         val update: Update,
     )
 }
