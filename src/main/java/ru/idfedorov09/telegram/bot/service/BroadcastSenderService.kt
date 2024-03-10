@@ -1,4 +1,5 @@
 package ru.idfedorov09.telegram.bot.service
+import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.methods.ParseMode
@@ -27,15 +28,25 @@ class BroadcastSenderService(
     private val bot: Executor,
     private val callbackDataRepository: CallbackDataRepository
 ) {
+
+    companion object {
+        private val log = LoggerFactory.getLogger(BroadcastSenderService::class.java)
+    }
+
     @Scheduled(fixedDelay = 1000)
     fun broadcastSender() {
-        val firstActiveBroadcast = broadcastRepository.findFirstActiveBroadcast() ?: return
-        if (firstActiveBroadcast.receivedUsersId.isEmpty()) startBroadcast(firstActiveBroadcast)
-        val firstUser = userRepository.findAll().firstOrNull { checkValidUser(it, firstActiveBroadcast) } ?: run {
-            finishBroadcast(firstActiveBroadcast)
-            return
+        runCatching {
+            val firstActiveBroadcast = broadcastRepository.findFirstActiveBroadcast() ?: return
+            if (firstActiveBroadcast.receivedUsersId.isEmpty()) startBroadcast(firstActiveBroadcast)
+            val firstUser = userRepository.findAll().firstOrNull { checkValidUser(it, firstActiveBroadcast) } ?: run {
+                finishBroadcast(firstActiveBroadcast)
+                return
+            }
+            sendBroadcast(firstUser, firstActiveBroadcast)
+        }.onFailure {  e ->
+            log.warn("Ошибка при работе broadcastSender: $e")
+            log.debug(e.stackTrace.toString())
         }
-        sendBroadcast(firstUser, firstActiveBroadcast)
     }
 
     fun sendBroadcast(userId: Long, broadcast: Broadcast, shouldAddToReceived: Boolean = true) {
