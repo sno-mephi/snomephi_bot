@@ -47,6 +47,10 @@ enum class TextCommands(
     WEEKLY_EVENTS(
         "Мероприятия недели",
     ),
+
+    HELP_COMMAND(
+        "/help",
+    ),
     ;
 
     /** Проверяет, является ли текст командой **/
