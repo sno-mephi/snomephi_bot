@@ -33,11 +33,11 @@ object KeyBoardUtil {
                 it.add(TextCommands.WEEKLY_EVENTS.commandText)
             },
         )
-        if (UserRole.ROOT in roles || UserRole.MAILER in roles){
+        if (UserRole.ROOT in roles || UserRole.MAILER in roles) {
             keyboards.add(
                 KeyboardRow().also {
                     it.add(TextCommands.BROADCAST_CONSTRUCTOR.commandText)
-                }
+                },
             )
         }
         val defaultKeyBoard = ReplyKeyboardMarkup().also {

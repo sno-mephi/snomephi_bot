@@ -41,7 +41,10 @@ enum class TextCommands(
 
     BROADCAST_CONSTRUCTOR(
         "Рассылка уведомлений",
-        listOf(UserRole.ROOT),
+        listOf(
+            UserRole.MAILER,
+            UserRole.ROOT,
+        ),
     ),
 
     WEEKLY_EVENTS(

@@ -56,9 +56,6 @@ class BroadcastConstructorFetcher(
             userActualizedInfo,
             update,
         )
-        params.userActualizedInfo.apply {
-            if (UserRole.ROOT !in roles && UserRole.MAILER !in roles) return
-        }
         when {
             update.hasMessage() && update.message.hasText() -> textCommandsHandler(params)
             update.hasCallbackQuery() -> callbackQueryHandler(update, params)
