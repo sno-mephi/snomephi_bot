@@ -51,7 +51,7 @@ class SettingMailFetcher(
                 } else {
                     "<b>Выключено</b>"
                 } + " - /toggle_${it.suffix}"
-        }.joinToString(separator = "\n") { it }
+        }.joinToString(separator = "\n\n") { it }
         val mailText = "<b>Настройка уведомлений</b>\n\nВыберите интересующие вас направления:\n\n$allCategoriesInfo"
         messageSenderService.sendMessage(
             MessageParams(
