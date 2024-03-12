@@ -10,6 +10,7 @@ import ru.idfedorov09.telegram.bot.data.GlobalConstants
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
+import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.Quest
 import ru.idfedorov09.telegram.bot.data.model.QuestDialogMessage
 import ru.idfedorov09.telegram.bot.data.model.User
@@ -18,6 +19,7 @@ import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.QuestDialogMessageRepository
 import ru.idfedorov09.telegram.bot.repo.QuestRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
+import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 
@@ -26,7 +28,7 @@ import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
  */
 @Component
 class DialogHandleFetcher(
-    private val bot: Executor,
+    private val messageSenderService: MessageSenderService,
     private val questRepository: QuestRepository,
     private val questDialogMessageRepository: QuestDialogMessageRepository,
     private val userRepository: UserRepository,
@@ -72,11 +74,11 @@ class DialogHandleFetcher(
     }
 
     private fun nonSupportedUpdateType(params: Params): UserActualizedInfo {
-        bot.execute(
-            SendMessage().also {
-                it.chatId = params.userActualizedInfo.tui
-                it.text = "⛔\uFE0F Сообщение данного типа не поддерживается."
-            },
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = params.userActualizedInfo.tui,
+                text = "⛔\uFE0F Сообщение данного типа не поддерживается."
+            )
         )
         return params.userActualizedInfo
     }
@@ -106,11 +108,11 @@ class DialogHandleFetcher(
         quest.dialogHistory.add(questDialogMessage.id!!)
         questRepository.save(quest)
 
-        bot.execute(
-            SendMessage().also {
-                it.chatId = if (isByQuestionAuthor) responder.tui!! else author.tui!!
-                it.text = messageText!!
-            },
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = if (isByQuestionAuthor) responder.tui!! else author.tui!!,
+                text = messageText!!
+            )
         )
 
         return userActualizedInfo
@@ -136,31 +138,31 @@ class DialogHandleFetcher(
             ),
         )
 
-        bot.execute(
-            SendMessage().also {
-                it.chatId = params.author.tui!!
-                it.text = "_⚠\uFE0F Оператор завершил диалог\\._"
-                it.parseMode = ParseMode.MARKDOWNV2
-            },
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = params.author.tui!!,
+                text = "_⚠\uFE0F Оператор завершил диалог\\._",
+                parseMode = ParseMode.MARKDOWNV2
+            )
         )
 
-        bot.execute(
-            SendMessage().also {
-                it.chatId = params.responder.tui!!
-                it.text = "\uD83D\uDDA4 Спасибо за обратную связь\\! *Диалог завершен\\.*"
-                it.replyMarkup = ReplyKeyboardRemove().apply {
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = params.responder.tui!!,
+                text = "\uD83D\uDDA4 Спасибо за обратную связь\\! *Диалог завершен\\.*",
+                replyMarkup = ReplyKeyboardRemove().apply {
                     removeKeyboard = true
-                }
-                it.parseMode = ParseMode.MARKDOWNV2
-            },
+                },
+                parseMode = ParseMode.MARKDOWNV2
+            )
         )
 
-        bot.execute(
-            EditMessageText().also {
-                it.chatId = GlobalConstants.QUEST_RESPONDENT_CHAT_ID
-                it.messageId = params.quest.consoleMessageId!!.toInt()
-                it.text = "✅ @${params.responder.lastTgNick} пообщался(-ась)"
-            },
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = GlobalConstants.QUEST_RESPONDENT_CHAT_ID,
+                messageId = params.quest.consoleMessageId!!.toInt(),
+                newText = "✅ @${params.responder.lastTgNick} пообщался(-ась)"
+            )
         )
 
         return params.userActualizedInfo.copy(
