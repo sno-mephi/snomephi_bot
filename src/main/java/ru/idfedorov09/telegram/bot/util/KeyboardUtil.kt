@@ -18,11 +18,7 @@ object KeyboardUtil {
         }
     }
 
-    private fun deleteKeyboard(roles: MutableSet<UserRole>): ReplyKeyboard {
-        return ReplyKeyboardRemove().apply {
-            removeKeyboard = true
-        }
-    }
+    private fun deleteKeyboard(roles: MutableSet<UserRole>) = ReplyKeyboardRemove().apply { removeKeyboard = true }
 
     private fun createDefaultKeyboard(roles: MutableSet<UserRole>): ReplyKeyboard {
         val keyboards = mutableListOf(
