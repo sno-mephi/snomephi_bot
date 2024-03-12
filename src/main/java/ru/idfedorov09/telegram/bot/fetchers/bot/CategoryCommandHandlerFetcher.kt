@@ -7,8 +7,10 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.keyboards.CategoryKeyboards
+import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
+import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
@@ -18,7 +20,7 @@ import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
  */
 @Component
 class CategoryCommandHandlerFetcher(
-    private val bot: Executor,
+    private val messageSenderService: MessageSenderService,
     private val updatesUtil: UpdatesUtil,
 ) : GeneralFetcher() {
     private data class RequestData(
@@ -66,16 +68,25 @@ class CategoryCommandHandlerFetcher(
     }
 
     private fun sendMessage(data: RequestData, text: String) {
-        val lastSent = bot.execute(SendMessage(data.chatId, text)).messageId
+        val lastSent = messageSenderService.sendMessage(
+            MessageParams(
+                chatId = data.chatId,
+                text = text
+            )
+        ).chatId
         data.userInfo = data.userInfo.copy(
             data = lastSent.toString(),
         )
     }
 
     private fun sendMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup) {
-        val msg = SendMessage(data.chatId, text)
-        msg.replyMarkup = keyboard
-        val lastSent = bot.execute(msg).messageId
+        val lastSent = messageSenderService.sendMessage(
+            MessageParams(
+                chatId = data.chatId,
+                text = text,
+                replyMarkup = keyboard
+            )
+        ).chatId
         data.userInfo = data.userInfo.copy(
             data = lastSent.toString(),
         )
