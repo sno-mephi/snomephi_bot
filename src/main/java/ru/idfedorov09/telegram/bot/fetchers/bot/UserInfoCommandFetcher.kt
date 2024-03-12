@@ -1,13 +1,14 @@
 package ru.idfedorov09.telegram.bot.fetchers.bot
 
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
+import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.UserRepository
+import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
@@ -21,10 +22,8 @@ class UserInfoCommandFetcher(
     private val updatesUtil: UpdatesUtil,
     private val userRepository: UserRepository,
     private val bot: Executor,
+    private val messageSenderService: MessageSenderService,
 ) : GeneralFetcher() {
-    companion object {
-        private val log = LoggerFactory.getLogger(UserInfoCommandFetcher::class.java)
-    }
 
     @InjectData
     fun doFetch(
@@ -34,7 +33,7 @@ class UserInfoCommandFetcher(
         val chatId = updatesUtil.getChatId(update) ?: return
         val messageText = updatesUtil.getText(update) ?: return
 
-        val params = UserInfoCommandFetcher.Params(
+        val params = Params(
             messageText = messageText,
             userActualizedInfo = userActualizedInfo,
             update = update,
@@ -46,9 +45,14 @@ class UserInfoCommandFetcher(
         }
     }
 
-    private fun handleCommands(params: UserInfoCommandFetcher.Params) {
+    private fun handleCommands(params: Params) {
         if (!TextCommands.USER_INFO.isAllowed(params.userActualizedInfo)) {
-            bot.execute(SendMessage(params.chatId, "Нет прав"))
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = params.chatId,
+                    text = "Нет прав"
+                )
+            )
             return
         }
 
@@ -56,11 +60,11 @@ class UserInfoCommandFetcher(
             .find(params.messageText)?.value?.let { Regex("""\d+""").find(it)?.value }
 
         if (tui == null) {
-            bot.execute(
-                SendMessage(
-                    params.chatId,
-                    "отправьте команду формата\n\"/userInfo tui\"",
-                ),
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = params.chatId,
+                    text = "отправьте команду формата\n\"/userInfo tui\"",
+                )
             )
             return
         }
@@ -98,13 +102,16 @@ class UserInfoCommandFetcher(
         } else {
             userRoles = "\nпусто"
         }
-
-        val msg = SendMessage()
-        msg.chatId = params.chatId
-        msg.text = "\uD83D\uDC64ФИО: $fullName\n\uD83D\uDCDAгруппа: $studyGroup\n\n\uD83D\uDD11роли:$userRoles\n\n" +
+        val msgText = "\uD83D\uDC64ФИО: $fullName\n\uD83D\uDCDAгруппа: $studyGroup\n\n\uD83D\uDD11роли:$userRoles\n\n" +
             "\uD83D\uDCF1последний ник в tg: $lastTgNick\n\n\uD83D\uDDD2категории:$userCategories\n\ntui: $tui\n" +
             "id: $id\n\nпоследнее действие: $lastUserActionType"
-        bot.execute(msg)
+
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = params.chatId,
+                text = msgText
+            )
+        )
     }
 
     private data class Params(
