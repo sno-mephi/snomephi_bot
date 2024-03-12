@@ -23,13 +23,15 @@ object MessageSenderUtil {
                     }
                 )
             } else {
-                SendPhoto().also {
-                    it.chatId = chatId
-                    it.caption = text
-                    it.photo = photo
-                    it.replyMarkup = replyMarkup
-                    it.parseMode = parseMode
-                }
+                bot.execute(
+                    SendPhoto().also {
+                        it.chatId = chatId
+                        it.caption = text
+                        it.photo = photo
+                        it.replyMarkup = replyMarkup
+                        it.parseMode = parseMode
+                    }
+                )
             }
         }
     }
