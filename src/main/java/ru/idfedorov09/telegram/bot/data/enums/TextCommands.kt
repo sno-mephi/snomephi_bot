@@ -59,6 +59,7 @@ enum class TextCommands(
 
     WEEKLY_EVENTS(
         commandText = "Мероприятия недели",
+        description = "присылает информацию о всех мероприятиях, запланированных на текущую неделю",
     ),
     ;
 
