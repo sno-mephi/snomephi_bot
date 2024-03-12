@@ -17,6 +17,7 @@ import ru.idfedorov09.telegram.bot.data.enums.TextCommands.BROADCAST_CONSTRUCTOR
 import ru.idfedorov09.telegram.bot.data.model.Broadcast
 import ru.idfedorov09.telegram.bot.data.model.Button
 import ru.idfedorov09.telegram.bot.data.model.CallbackData
+import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
@@ -24,6 +25,7 @@ import ru.idfedorov09.telegram.bot.repo.ButtonRepository
 import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository
 import ru.idfedorov09.telegram.bot.service.BroadcastSenderService
+import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 import java.time.LocalDateTime
@@ -42,6 +44,7 @@ class BroadcastConstructorFetcher(
     private val broadcastRepository: BroadcastRepository,
     private val buttonRepository: ButtonRepository,
     private val broadcastSenderService: BroadcastSenderService,
+    private val messageSenderService: MessageSenderService,
 ) : GeneralFetcher() {
 
     @InjectData
@@ -156,12 +159,12 @@ class BroadcastConstructorFetcher(
                     }
                 }.map { listOf(it) }
 
-            val sentMessage = params.bot.execute(
-                SendMessage().also {
-                    it.text = "\uD83D\uDCDD Отправь мне текст коллбэка"
-                    it.chatId = tui
-                    it.replyMarkup = createKeyboard(keyboard)
-                },
+            val sentMessage = messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = tui,
+                    replyMarkup = createKeyboard(keyboard),
+                    text = "\uD83D\uDCDD Отправь мне текст коллбэка"
+                )
             )
             bcData = bcData?.copy(
                 lastConsoleMessageId = sentMessage.messageId,
@@ -173,13 +176,13 @@ class BroadcastConstructorFetcher(
     private fun changeText(params: Params) {
         params.userActualizedInfo.apply {
             if (bcData?.imageHash != null && params.update.message.text.length > 900) {
-                params.bot.execute(
-                    SendMessage().also {
-                        it.text = "Ошибка! Невозможно добавить текст длины" +
-                            " ${params.update.message.text.length} > 900 если приложена фотография. " +
-                            "Измените текст или удалите фотографию."
-                        it.chatId = tui
-                    },
+                messageSenderService.sendMessage(
+                    MessageParams(
+                        chatId = tui,
+                        text = "Ошибка! Невозможно добавить текст длины" +
+                                " ${params.update.message.text.length} > 900 если приложена фотография. " +
+                                "Измени текст или удали фотографию."
+                    )
                 )
             } else {
                 bcData = bcData?.copy(
@@ -194,13 +197,13 @@ class BroadcastConstructorFetcher(
     private fun changePhoto(params: Params) {
         params.userActualizedInfo.apply {
             if ((bcData?.text?.length ?: 0) > 900) {
-                params.bot.execute(
-                    SendMessage().also {
-                        it.text = "Ошибка! Невозможно добавить фотографию, длина текста " +
-                            "${bcData?.text?.length} > 900. Измените текст или не " +
-                            "прикладывайте фотографию"
-                        it.chatId = tui
-                    },
+                messageSenderService.sendMessage(
+                    MessageParams(
+                        chatId = tui,
+                        text = "Ошибка! Невозможно добавить фотографию, длина текста " +
+                                "${bcData?.text?.length} > 900. Измените текст или не " +
+                                "прикладывайте фотографию"
+                    )
                 )
             } else {
                 val photoBroadcast = params.bot.execute(
@@ -255,11 +258,11 @@ class BroadcastConstructorFetcher(
 
             // удаляем консоль, она больше не нужна
             bcData?.lastConsoleMessageId?.let { consoleId ->
-                params.bot.execute(
-                    DeleteMessage().also {
-                        it.chatId = tui
-                        it.messageId = consoleId
-                    },
+                messageSenderService.deleteMessage(
+                    MessageParams(
+                        chatId = tui,
+                        messageId = consoleId
+                    )
                 )
             }
 
@@ -284,11 +287,11 @@ class BroadcastConstructorFetcher(
             }
             val okayMessage = "☃\uFE0F Рассылка успешно создана! Обязательно сообщу, когда рассылка будет завершена!"
 
-            params.bot.execute(
-                SendMessage().also {
-                    it.chatId = tui
-                    it.text = okayMessage
-                },
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = tui,
+                    text = okayMessage
+                )
             )
             lastUserActionType = LastUserActionType.DEFAULT
         }
@@ -323,16 +326,16 @@ class BroadcastConstructorFetcher(
         params.userActualizedInfo.apply {
             val buttons = buttonRepository.findAllValidButtonsForBroadcast(bcData?.id!!)
             if (buttons.size >= MAX_BROADCAST_BUTTONS_COUNT) {
-                params.bot.execute(
-                    SendMessage().also {
-                        it.text = "☠\uFE0F Ты добавил слишком много кнопок. Отредактируй или удали лишние плиз"
-                        it.chatId = tui
-                    },
+                messageSenderService.sendMessage(
+                    MessageParams(
+                        chatId = tui,
+                        text = "☠\uFE0F Ты добавил слишком много кнопок. Отредактируй или удали лишние плиз"
+                    )
                 )
                 return
             }
 
-            val newButton = buttonRepository.save(
+            buttonRepository.save(
                 Button(
                     authorId = id,
                     broadcastId = bcData?.id,
@@ -360,12 +363,12 @@ class BroadcastConstructorFetcher(
                 }.map { listOf(it) }
 
             removeBcConsole(params)
-            val sentMessage = params.bot.execute(
-                SendMessage().also {
-                    it.text = "\uD83D\uDCDD Отправь мне текст, который будет отображаться на кнопке"
-                    it.chatId = tui
-                    it.replyMarkup = createKeyboard(keyboard)
-                },
+            val sentMessage = messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = tui,
+                    text = "\uD83D\uDCDD Отправь мне текст, который будет отображаться на кнопке",
+                    replyMarkup = createKeyboard(keyboard)
+                )
             )
             bcData = bcData?.copy(
                 lastConsoleMessageId = sentMessage.messageId,
@@ -391,12 +394,12 @@ class BroadcastConstructorFetcher(
                 }.map { listOf(it) }
 
             removeBcConsole(params)
-            val sentMessage = params.bot.execute(
-                SendMessage().also {
-                    it.text = "\uD83D\uDCDD Отправь мне текст с нужной ссылкой"
-                    it.chatId = tui
-                    it.replyMarkup = createKeyboard(keyboard)
-                },
+            val sentMessage = messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = tui,
+                    text = "\uD83D\uDCDD Отправь мне текст с нужной ссылкой",
+                    replyMarkup = createKeyboard(keyboard)
+                )
             )
             bcData = bcData?.copy(
                 lastConsoleMessageId = sentMessage.messageId,
@@ -422,14 +425,14 @@ class BroadcastConstructorFetcher(
                     }
                 }.map { listOf(it) }
 
-            params.bot.execute(
-                SendMessage().also {
-                    it.text = "\uD83E\uDD21 Слишком длинная надпись для кнопки! " +
-                        "Ограничение на длину символов: 32. Повтори попытку.\n\n" +
-                        "\uD83D\uDCDD Отправь мне текст, который будет отображаться на кнопке"
-                    it.chatId = params.userActualizedInfo.tui
-                    it.replyMarkup = createKeyboard(keyboard)
-                },
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = params.userActualizedInfo.tui,
+                    replyMarkup = createKeyboard(keyboard),
+                    text = "\uD83E\uDD21 Слишком длинная надпись для кнопки! " +
+                            "Ограничение на длину символов: 32. Повтори попытку.\n\n" +
+                            "\uD83D\uDCDD Отправь мне текст, который будет отображаться на кнопке"
+                )
             )
             return
         }
@@ -511,16 +514,16 @@ class BroadcastConstructorFetcher(
                     }
                     .map { listOf(it) }
 
-            val sentMessage = params.bot.execute(
-                SendMessage().also {
-                    it.text = "Настройки кнопки:\n\n" +
-                        "Надпись на кнопке: $caption\n" +
-                        "Ссылка: $urlTextCode $urlTextLink\n" +
-                        "Коллбэк: $callbackDataText"
-                    it.chatId = tui
-                    it.parseMode = ParseMode.HTML
-                    it.replyMarkup = createKeyboard(keyboard)
-                },
+            val sentMessage = messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = tui,
+                    text = "Настройки кнопки:\n\n" +
+                            "Надпись на кнопке: $caption\n" +
+                            "Ссылка: $urlTextCode $urlTextLink\n" +
+                            "Коллбэк: $callbackDataText",
+                    parseMode = ParseMode.HTML,
+                    replyMarkup = createKeyboard(keyboard)
+                )
             )
 
             bcData = bcData?.copy(
@@ -562,13 +565,13 @@ class BroadcastConstructorFetcher(
                 }
             }.map { listOf(it) }
 
-        val sent = params.bot.execute(
-            SendMessage().also {
-                it.text = messageText
-                it.parseMode = ParseMode.HTML
-                it.replyMarkup = createKeyboard(keyboard)
-                it.chatId = params.userActualizedInfo.tui
-            },
+        val sent = messageSenderService.sendMessage(
+            MessageParams(
+                chatId = params.userActualizedInfo.tui,
+                text = messageText,
+                parseMode = ParseMode.HTML,
+                replyMarkup = createKeyboard(keyboard)
+            )
         )
 
         params.userActualizedInfo.bcData = params.userActualizedInfo.bcData?.copy(
@@ -589,12 +592,12 @@ class BroadcastConstructorFetcher(
 
         val cancelButton = CallbackData(callbackData = "#bc_action_cancel", metaText = "Отмена").save()
 
-        val sent = params.bot.execute(
-            SendMessage().also {
-                it.text = msgText
-                it.chatId = params.userActualizedInfo.tui
-                it.parseMode = ParseMode.MARKDOWNV2
-                it.replyMarkup = createKeyboard(
+        val sent = messageSenderService.sendMessage(
+            MessageParams(
+                chatId = params.userActualizedInfo.tui,
+                text = msgText,
+                parseMode = ParseMode.MARKDOWNV2,
+                replyMarkup = createKeyboard(
                     listOf(
                         listOf(
                             InlineKeyboardButton().also {
@@ -603,8 +606,8 @@ class BroadcastConstructorFetcher(
                             },
                         ),
                     ),
-                )
-            },
+                ),
+            )
         )
         params.userActualizedInfo.bcData = params.userActualizedInfo.bcData?.copy(
             lastConsoleMessageId = sent.messageId,
@@ -618,12 +621,11 @@ class BroadcastConstructorFetcher(
         val cancelButton = CallbackData(callbackData = "#bc_action_cancel", metaText = "Отмена").save()
         val deletePhoto = CallbackData(callbackData = "#bc_delete_photo", metaText = "Удалить фото").save()
 
-        params.bot.execute(
-            SendMessage().also {
-                it.text = msgText
-                it.chatId = params.userActualizedInfo.tui
-                it.parseMode = ParseMode.MARKDOWNV2
-                it.replyMarkup = createKeyboard(
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = params.userActualizedInfo.tui,
+                text = msgText,
+                replyMarkup = createKeyboard(
                     listOf(
                         listOf(
                             InlineKeyboardButton().also {
@@ -639,7 +641,7 @@ class BroadcastConstructorFetcher(
                         ),
                     ),
                 )
-            },
+            )
         )
         params.userActualizedInfo.lastUserActionType = LastUserActionType.BC_PHOTO_TYPE
     }
@@ -649,12 +651,11 @@ class BroadcastConstructorFetcher(
         val msgStart = prefix?.let { "$prefix\n" } ?: ""
         val msgText = msgStart + "Отправьте время запуска рассылки в формате 'дд.мм.гггг чч:мм'"
         val cancelButton = CallbackData(callbackData = "#bc_action_cancel", metaText = "Отмена").save()
-        val sent = params.bot.execute(
-            SendMessage().also {
-                it.text = msgText
-                it.chatId = params.userActualizedInfo.tui
-                it.parseMode = ParseMode.HTML
-                it.replyMarkup = createKeyboard(
+        val sent = messageSenderService.sendMessage(
+            MessageParams(
+                chatId = params.userActualizedInfo.tui,
+                text = msgText,
+                replyMarkup = createKeyboard(
                     listOf(
                         listOf(
                             InlineKeyboardButton().also {
@@ -664,7 +665,7 @@ class BroadcastConstructorFetcher(
                         ),
                     ),
                 )
-            },
+            )
         )
         params.userActualizedInfo.bcData = params.userActualizedInfo.bcData?.copy(
             lastConsoleMessageId = sent.messageId,

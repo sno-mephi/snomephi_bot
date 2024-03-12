@@ -10,9 +10,11 @@ import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.keyboards.CategoryKeyboards
 import ru.idfedorov09.telegram.bot.data.model.Category
+import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository
+import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
@@ -22,7 +24,7 @@ import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
  */
 @Component
 class CategoryActionTypeHandlerFetcher(
-    private val bot: Executor,
+    private val messageSenderService: MessageSenderService,
     private val updatesUtil: UpdatesUtil,
     private val categoryRepository: CategoryRepository,
 ) : GeneralFetcher() {
@@ -82,11 +84,12 @@ class CategoryActionTypeHandlerFetcher(
                 changedByTui = category.changedByTui,
             ),
         )
-        bot.execute(
-            DeleteMessage(
-                data.chatId,
-                data.update.message.messageId,
-            ),
+
+        messageSenderService.deleteMessage(
+            MessageParams(
+                chatId = data.chatId,
+                messageId = data.update.message.messageId
+            )
         )
         data.userInfo.data?.toInt()?.let {
             editMessage(
@@ -140,11 +143,11 @@ class CategoryActionTypeHandlerFetcher(
                 changedByTui = category.changedByTui,
             ),
         )
-        bot.execute(
-            DeleteMessage(
-                data.chatId,
-                data.update.message.messageId,
-            ),
+        messageSenderService.deleteMessage(
+            MessageParams(
+                chatId = data.chatId,
+                messageId = data.update.message.messageId
+            )
         )
         data.userInfo.data?.toInt()?.let {
             editMessage(
@@ -182,12 +185,13 @@ class CategoryActionTypeHandlerFetcher(
                 changedByTui = category.changedByTui,
             ),
         )
-        bot.execute(
-            DeleteMessage(
-                data.chatId,
-                data.update.message.messageId,
-            ),
+        messageSenderService.deleteMessage(
+            MessageParams(
+                chatId = data.chatId,
+                messageId = data.update.message.messageId
+            )
         )
+
         data.userInfo.data?.toInt()?.let {
             editMessage(
                 it,
@@ -203,24 +207,24 @@ class CategoryActionTypeHandlerFetcher(
 
     private fun editMessage(messageId: Int, data: RequestData, text: String, keyboard: InlineKeyboardMarkup?) {
         val msgId = messageId
-        bot.execute(
-            EditMessageText(
-                data.chatId,
-                msgId,
-                null,
-                text,
-                null,
-                null,
-                keyboard,
-                null,
-            ),
+        messageSenderService.editMessage(
+            MessageParams(
+                chatId = data.chatId,
+                messageId = msgId,
+                text = text,
+                replyMarkup = keyboard
+            )
         )
     }
 
     private fun sendMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup) {
-        val msg = SendMessage(data.chatId, text)
-        msg.replyMarkup = keyboard
-        val lastSent = bot.execute(msg).messageId
+        val lastSent = messageSenderService.sendMessage(
+            MessageParams(
+                chatId = data.chatId,
+                text = text,
+                replyMarkup = keyboard
+            )
+        ).messageId
         data.userInfo = data.userInfo.copy(
             data = lastSent.toString(),
         )
