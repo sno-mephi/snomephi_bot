@@ -55,7 +55,6 @@ class BroadcastConstructorFetcher(
             userActualizedInfo,
             update,
         )
-
         when {
             update.hasMessage() && update.message.hasText() -> textCommandsHandler(params)
             update.hasCallbackQuery() -> callbackQueryHandler(update, params)
