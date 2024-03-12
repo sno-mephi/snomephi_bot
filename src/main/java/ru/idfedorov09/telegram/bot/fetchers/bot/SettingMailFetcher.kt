@@ -2,15 +2,14 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.ParseMode
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.model.Category
+import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
-import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository
-import ru.idfedorov09.telegram.bot.repo.UserRepository
+import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 
@@ -21,9 +20,7 @@ import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 @Component
 class SettingMailFetcher(
     private val categoryRepository: CategoryRepository,
-    private val userRepository: UserRepository,
-    private val bot: Executor,
-
+    private val messageSenderService: MessageSenderService,
 ) : GeneralFetcher() {
     @InjectData
     fun doFetch(
@@ -54,14 +51,14 @@ class SettingMailFetcher(
                 } else {
                     "<b>Выключено</b>"
                 } + " - /toggle_${it.suffix}"
-        }.joinToString(separator = "\n") { it }
+        }.joinToString(separator = "\n\n") { it }
         val mailText = "<b>Настройка уведомлений</b>\n\nВыберите интересующие вас направления:\n\n$allCategoriesInfo"
-        bot.execute(
-            SendMessage().also {
-                it.chatId = userActualizedInfo.tui
-                it.text = mailText
-                it.parseMode = ParseMode.HTML
-            },
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = userActualizedInfo.tui,
+                text = mailText,
+                parseMode = ParseMode.HTML
+            )
         )
     }
 
@@ -77,20 +74,19 @@ class SettingMailFetcher(
         if (category.isUnremovable == true) return
         if (userActualizedInfo.categories.contains(category)) {
             userCategories.remove(category)
-            bot.execute(
-                SendMessage().also {
-                    it.chatId = chatId
-                    it.text = "❌Уведомления о мероприятиях ${category.title} выключены."
-                },
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = chatId,
+                    text = "❌Уведомления о мероприятиях ${category.title} выключены."
+                )
             )
         } else {
             userCategories.add(category)
-
-            bot.execute(
-                SendMessage().also {
-                    it.chatId = chatId
-                    it.text = "✅Уведомления о мероприятиях  ${category.title} включены.."
-                },
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = chatId,
+                    text = "✅Уведомления о мероприятиях  ${category.title} включены."
+                )
             )
         }
     }

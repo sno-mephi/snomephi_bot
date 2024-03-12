@@ -11,12 +11,14 @@ import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.*
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
+import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.Quest
 import ru.idfedorov09.telegram.bot.data.model.QuestDialogMessage
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.QuestDialogMessageRepository
 import ru.idfedorov09.telegram.bot.repo.QuestRepository
+import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
@@ -26,7 +28,7 @@ class QuestStartFetcher(
     private val updatesUtil: UpdatesUtil,
     private val questRepository: QuestRepository,
     private val questDialogMessageRepository: QuestDialogMessageRepository,
-    private val bot: Executor,
+    private val messageSenderService: MessageSenderService,
 ) : GeneralFetcher() {
 
     @InjectData
@@ -37,11 +39,9 @@ class QuestStartFetcher(
         if (!(update.hasMessage() && update.message.hasText())) return
 
         // создаем новый вопрос если пользователь сейчас не в активном диалоге
-        if (userActualizedInfo.activeQuest != null ||
-            !(
-                userActualizedInfo.lastUserActionType == LastUserActionType.DEFAULT ||
-                    userActualizedInfo.lastUserActionType == LastUserActionType.ACT_QUEST_ANS_CLICK
-                )
+        if (userActualizedInfo.activeQuest != null
+            || !(userActualizedInfo.lastUserActionType == LastUserActionType.DEFAULT
+                    || userActualizedInfo.lastUserActionType == LastUserActionType.ACT_QUEST_ANS_CLICK)
         ) {
             return
         }
@@ -95,35 +95,37 @@ class QuestStartFetcher(
 
         quest.dialogHistory.add(questDialogMessage.id!!)
 
-        bot.execute(
-            SendMessage().also {
-                it.chatId = userActualizedInfo.tui
-                it.text = "✉\uFE0F Сформировано обращение #${quest.id}. Ожидайте ответа."
-            },
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = userActualizedInfo.tui,
+                text = "✉\uFE0F Сформировано обращение #${quest.id}. Ожидайте ответа."
+            )
         )
 
         // TODO: обработать случай когда у юзера нет никнейма
         // TODO: добавить время обращения
-        bot.execute(
-            SendMessage().also {
-                it.chatId = QUEST_RESPONDENT_CHAT_ID
-                it.text =
-                    "\uD83D\uDCE5 Получен вопрос #${quest.id} от @${userActualizedInfo.lastTgNick} (${userActualizedInfo.fullName})"
-            },
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = QUEST_RESPONDENT_CHAT_ID,
+                text = "\uD83D\uDCE5 Получен вопрос #${quest.id} " +
+                        "от @${userActualizedInfo.lastTgNick} (${userActualizedInfo.fullName})"
+            )
         )
-        bot.execute(
-            ForwardMessage().also {
-                it.chatId = QUEST_RESPONDENT_CHAT_ID
-                it.fromChatId = updatesUtil.getChatId(update).toString()
-                it.messageId = update.message.messageId
-            },
+
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = QUEST_RESPONDENT_CHAT_ID,
+                fromChatId = updatesUtil.getChatId(update).toString(),
+                messageId = update.message.messageId
+            )
         )
-        val sentMessage = bot.execute(
-            SendMessage().also {
-                it.chatId = QUEST_RESPONDENT_CHAT_ID
-                it.text = "Выберите действие:"
-                it.replyMarkup = createChooseKeyboard(quest)
-            },
+
+        val sentMessage = messageSenderService.sendMessage(
+            MessageParams(
+                chatId = QUEST_RESPONDENT_CHAT_ID,
+                text = "Выберите действие:",
+                replyMarkup = createChooseKeyboard(quest)
+            )
         )
 
         quest.copy(

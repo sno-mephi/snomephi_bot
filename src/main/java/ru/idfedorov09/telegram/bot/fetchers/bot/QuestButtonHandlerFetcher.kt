@@ -20,12 +20,14 @@ import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
+import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.Quest
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.QuestDialogMessageRepository
 import ru.idfedorov09.telegram.bot.repo.QuestRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
+import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 import java.lang.NumberFormatException
@@ -37,6 +39,7 @@ import kotlin.jvm.optionals.getOrNull
 @Component
 class QuestButtonHandlerFetcher(
     private val bot: Executor,
+    private val messageSenderService: MessageSenderService,
     private val questRepository: QuestRepository,
     private val userRepository: UserRepository,
     private val dialogMessageRepository: QuestDialogMessageRepository,
@@ -91,12 +94,12 @@ class QuestButtonHandlerFetcher(
             ),
         )
 
-        bot.execute(
-            SendMessage().also {
-                it.chatId = questionAuthor.tui!!
-                it.text = "<i>С вами общается оператор по поводу обращения #${data.quest.id}</i>"
-                it.parseMode = ParseMode.HTML
-            },
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = questionAuthor.tui!!,
+                text = "<i>С вами общается оператор по поводу обращения #${data.quest.id}</i>",
+                parseMode = ParseMode.HTML,
+            )
         )
 
         // клавиатура с командой завершения диалога
@@ -110,23 +113,24 @@ class QuestButtonHandlerFetcher(
             it.resizeKeyboard = true
         }
 
-        bot.execute(
-            SendMessage().also {
-                it.chatId = data.userActualizedInfo.tui
-                it.text = "<i>Ты перешел в диалог с пользователем @${questionAuthor.lastTgNick}. " +
-                    "Несмотря на твою анонимность, оставайся вежливым :)</i>"
-                it.parseMode = ParseMode.HTML
-                it.replyMarkup = closeDialogKeyboard
-            },
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = data.userActualizedInfo.tui,
+                text = "<i>Ты перешел в диалог с пользователем @${questionAuthor.lastTgNick}. " +
+                        "Несмотря на твою анонимность, оставайся вежливым :)</i>",
+                parseMode = ParseMode.HTML,
+                replyMarkup = closeDialogKeyboard
+            )
         )
 
-        bot.execute(
-            EditMessageText().also {
-                it.chatId = QUEST_RESPONDENT_CHAT_ID
-                it.messageId = quest.consoleMessageId!!.toInt()
-                it.text = "✏\uFE0F ${data.userActualizedInfo.lastTgNick} ведет диалог"
-            },
+        messageSenderService.editMessage(
+            MessageParams(
+                chatId = QUEST_RESPONDENT_CHAT_ID,
+                messageId = quest.consoleMessageId!!.toInt(),
+                text = "✏\uFE0F ${data.userActualizedInfo.lastTgNick} ведет диалог"
+            )
         )
+
         return data.userActualizedInfo.copy(
             activeQuest = data.quest,
         )
@@ -143,12 +147,12 @@ class QuestButtonHandlerFetcher(
 
         // TODO: а если у пользователя нет ника?
         val newText = "\uD83D\uDFE1 Проигнорировано пользователем @${data.userActualizedInfo.lastTgNick}."
-        bot.execute(
-            EditMessageText().also {
-                it.chatId = QUEST_RESPONDENT_CHAT_ID
-                it.messageId = data.quest.consoleMessageId?.toInt()
-                it.text = newText
-            },
+        messageSenderService.editMessage(
+            MessageParams(
+                chatId = QUEST_RESPONDENT_CHAT_ID,
+                messageId = data.quest.consoleMessageId?.toInt(),
+                text = newText
+            )
         )
         return data.userActualizedInfo
     }
@@ -160,26 +164,28 @@ class QuestButtonHandlerFetcher(
         val questionAuthor = userRepository.findById(data.quest.authorId!!).get()
         val firstMessage = dialogMessageRepository.findById(data.quest.dialogHistory.first()).get()
 
-        bot.execute(
-            SendMessage().also {
-                it.chatId = data.userActualizedInfo.tui
-                it.text = "Кажется, ты хотел(-а) ответить на следующее сообщение:"
-            },
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = data.userActualizedInfo.tui,
+                text = "Кажется, ты хотел(-а) ответить на следующее сообщение:"
+            )
         )
-        bot.execute(
-            ForwardMessage().also {
-                it.chatId = data.userActualizedInfo.tui
-                it.fromChatId = questionAuthor.tui.toString()
-                it.messageId = firstMessage.messageId!!
-            },
+
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = data.userActualizedInfo.tui,
+                fromChatId = questionAuthor.tui.toString(),
+                messageId = firstMessage.messageId!!
+            )
         )
-        bot.execute(
-            SendMessage().also {
-                it.chatId = data.userActualizedInfo.tui
-                it.text = "Ты можешь либо ответить анонимно одним сообщением, отправив его сейчас, " +
-                    "либо начать анонимный диалог с пользователем."
-                it.replyMarkup = createChooseKeyboard(data.quest)
-            },
+
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = data.userActualizedInfo.tui,
+                text = "Ты можешь либо ответить анонимно одним сообщением, отправив его сейчас, " +
+                        "либо начать анонимный диалог с пользователем.",
+                replyMarkup = createChooseKeyboard(data.quest)
+            )
         )
 
         return data.userActualizedInfo.copy(
@@ -203,13 +209,13 @@ class QuestButtonHandlerFetcher(
 
         // TODO: а если у пользователя нет ника?
         val newText = "\uD83D\uDD34 Автор забанен пользователем @${data.userActualizedInfo.lastTgNick}."
-        bot.execute(
-            EditMessageText().also {
-                it.chatId = QUEST_RESPONDENT_CHAT_ID
-                it.messageId = data.quest.consoleMessageId?.toInt()
-                it.text = newText
-                it.replyMarkup = createUnbanKeyboard(data.quest)
-            },
+        messageSenderService.editMessage(
+            MessageParams(
+                chatId = QUEST_RESPONDENT_CHAT_ID,
+                messageId = data.quest.consoleMessageId?.toInt(),
+                text = newText,
+                replyMarkup = createUnbanKeyboard(data.quest)
+            )
         )
 
         return data.userActualizedInfo

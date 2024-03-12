@@ -1,13 +1,12 @@
 package ru.idfedorov09.telegram.bot.fetchers.bot
 
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
+import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
-import ru.idfedorov09.telegram.bot.executor.Executor
+import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
@@ -19,15 +18,12 @@ import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 @Component
 class RoleDescriptionFetcher(
     private val updatesUtil: UpdatesUtil,
+    private val messageSenderService: MessageSenderService,
 ) : GeneralFetcher() {
-    companion object {
-        private val log = LoggerFactory.getLogger(RoleDescriptionFetcher::class.java)
-    }
 
     @InjectData
     fun doFetch(
         update: Update,
-        bot: Executor,
         userActualizedInfo: UserActualizedInfo,
     ) {
         val chatId = updatesUtil.getChatId(update) ?: return
@@ -36,13 +32,25 @@ class RoleDescriptionFetcher(
         if (!TextCommands.ROLE_DESCRIPTION.commandText.equals(messageText)) return
 
         if (!TextCommands.ROLE_DESCRIPTION.isAllowed(userActualizedInfo)) {
-            bot.execute(SendMessage(chatId, "Нет прав"))
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = chatId,
+                    text = "Нет прав"
+                )
+            )
+
             return
         }
 
         val text = UserRole.entries.joinToString("\n\n") {
             "- ${it}\n\t${it.description}"
         }
-        bot.execute(SendMessage(chatId, text))
+
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = chatId,
+                text = text
+            )
+        )
     }
 }
