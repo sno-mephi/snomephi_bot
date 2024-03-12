@@ -113,9 +113,9 @@ class QuestButtonHandlerFetcher(
         bot.execute(
             SendMessage().also {
                 it.chatId = data.userActualizedInfo.tui
-                it.text = "_Ты перешел в диалог с пользователем @${questionAuthor.lastTgNick}\\. " +
-                    "Несмотря на твою анонимность, оставайся вежливым :\\)_"
-                it.parseMode = ParseMode.MARKDOWNV2
+                it.text = "<i>Ты перешел в диалог с пользователем @${questionAuthor.lastTgNick}. " +
+                    "Несмотря на твою анонимность, оставайся вежливым :)</i>"
+                it.parseMode = ParseMode.HTML
                 it.replyMarkup = closeDialogKeyboard
             },
         )
