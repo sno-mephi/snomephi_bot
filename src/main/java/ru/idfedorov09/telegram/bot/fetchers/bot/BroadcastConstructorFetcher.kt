@@ -2,9 +2,6 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.ParseMode
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage
-import org.telegram.telegrambots.meta.api.methods.send.SendPhoto
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
@@ -50,11 +47,9 @@ class BroadcastConstructorFetcher(
     @InjectData
     fun doFetch(
         userActualizedInfo: UserActualizedInfo,
-        update: Update,
-        bot: Executor,
+        update: Update
     ) {
         val params = Params(
-            bot,
             userActualizedInfo,
             update,
         )
@@ -206,12 +201,13 @@ class BroadcastConstructorFetcher(
                     )
                 )
             } else {
-                val photoBroadcast = params.bot.execute(
-                    SendPhoto().also {
-                        it.chatId = TRASH_CHAT_ID
-                        it.photo = InputFile(params.update.message.photo.last().fileId)
-                    },
-                ).photo.firstOrNull()?.fileId
+                val photoBroadcast = messageSenderService.sendMessage(
+                    MessageParams(
+                        chatId = TRASH_CHAT_ID,
+                        photo = InputFile(params.update.message.photo.last().fileId)
+                    )
+                ).photo.lastOrNull()?.fileId
+
                 bcData = bcData?.copy(
                     imageHash = photoBroadcast,
                 )
@@ -699,12 +695,12 @@ class BroadcastConstructorFetcher(
             }.joinToString(separator = "\n") { it }
             val msgText = "<b>Настройка категорий</b>\n\nВыберите категории рассылки (если все выключены, " +
                 "то рассылка будет по всем пользователям):\n\n$allCategoriesInfo"
-            params.bot.execute(
-                SendMessage().also {
-                    it.chatId = tui
-                    it.text = msgText
-                    it.parseMode = ParseMode.HTML
-                    it.replyMarkup = createKeyboard(
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = tui,
+                    text = msgText,
+                    parseMode = ParseMode.HTML,
+                    replyMarkup = createKeyboard(
                         listOf(
                             listOf(
                                 InlineKeyboardButton().also {
@@ -720,7 +716,7 @@ class BroadcastConstructorFetcher(
                             ),
                         ),
                     )
-                },
+                )
             )
             lastUserActionType = LastUserActionType.BC_CHANGE_CATEGORIES
         }
@@ -748,11 +744,11 @@ class BroadcastConstructorFetcher(
             bcData ?: return
             bcData?.lastConsoleMessageId ?: return
 
-            params.bot.execute(
-                DeleteMessage().also {
-                    it.chatId = tui
-                    it.messageId = bcData?.lastConsoleMessageId!!
-                },
+            messageSenderService.deleteMessage(
+                MessageParams(
+                    chatId = tui,
+                    messageId = bcData?.lastConsoleMessageId!!
+                )
             )
             bcData = bcData?.copy(
                 lastConsoleMessageId = null,
@@ -782,13 +778,13 @@ class BroadcastConstructorFetcher(
                         }
                     }.map { listOf(it) }
 
-                val sent = params.bot.execute(
-                    SendMessage().also {
-                        it.text = messageText
-                        it.parseMode = ParseMode.HTML
-                        it.replyMarkup = createKeyboard(keyboard)
-                        it.chatId = params.userActualizedInfo.tui
-                    },
+                val sent = messageSenderService.sendMessage(
+                    MessageParams(
+                        text = messageText,
+                        parseMode = ParseMode.HTML,
+                        replyMarkup = createKeyboard(keyboard),
+                        chatId = params.userActualizedInfo.tui
+                    )
                 )
 
                 bcData = bcData?.copy(
@@ -852,23 +848,23 @@ class BroadcastConstructorFetcher(
                 // TODO: добавить везде где есть предпросмотр ? хз
                 runCatching {
                     when (bcData?.imageHash) {
-                        null -> params.bot.execute(
-                            SendMessage().also {
-                                it.chatId = params.userActualizedInfo.tui
-                                it.text = text
-                                it.replyMarkup = createKeyboard(keyboard)
-                                it.parseMode = ParseMode.HTML
-                            },
+                        null -> messageSenderService.sendMessage(
+                            MessageParams(
+                                chatId = params.userActualizedInfo.tui,
+                                text = text,
+                                replyMarkup = createKeyboard(keyboard),
+                                parseMode = ParseMode.HTML
+                            )
                         )
 
-                        else -> params.bot.execute(
-                            SendPhoto().also {
-                                it.chatId = params.userActualizedInfo.tui
-                                it.caption = text
-                                it.parseMode = ParseMode.HTML
-                                it.replyMarkup = createKeyboard(keyboard)
-                                it.photo = InputFile(bcData?.imageHash)
-                            },
+                        else -> messageSenderService.sendMessage(
+                            MessageParams(
+                                chatId = params.userActualizedInfo.tui,
+                                text =text,
+                                parseMode = ParseMode.HTML,
+                                replyMarkup = createKeyboard(keyboard),
+                                photo = InputFile(bcData?.imageHash)
+                            )
                         )
                     }
                 }.onFailure {
@@ -879,12 +875,12 @@ class BroadcastConstructorFetcher(
                                 ?.replace(">", "&gt;")
                         }</pre>\n\nПопробуй еще раз."
 
-                    params.bot.execute(
-                        SendMessage().also {
-                            it.text = failText
-                            it.chatId = params.userActualizedInfo.tui
-                            it.parseMode = ParseMode.HTML
-                        },
+                    messageSenderService.sendMessage(
+                        MessageParams(
+                            text = failText,
+                            chatId = params.userActualizedInfo.tui,
+                            parseMode = ParseMode.HTML
+                        )
                     )
                 }.onSuccess {
                     bcData = bcData?.copy(
@@ -902,7 +898,6 @@ class BroadcastConstructorFetcher(
     private fun CallbackData.save() = callbackDataRepository.save(this)
 
     private data class Params(
-        val bot: Executor,
         var userActualizedInfo: UserActualizedInfo,
         val update: Update,
     )
