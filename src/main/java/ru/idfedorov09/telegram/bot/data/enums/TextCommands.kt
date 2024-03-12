@@ -7,7 +7,7 @@ enum class TextCommands(
     val commandText: String,
     /** роли которым доступна эта команда **/
     private val allowedRoles: List<UserRole> = listOf(UserRole.USER),
-    private val description: String? = null,
+    private val description: String? = "",
     private val isFullCommand: Boolean = true,
 ) {
     QUEST_DIALOG_CLOSE(
@@ -28,7 +28,7 @@ enum class TextCommands(
 
     SETTING_MAIL(
         commandText = "Настройка уведомлений",
-        description = "Рассылка уведомлений - открывает конструктор рассылки уведомлений для дальнейшей настройки",
+        description = "помогает настроить рассылку нужных вам уведомлений о мероприятих и кружках",
     ),
 
     TOGGLE(
