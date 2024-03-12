@@ -123,11 +123,11 @@ class QuestButtonHandlerFetcher(
             )
         )
 
-        messageSenderService.sendMessage(
+        messageSenderService.editMessage(
             MessageParams(
                 chatId = QUEST_RESPONDENT_CHAT_ID,
                 messageId = quest.consoleMessageId!!.toInt(),
-                newText = "✏\uFE0F ${data.userActualizedInfo.lastTgNick} ведет диалог"
+                text = "✏\uFE0F ${data.userActualizedInfo.lastTgNick} ведет диалог"
             )
         )
 
@@ -147,11 +147,11 @@ class QuestButtonHandlerFetcher(
 
         // TODO: а если у пользователя нет ника?
         val newText = "\uD83D\uDFE1 Проигнорировано пользователем @${data.userActualizedInfo.lastTgNick}."
-        messageSenderService.sendMessage(
+        messageSenderService.editMessage(
             MessageParams(
                 chatId = QUEST_RESPONDENT_CHAT_ID,
                 messageId = data.quest.consoleMessageId?.toInt(),
-                newText = newText
+                text = newText
             )
         )
         return data.userActualizedInfo
@@ -209,11 +209,11 @@ class QuestButtonHandlerFetcher(
 
         // TODO: а если у пользователя нет ника?
         val newText = "\uD83D\uDD34 Автор забанен пользователем @${data.userActualizedInfo.lastTgNick}."
-        messageSenderService.sendMessage(
+        messageSenderService.editMessage(
             MessageParams(
                 chatId = QUEST_RESPONDENT_CHAT_ID,
                 messageId = data.quest.consoleMessageId?.toInt(),
-                newText = newText,
+                text = newText,
                 replyMarkup = createUnbanKeyboard(data.quest)
             )
         )

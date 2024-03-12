@@ -1,19 +1,16 @@
 package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.keyboards.CategoryKeyboards
 import ru.idfedorov09.telegram.bot.data.model.Category
+import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
-import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository
+import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
@@ -23,8 +20,8 @@ import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
  */
 @Component
 class CategoryButtonHandlerFetcher(
-    private val bot: Executor,
     private val updatesUtil: UpdatesUtil,
+    private val messageSenderService: MessageSenderService,
     private val categoryRepository: CategoryRepository,
 ) : GeneralFetcher() {
     private data class RequestData(
@@ -244,17 +241,14 @@ class CategoryButtonHandlerFetcher(
                 changedByTui = null,
             ),
         )
-        bot.execute(
-            EditMessageText(
-                data.chatId,
-                data.userInfo.data?.toInt(),
-                null,
-                "✅ Категория #${category.suffix} успешно добавлена",
-                null,
-                null,
-                CategoryKeyboards.confirmationDone(),
-                null,
-            ),
+
+        messageSenderService.editMessage(
+            MessageParams(
+                chatId = data.chatId,
+                messageId = data.userInfo.data?.toInt(),
+                text = "✅ Категория #${category.suffix} успешно добавлена",
+                replyMarkup = CategoryKeyboards.confirmationDone()
+            )
         )
     }
 
@@ -325,13 +319,11 @@ class CategoryButtonHandlerFetcher(
     }
 
     private fun clickExit(data: RequestData) {
-        bot.execute(
-            data.userInfo.data?.let {
-                DeleteMessage(
-                    data.chatId,
-                    it.toInt(),
-                )
-            },
+        messageSenderService.deleteMessage(
+            MessageParams(
+                chatId = data.chatId,
+                messageId = data.userInfo.data?.toInt()
+            )
         )
         data.userInfo = data.userInfo.copy(
             lastUserActionType = LastUserActionType.DEFAULT,
@@ -339,9 +331,13 @@ class CategoryButtonHandlerFetcher(
     }
 
     private fun sendMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup) {
-        val msg = SendMessage(data.chatId, text)
-        msg.replyMarkup = keyboard
-        val lastSent = bot.execute(msg).messageId
+        val lastSent = messageSenderService.sendMessage(
+            MessageParams(
+                chatId = data.chatId,
+                text = text,
+                replyMarkup = keyboard
+            )
+        ).messageId
         data.userInfo = data.userInfo.copy(
             data = lastSent.toString(),
         )
@@ -349,17 +345,13 @@ class CategoryButtonHandlerFetcher(
 
     private fun editMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup?) {
         val msgId = data.update.callbackQuery.message.messageId
-        bot.execute(
-            EditMessageText(
-                data.chatId,
-                msgId,
-                null,
-                text,
-                null,
-                null,
-                keyboard,
-                null,
-            ),
+        messageSenderService.editMessage(
+            MessageParams(
+                chatId = data.chatId,
+                messageId = msgId,
+                text = text,
+                replyMarkup = keyboard
+            )
         )
         data.userInfo = data.userInfo.copy(
             data = msgId.toString(),
@@ -368,13 +360,12 @@ class CategoryButtonHandlerFetcher(
 
     private fun editMessage(data: RequestData, keyboard: InlineKeyboardMarkup?) {
         val msgId = data.update.callbackQuery.message.messageId
-        bot.execute(
-            EditMessageReplyMarkup(
-                data.chatId,
-                msgId,
-                null,
-                keyboard,
-            ),
+        messageSenderService.editMessageReplyMarkup(
+            MessageParams(
+                chatId = data.chatId,
+                messageId = msgId,
+                replyMarkup = keyboard
+            )
         )
         data.userInfo = data.userInfo.copy(
             data = msgId.toString(),

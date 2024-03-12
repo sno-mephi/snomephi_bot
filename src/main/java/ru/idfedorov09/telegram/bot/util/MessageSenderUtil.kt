@@ -3,6 +3,8 @@ package ru.idfedorov09.telegram.bot.util
 import org.telegram.telegrambots.meta.api.methods.ForwardMessage
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
@@ -18,19 +20,18 @@ object MessageSenderUtil {
         messageParams.apply {
             return when {
                 fromChatId != null -> forwardMessage(bot, messageParams)
-                newText != null -> editMessageText(bot, messageParams)
                 else -> commonMessage(bot, messageParams)
             }
         }
     }
 
-    private fun editMessageText(
+    fun editMessageText(
         bot: Executor,
         params: MessageParams,
     ): Message {
         return params.run {
-            if (messageId == null || newText == null) {
-                throw NullPointerException("messageId in editing message should be not null.")
+            if (messageId == null || text == null) {
+                throw NullPointerException("messageId and text in editing message should be not null.")
             }
             if (replyMarkup !is InlineKeyboardMarkup) {
                 throw IllegalArgumentException("Incorrect type of keyboard!")
@@ -40,11 +41,51 @@ object MessageSenderUtil {
                 EditMessageText().also {
                     it.chatId = chatId
                     it.messageId = messageId
-                    it.text = newText
+                    it.text = text
                     it.replyMarkup = replyMarkup
                     it.parseMode = parseMode
                 },
             ) as Message
+        }
+    }
+
+    fun deleteMessage(
+        bot: Executor,
+        params: MessageParams
+    ) {
+        params.apply {
+            messageId ?: throw NullPointerException("messageId is should be not null!")
+
+            bot.execute(
+                DeleteMessage().also {
+                    it.chatId = chatId
+                    it.messageId = messageId
+                }
+            )
+        }
+    }
+
+    fun editMessageReplyMarkup(
+        bot: Executor,
+        params: MessageParams
+    ) {
+        params.apply {
+
+            if (messageId == null) {
+                throw NullPointerException("messageId in editing message should be not null.")
+            }
+
+            if (replyMarkup != null && replyMarkup !is InlineKeyboardMarkup) {
+                throw IllegalArgumentException("Incorrect type of keyboard!")
+            }
+
+            bot.execute(
+                EditMessageReplyMarkup().also {
+                    it.chatId = chatId
+                    it.messageId = messageId
+                    it.replyMarkup = replyMarkup as? InlineKeyboardMarkup
+                }
+            )
         }
     }
 

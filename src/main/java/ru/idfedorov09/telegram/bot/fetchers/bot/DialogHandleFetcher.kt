@@ -157,11 +157,11 @@ class DialogHandleFetcher(
             )
         )
 
-        messageSenderService.sendMessage(
+        messageSenderService.editMessage(
             MessageParams(
                 chatId = GlobalConstants.QUEST_RESPONDENT_CHAT_ID,
                 messageId = params.quest.consoleMessageId!!.toInt(),
-                newText = "✅ @${params.responder.lastTgNick} пообщался(-ась)"
+                text = "✅ @${params.responder.lastTgNick} пообщался(-ась)"
             )
         )
 
