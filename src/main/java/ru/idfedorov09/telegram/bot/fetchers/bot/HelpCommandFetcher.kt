@@ -12,14 +12,11 @@ import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
 import ru.idfedorov09.telegram.bot.service.BroadcastSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
-
 /**
 фетчер для рассылки команд /help
  */
 @Component
 class HelpCommandFetcher(
-    private val broadcastRepository: BroadcastRepository,
-    private val broadcastSenderService: BroadcastSenderService
 ) : GeneralFetcher() {
 
 
@@ -39,9 +36,9 @@ class HelpCommandFetcher(
                 "Мероприятия недели - присылает информацию о всех мероприятиях, запланированных на текущую неделю",
                 "Настройка уведомлений - помогает настроить рассылку нужных вам уведомлений о мероприятих и кружках")
 
-            val textForMailer = listOf("")
+            val textForMailer = listOf("Рассылка уведомлений - открывает конструктор рассылки уведомлений для дальнейшей настройки")
 
-            val textForCategoryBuilder = listOf("/category - настройка категорий???")
+            val textForCategoryBuilder = listOf("/category - настройка категорий")
 
             val textForRoot = listOf(
                 "/userInfo - присылает полную информацию о пользователе",
@@ -49,13 +46,17 @@ class HelpCommandFetcher(
 
             var finalText = textForUser.joinToString(separator = "\n▪",prefix ="▪",postfix = "\n")
 
+            if (UserRole.ROOT in userActualizedInfo.roles){
+                finalText += textForCategoryBuilder.joinToString(separator = "\n▪",prefix ="▪", postfix = "\n") + textForMailer.joinToString(separator = "\n▪",prefix ="▪",postfix = "\n") + textForRoot.joinToString(separator = "\n▪",prefix ="▪",postfix = "\n")
+            }
+            else{
             for(role in userActualizedInfo.roles){
                 when(role){
                     UserRole.CATEGORY_BUILDER -> finalText += textForCategoryBuilder.joinToString(separator = "\n▪",prefix ="▪", postfix = "\n")
                     UserRole.MAILER -> finalText += textForMailer.joinToString(separator = "\n▪",prefix ="▪",postfix = "\n")
-                    UserRole.ROOT -> finalText += textForRoot.joinToString(separator = "\n▪",prefix ="▪", postfix = "\n")
                     else -> {}
                 }
+            }
             }
 
             bot.execute(
