@@ -27,16 +27,16 @@ object KeyBoardUtil {
     private fun createDefaultKeyBoard(roles: MutableSet<UserRole>): ReplyKeyboard {
         val keyboards = mutableListOf(
             KeyboardRow().also {
-                it.add(TextCommands.SETTING_MAIL.commandText)
+                it.add(TextCommands.SETTING_MAIL())
             },
             KeyboardRow().also {
-                it.add(TextCommands.WEEKLY_EVENTS.commandText)
+                it.add(TextCommands.WEEKLY_EVENTS())
             },
         )
         if (UserRole.ROOT in roles || UserRole.MAILER in roles) {
             keyboards.add(
                 KeyboardRow().also {
-                    it.add(TextCommands.BROADCAST_CONSTRUCTOR.commandText)
+                    it.add(TextCommands.BROADCAST_CONSTRUCTOR())
                 },
             )
         }
@@ -51,10 +51,7 @@ object KeyBoardUtil {
     private fun createDialogKeyBoard(roles: MutableSet<UserRole>): ReplyKeyboard {
         val keyboards = mutableListOf(
             KeyboardRow().also {
-                it.add(TextCommands.SETTING_MAIL.commandText)
-            },
-            KeyboardRow().also {
-                it.add(TextCommands.WEEKLY_EVENTS.commandText)
+                it.add(TextCommands.QUEST_DIALOG_CLOSE())
             },
         )
         val closeDialogKeyboard = ReplyKeyboardMarkup().also {
