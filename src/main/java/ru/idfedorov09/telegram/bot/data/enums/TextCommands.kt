@@ -7,48 +7,58 @@ enum class TextCommands(
     val commandText: String,
     /** роли которым доступна эта команда **/
     private val allowedRoles: List<UserRole> = listOf(UserRole.USER),
+    private val description: String? = null,
+    private val isFullCommand: Boolean = true,
 ) {
     QUEST_DIALOG_CLOSE(
-        "❌ Завершить диалог",
+        commandText = "❌ Завершить диалог",
+        description = "Завершает диало",
+        isFullCommand = false,
     ),
 
     /** Открыть меню категорий **/
     CATEGORY_CHOOSE_ACTION(
-        "/category",
-        listOf(
+        commandText = "/category",
+        allowedRoles = listOf(
             UserRole.CATEGORY_BUILDER,
             UserRole.ROOT,
         ),
+        description = "настройка категорий",
     ),
 
     SETTING_MAIL(
-        "Настройка уведомлений",
+        commandText = "Настройка уведомлений",
+        description = "Рассылка уведомлений - открывает конструктор рассылки уведомлений для дальнейшей настройки",
     ),
 
     TOGGLE(
-        "/toggle",
+        commandText = "/toggle",
+        isFullCommand = false,
     ),
 
     USER_INFO(
-        "/userInfo",
-        listOf(UserRole.ROOT),
+        commandText = "/userInfo",
+        allowedRoles = listOf(UserRole.ROOT),
+        description = "присылает полную информацию о пользователе",
     ),
 
     ROLE_DESCRIPTION(
-        "/role",
-        listOf(UserRole.ROOT),
+        commandText = "/role",
+        allowedRoles = listOf(UserRole.ROOT),
+        description = "присылает полный список ролей пользователя",
     ),
 
     BROADCAST_CONSTRUCTOR(
-        "Рассылка уведомлений",
-        listOf(
+        commandText = "Рассылка уведомлений",
+        allowedRoles = listOf(
             UserRole.MAILER,
             UserRole.ROOT,
         ),
+        description = "Рассылка уведомлений - открывает конструктор рассылки уведомлений для дальнейшей настройки",
     ),
 
     WEEKLY_EVENTS(
-        "Мероприятия недели",
+        commandText = "Мероприятия недели",
     ),
     ;
 
