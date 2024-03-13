@@ -319,12 +319,14 @@ class CategoryButtonHandlerFetcher(
     }
 
     private fun clickExit(data: RequestData) {
-        messageSenderService.deleteMessage(
-            MessageParams(
-                chatId = data.chatId,
-                messageId = data.userInfo.data?.toInt()
+        data.userInfo.data?.let {
+            messageSenderService.deleteMessage(
+                MessageParams(
+                    chatId = data.chatId,
+                    messageId = it.toInt()
+                )
             )
-        )
+        }
         data.userInfo = data.userInfo.copy(
             lastUserActionType = LastUserActionType.DEFAULT,
         )

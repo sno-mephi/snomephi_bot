@@ -19,6 +19,7 @@ import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_START_DIALO
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
+import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.Quest
@@ -28,6 +29,7 @@ import ru.idfedorov09.telegram.bot.repo.QuestDialogMessageRepository
 import ru.idfedorov09.telegram.bot.repo.QuestRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
+import ru.idfedorov09.telegram.bot.service.SwitchKeyboardService
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 import java.lang.NumberFormatException
@@ -43,6 +45,7 @@ class QuestButtonHandlerFetcher(
     private val questRepository: QuestRepository,
     private val userRepository: UserRepository,
     private val dialogMessageRepository: QuestDialogMessageRepository,
+    private val switchKeyboardService: SwitchKeyboardService,
 ) : GeneralFetcher() {
 
     // TODO: обработать случай когда бот не может написать пользователю!
@@ -94,6 +97,12 @@ class QuestButtonHandlerFetcher(
             ),
         )
 
+        switchKeyboardService.disableKeyboard(questionAuthor.id!!)
+        switchKeyboardService.switchKeyboard(
+            data.userActualizedInfo.id!!,
+            UserKeyboardType.DIALOG_QUEST
+        )
+
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = questionAuthor.tui!!,
@@ -102,24 +111,12 @@ class QuestButtonHandlerFetcher(
             )
         )
 
-        // клавиатура с командой завершения диалога
-        val closeDialogKeyboard = ReplyKeyboardMarkup().also {
-            it.keyboard = listOf(
-                KeyboardRow().also {
-                    it.add(TextCommands.QUEST_DIALOG_CLOSE.commandText)
-                },
-            )
-            it.oneTimeKeyboard = true
-            it.resizeKeyboard = true
-        }
-
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = data.userActualizedInfo.tui,
                 text = "<i>Ты перешел в диалог с пользователем @${questionAuthor.lastTgNick}. " +
                         "Несмотря на твою анонимность, оставайся вежливым :)</i>",
-                parseMode = ParseMode.HTML,
-                replyMarkup = closeDialogKeyboard
+                parseMode = ParseMode.HTML
             )
         )
 

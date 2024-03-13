@@ -68,7 +68,11 @@ data class User(
     val constructorId: Long? = null,
 
     /** тип текущей инлайн клавиатуры **/
-    @Column(name = "current_keyboard_type", columnDefinition = "TEXT")
+    @Column(name = "current_keyboard_type", columnDefinition = "TEXT", updatable = false)
     @Convert(converter = UserKeyboardTypeConverter::class)
     val currentKeyboardType: UserKeyboardType = UserKeyboardType.WITHOUT_KEYBOARD,
+
+    /** Было ли выполнено переключение клавиатуры на новую **/
+    @Column(name = "is_keyboard_switched", updatable = false)
+    val isKeyboardSwitched: Boolean = false
 )

@@ -9,7 +9,7 @@ data class MessageParams (
     val photo: InputFile? = null,
     val document: InputFile? = null,
     val text: String? = null,
-    val replyMarkup: ReplyKeyboard? = InlineKeyboardMarkup().also { it.keyboard = emptyList() },
+    val replyMarkup: ReplyKeyboard? = null,
     val parseMode: String? = null,
     val fromChatId: String? = null,
     val messageId: Int? = null,

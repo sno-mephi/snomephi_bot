@@ -34,7 +34,7 @@ object MessageSenderUtil {
             if (messageId == null || text == null) {
                 throw NullPointerException("messageId and text in editing message should be not null.")
             }
-            if (replyMarkup !is InlineKeyboardMarkup) {
+            if (replyMarkup != null && replyMarkup !is InlineKeyboardMarkup) {
                 throw IllegalArgumentException("Incorrect type of keyboard!")
             }
 
@@ -43,7 +43,7 @@ object MessageSenderUtil {
                     it.chatId = chatId
                     it.messageId = messageId
                     it.text = text
-                    it.replyMarkup = replyMarkup
+                    it.replyMarkup = replyMarkup as? InlineKeyboardMarkup
                     it.parseMode = parseMode
                 },
             ) as Message
