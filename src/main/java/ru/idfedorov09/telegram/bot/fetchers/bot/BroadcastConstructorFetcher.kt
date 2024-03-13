@@ -64,7 +64,7 @@ class BroadcastConstructorFetcher(
 
         text.apply {
             when {
-                startsWith(BROADCAST_CONSTRUCTOR()) -> showBcConsole(params)
+                startsWith(BROADCAST_CONSTRUCTOR()) -> chooseType(params)
                 else -> commonTextHandler(params)
             }
         }
@@ -109,6 +109,8 @@ class BroadcastConstructorFetcher(
                 startsWith("#bc_button_remove") -> removeButton(params)
                 startsWith("#bc_change_button_callback") -> changeButtonCallbackDataMessage(params)
                 startsWith("#bc_complete") -> bcComplete(params)
+                startsWith("#bc_start_common") -> bcEntryPoint(params, false)
+                startsWith("#bc_start_weekly") -> bcEntryPoint(params, true)
             }
         }
     }
@@ -399,6 +401,19 @@ class BroadcastConstructorFetcher(
                 lastConsoleMessageId = sentMessage.messageId,
             )
             lastUserActionType = LastUserActionType.BC_BUTTON_LINK_TYPE
+        }
+    }
+
+    private fun bcEntryPoint(params: Params, isWeekly: Boolean) {
+        params.userActualizedInfo.apply {
+            bcData = broadcastRepository.save(
+                Broadcast(
+                    authorId = params.userActualizedInfo.id,
+                    isWeekly = isWeekly,
+                    lastConsoleMessageId = params.update.callbackQuery.message.messageId
+                ),
+            )
+            showBcConsole(params)
         }
     }
 
@@ -752,6 +767,27 @@ class BroadcastConstructorFetcher(
                 lastConsoleMessageId = null,
             )
         }
+    }
+
+    private fun chooseType(params: Params) {
+        val messageText = "Выберите тип рассылки"
+        val common = CallbackData(callbackData = "#bc_start_common", metaText = "Обычная рассылка").save()
+        val weeklyEvents = CallbackData(callbackData = "#bc_start_weekly", metaText = "Мероприятия недели").save()
+        val keyboard =
+            listOf(common, weeklyEvents).map { button ->
+                InlineKeyboardButton().also {
+                    it.text = button.metaText!!
+                    it.callbackData = button.id?.toString()
+                }
+            }.map { listOf(it) }
+
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = params.userActualizedInfo.tui,
+                text = messageText,
+                replyMarkup = createKeyboard(keyboard)
+            )
+        )
     }
 
     private fun showBcConsole(params: Params, showPreview: Boolean = true) {
