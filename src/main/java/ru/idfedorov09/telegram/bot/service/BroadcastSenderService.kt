@@ -54,6 +54,7 @@ class BroadcastSenderService(
     }
 
     private fun sendBroadcast(user: User, broadcast: Broadcast, shouldAddToReceived: Boolean = true) {
+        log.debug("Sending broadcast={} to user={}", user, broadcast)
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = user.tui!!,
@@ -73,6 +74,7 @@ class BroadcastSenderService(
     }
 
     private fun startBroadcast(broadcast: Broadcast) {
+        log.debug("send start broadcast message for broadcast = {}", broadcast)
         val author = broadcast.authorId?.let { userRepository.findById(it).getOrNull() } ?: return
         val msgText = "Рассылка №${broadcast.id} успешно запущена"
 
