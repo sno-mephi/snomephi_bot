@@ -1,6 +1,7 @@
 package ru.idfedorov09.telegram.bot.util
 
 import org.telegram.telegrambots.meta.api.methods.ForwardMessage
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
@@ -15,7 +16,7 @@ object MessageSenderUtil {
 
     fun sendMessage(
         bot: Executor,
-        messageParams: MessageParams
+        messageParams: MessageParams,
     ): Message {
         messageParams.apply {
             return when {
@@ -51,7 +52,7 @@ object MessageSenderUtil {
 
     fun deleteMessage(
         bot: Executor,
-        params: MessageParams
+        params: MessageParams,
     ) {
         params.apply {
             messageId ?: throw NullPointerException("messageId is should be not null!")
@@ -60,17 +61,16 @@ object MessageSenderUtil {
                 DeleteMessage().also {
                     it.chatId = chatId
                     it.messageId = messageId
-                }
+                },
             )
         }
     }
 
     fun editMessageReplyMarkup(
         bot: Executor,
-        params: MessageParams
+        params: MessageParams,
     ) {
         params.apply {
-
             if (messageId == null) {
                 throw NullPointerException("messageId in editing message should be not null.")
             }
@@ -84,7 +84,7 @@ object MessageSenderUtil {
                     it.chatId = chatId
                     it.messageId = messageId
                     it.replyMarkup = replyMarkup as? InlineKeyboardMarkup
-                }
+                },
             )
         }
     }
@@ -94,20 +94,20 @@ object MessageSenderUtil {
         params: MessageParams,
     ): Message {
         return params.run {
-            if (text == null && photo == null) {
-                throw NullPointerException("Text or photo should be not null.")
+            if (text == null && photo == null && document == null) {
+                throw NullPointerException("Text or photo or document should be not null.")
             }
-
-            if (photo == null) {
+            if (document != null) {
                 bot.execute(
-                    SendMessage().also {
+                    SendDocument().also {
+                        it.document = document
+                        it.caption = text
                         it.chatId = chatId
-                        it.text = text!!
                         it.replyMarkup = replyMarkup
                         it.parseMode = parseMode
-                    }
+                    },
                 )
-            } else {
+            } else if (photo != null) {
                 bot.execute(
                     SendPhoto().also {
                         it.chatId = chatId
@@ -115,7 +115,16 @@ object MessageSenderUtil {
                         it.photo = photo
                         it.replyMarkup = replyMarkup
                         it.parseMode = parseMode
-                    }
+                    },
+                )
+            } else {
+                bot.execute(
+                    SendMessage().also {
+                        it.chatId = chatId
+                        it.text = text!!
+                        it.replyMarkup = replyMarkup
+                        it.parseMode = parseMode
+                    },
                 )
             }
         }
@@ -134,7 +143,7 @@ object MessageSenderUtil {
                     it.chatId = chatId
                     it.fromChatId = fromChatId!!
                     it.messageId = messageId!!
-                }
+                },
             )
         }
     }

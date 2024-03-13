@@ -2,10 +2,8 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.ParseMode
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
+import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.Update
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove
 import ru.idfedorov09.telegram.bot.data.GlobalConstants
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
@@ -16,7 +14,6 @@ import ru.idfedorov09.telegram.bot.data.model.Quest
 import ru.idfedorov09.telegram.bot.data.model.QuestDialogMessage
 import ru.idfedorov09.telegram.bot.data.model.User
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
-import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.QuestDialogMessageRepository
 import ru.idfedorov09.telegram.bot.repo.QuestRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
@@ -51,11 +48,33 @@ class DialogHandleFetcher(
         // если апдейт из беседы, то игнорим
         if (update.message.chatId.toString() != userActualizedInfo.tui) return userActualizedInfo
 
-        val messageText = update.message.text
+        val messageText = update.message.text ?: update.message.caption
         val quest = userActualizedInfo.activeQuest
         val author = userRepository.findById(quest.authorId!!).get()
         val responder = userRepository.findById(quest.responderId!!).get()
         val isByQuestionAuthor = author.tui == userActualizedInfo.tui
+
+        val photoHash = if (update.message.hasPhoto()) {
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = GlobalConstants.TRASH_CHAT_ID,
+                    photo = InputFile(update.message.photo.last().fileId),
+                ),
+            ).photo.lastOrNull()?.fileId
+        } else {
+            null
+        }
+
+        val documentHash = if (update.message.hasDocument()) {
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = GlobalConstants.TRASH_CHAT_ID,
+                    document = InputFile(update.message.document.fileId),
+                ),
+            ).document.fileId
+        } else {
+            null
+        }
 
         val params = Params(
             messageText = messageText,
@@ -65,12 +84,15 @@ class DialogHandleFetcher(
             isByQuestionAuthor = isByQuestionAuthor,
             userActualizedInfo = userActualizedInfo,
             update = update,
+            photoHash = photoHash,
+            documentHash = documentHash,
         )
 
         val updatedUserActualizedInfo = when {
             TextCommands.isTextCommand(params.messageText) -> handleCommands(params)
             update.hasMessage() && update.message.hasText() -> handleMessageText(params)
             update.hasMessage() && update.message.hasPhoto() -> handleMessagePhoto(params)
+            update.hasMessage() && update.message.hasDocument() -> handleMessageDocument(params)
             else -> nonSupportedUpdateType(params)
         }
         return updatedUserActualizedInfo
@@ -80,45 +102,80 @@ class DialogHandleFetcher(
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = params.userActualizedInfo.tui,
-                text = "⛔\uFE0F Сообщение данного типа не поддерживается."
-            )
+                text = "⛔\uFE0F Сообщение данного типа не поддерживается.",
+            ),
         )
         return params.userActualizedInfo
+    }
+
+    private fun handleMessageDocument(params: Params): UserActualizedInfo {
+        params.apply {
+            val questDialogMessage = QuestDialogMessage(
+                questId = quest.id,
+                isByQuestionAuthor = isByQuestionAuthor,
+                authorId = userActualizedInfo.id,
+                messageText = messageText,
+                messageDocumentHash = documentHash,
+                messageId = update.message.messageId,
+            ).let { questDialogMessageRepository.save(it) }
+            quest.dialogHistory.add(questDialogMessage.id!!)
+            questRepository.save(quest)
+
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = if (isByQuestionAuthor) responder.tui!! else author.tui!!,
+                    text = messageText,
+                    document = InputFile(documentHash),
+                ),
+            )
+            return userActualizedInfo
+        }
     }
 
     private fun handleMessagePhoto(params: Params): UserActualizedInfo {
-        nonSupportedUpdateType(params)
-        // TODO()
-        return params.userActualizedInfo
+        params.apply {
+            val questDialogMessage = QuestDialogMessage(
+                questId = quest.id,
+                isByQuestionAuthor = isByQuestionAuthor,
+                authorId = userActualizedInfo.id,
+                messageText = messageText,
+                messagePhotoHash = photoHash,
+                messageId = update.message.messageId,
+            ).let { questDialogMessageRepository.save(it) }
+            quest.dialogHistory.add(questDialogMessage.id!!)
+            questRepository.save(quest)
+
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = if (isByQuestionAuthor) responder.tui!! else author.tui!!,
+                    text = messageText,
+                    photo = InputFile(photoHash),
+                ),
+            )
+            return userActualizedInfo
+        }
     }
 
     private fun handleMessageText(params: Params): UserActualizedInfo {
-        val quest = params.quest
-        val isByQuestionAuthor = params.isByQuestionAuthor
-        val userActualizedInfo = params.userActualizedInfo
-        val messageText = params.messageText
-        val update = params.update
-        val responder = params.responder
-        val author = params.author
+        params.apply {
+            val questDialogMessage = QuestDialogMessage(
+                questId = quest.id,
+                isByQuestionAuthor = isByQuestionAuthor,
+                authorId = userActualizedInfo.id,
+                messageText = messageText,
+                messageId = update.message.messageId,
+            ).let { questDialogMessageRepository.save(it) }
+            quest.dialogHistory.add(questDialogMessage.id!!)
+            questRepository.save(quest)
 
-        val questDialogMessage = QuestDialogMessage(
-            questId = quest.id,
-            isByQuestionAuthor = isByQuestionAuthor,
-            authorId = userActualizedInfo.id,
-            messageText = messageText,
-            messageId = update.message.messageId,
-        ).let { questDialogMessageRepository.save(it) }
-        quest.dialogHistory.add(questDialogMessage.id!!)
-        questRepository.save(quest)
-
-        messageSenderService.sendMessage(
-            MessageParams(
-                chatId = if (isByQuestionAuthor) responder.tui!! else author.tui!!,
-                text = messageText!!
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = if (isByQuestionAuthor) responder.tui!! else author.tui!!,
+                    text = messageText!!,
+                ),
             )
-        )
-
-        return userActualizedInfo
+            return userActualizedInfo
+        }
     }
 
     private fun handleCommands(params: Params): UserActualizedInfo {
@@ -148,8 +205,8 @@ class DialogHandleFetcher(
             MessageParams(
                 chatId = params.author.tui!!,
                 text = "_⚠\uFE0F Оператор завершил диалог\\._",
-                parseMode = ParseMode.MARKDOWNV2
-            )
+                parseMode = ParseMode.MARKDOWNV2,
+            ),
         )
 
         messageSenderService.sendMessage(
@@ -164,8 +221,8 @@ class DialogHandleFetcher(
             MessageParams(
                 chatId = GlobalConstants.QUEST_RESPONDENT_CHAT_ID,
                 messageId = params.quest.consoleMessageId!!.toInt(),
-                text = "✅ @${params.responder.lastTgNick} пообщался(-ась)"
-            )
+                text = "✅ @${params.responder.lastTgNick} пообщался(-ась)",
+            ),
         )
 
         return params.userActualizedInfo.copy(
@@ -178,6 +235,8 @@ class DialogHandleFetcher(
      */
     private data class Params(
         val messageText: String?,
+        val photoHash: String?,
+        val documentHash: String?,
         val quest: Quest,
         val author: User,
         val responder: User,

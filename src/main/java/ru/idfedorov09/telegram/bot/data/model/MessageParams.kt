@@ -7,6 +7,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard
 data class MessageParams (
     val chatId: String,
     val photo: InputFile? = null,
+    val document: InputFile? = null,
     val text: String? = null,
     val replyMarkup: ReplyKeyboard? = null,
     val parseMode: String? = null,
