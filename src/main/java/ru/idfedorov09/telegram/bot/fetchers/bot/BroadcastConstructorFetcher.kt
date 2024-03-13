@@ -16,7 +16,6 @@ import ru.idfedorov09.telegram.bot.data.model.Button
 import ru.idfedorov09.telegram.bot.data.model.CallbackData
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
-import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
 import ru.idfedorov09.telegram.bot.repo.ButtonRepository
 import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
@@ -47,7 +46,7 @@ class BroadcastConstructorFetcher(
     @InjectData
     fun doFetch(
         userActualizedInfo: UserActualizedInfo,
-        update: Update
+        update: Update,
     ) {
         val params = Params(
             userActualizedInfo,
@@ -157,8 +156,8 @@ class BroadcastConstructorFetcher(
                 MessageParams(
                     chatId = tui,
                     replyMarkup = createKeyboard(keyboard),
-                    text = "\uD83D\uDCDD Отправь мне текст коллбэка"
-                )
+                    text = "\uD83D\uDCDD Отправь мне текст коллбэка",
+                ),
             )
             bcData = bcData?.copy(
                 lastConsoleMessageId = sentMessage.messageId,
@@ -174,9 +173,9 @@ class BroadcastConstructorFetcher(
                     MessageParams(
                         chatId = tui,
                         text = "Ошибка! Невозможно добавить текст длины" +
-                                " ${params.update.message.text.length} > 900 если приложена фотография. " +
-                                "Измени текст или удали фотографию."
-                    )
+                            " ${params.update.message.text.length} > 900 если приложена фотография. " +
+                            "Измени текст или удали фотографию.",
+                    ),
                 )
             } else {
                 bcData = bcData?.copy(
@@ -195,16 +194,16 @@ class BroadcastConstructorFetcher(
                     MessageParams(
                         chatId = tui,
                         text = "Ошибка! Невозможно добавить фотографию, длина текста " +
-                                "${bcData?.text?.length} > 900. Измените текст или не " +
-                                "прикладывайте фотографию"
-                    )
+                            "${bcData?.text?.length} > 900. Измените текст или не " +
+                            "прикладывайте фотографию",
+                    ),
                 )
             } else {
                 val photoBroadcast = messageSenderService.sendMessage(
                     MessageParams(
                         chatId = TRASH_CHAT_ID,
-                        photo = InputFile(params.update.message.photo.last().fileId)
-                    )
+                        photo = InputFile(params.update.message.photo.last().fileId),
+                    ),
                 ).photo.lastOrNull()?.fileId
 
                 bcData = bcData?.copy(
@@ -256,8 +255,8 @@ class BroadcastConstructorFetcher(
                 messageSenderService.deleteMessage(
                     MessageParams(
                         chatId = tui,
-                        messageId = consoleId
-                    )
+                        messageId = consoleId,
+                    ),
                 )
             }
 
@@ -285,8 +284,8 @@ class BroadcastConstructorFetcher(
             messageSenderService.sendMessage(
                 MessageParams(
                     chatId = tui,
-                    text = okayMessage
-                )
+                    text = okayMessage,
+                ),
             )
             lastUserActionType = LastUserActionType.DEFAULT
         }
@@ -324,8 +323,8 @@ class BroadcastConstructorFetcher(
                 messageSenderService.sendMessage(
                     MessageParams(
                         chatId = tui,
-                        text = "☠\uFE0F Ты добавил слишком много кнопок. Отредактируй или удали лишние плиз"
-                    )
+                        text = "☠\uFE0F Ты добавил слишком много кнопок. Отредактируй или удали лишние плиз",
+                    ),
                 )
                 return
             }
@@ -362,8 +361,8 @@ class BroadcastConstructorFetcher(
                 MessageParams(
                     chatId = tui,
                     text = "\uD83D\uDCDD Отправь мне текст, который будет отображаться на кнопке",
-                    replyMarkup = createKeyboard(keyboard)
-                )
+                    replyMarkup = createKeyboard(keyboard),
+                ),
             )
             bcData = bcData?.copy(
                 lastConsoleMessageId = sentMessage.messageId,
@@ -393,8 +392,8 @@ class BroadcastConstructorFetcher(
                 MessageParams(
                     chatId = tui,
                     text = "\uD83D\uDCDD Отправь мне текст с нужной ссылкой",
-                    replyMarkup = createKeyboard(keyboard)
-                )
+                    replyMarkup = createKeyboard(keyboard),
+                ),
             )
             bcData = bcData?.copy(
                 lastConsoleMessageId = sentMessage.messageId,
@@ -425,9 +424,9 @@ class BroadcastConstructorFetcher(
                     chatId = params.userActualizedInfo.tui,
                     replyMarkup = createKeyboard(keyboard),
                     text = "\uD83E\uDD21 Слишком длинная надпись для кнопки! " +
-                            "Ограничение на длину символов: 32. Повтори попытку.\n\n" +
-                            "\uD83D\uDCDD Отправь мне текст, который будет отображаться на кнопке"
-                )
+                        "Ограничение на длину символов: 32. Повтори попытку.\n\n" +
+                        "\uD83D\uDCDD Отправь мне текст, который будет отображаться на кнопке",
+                ),
             )
             return
         }
@@ -513,12 +512,12 @@ class BroadcastConstructorFetcher(
                 MessageParams(
                     chatId = tui,
                     text = "Настройки кнопки:\n\n" +
-                            "Надпись на кнопке: $caption\n" +
-                            "Ссылка: $urlTextCode $urlTextLink\n" +
-                            "Коллбэк: $callbackDataText",
+                        "Надпись на кнопке: $caption\n" +
+                        "Ссылка: $urlTextCode $urlTextLink\n" +
+                        "Коллбэк: $callbackDataText",
                     parseMode = ParseMode.HTML,
-                    replyMarkup = createKeyboard(keyboard)
-                )
+                    replyMarkup = createKeyboard(keyboard),
+                ),
             )
 
             bcData = bcData?.copy(
@@ -565,8 +564,8 @@ class BroadcastConstructorFetcher(
                 chatId = params.userActualizedInfo.tui,
                 text = messageText,
                 parseMode = ParseMode.HTML,
-                replyMarkup = createKeyboard(keyboard)
-            )
+                replyMarkup = createKeyboard(keyboard),
+            ),
         )
 
         params.userActualizedInfo.bcData = params.userActualizedInfo.bcData?.copy(
@@ -602,7 +601,7 @@ class BroadcastConstructorFetcher(
                         ),
                     ),
                 ),
-            )
+            ),
         )
         params.userActualizedInfo.bcData = params.userActualizedInfo.bcData?.copy(
             lastConsoleMessageId = sent.messageId,
@@ -635,8 +634,8 @@ class BroadcastConstructorFetcher(
                             },
                         ),
                     ),
-                )
-            )
+                ),
+            ),
         )
         params.userActualizedInfo.lastUserActionType = LastUserActionType.BC_PHOTO_TYPE
     }
@@ -659,8 +658,8 @@ class BroadcastConstructorFetcher(
                             },
                         ),
                     ),
-                )
-            )
+                ),
+            ),
         )
         params.userActualizedInfo.bcData = params.userActualizedInfo.bcData?.copy(
             lastConsoleMessageId = sent.messageId,
@@ -714,8 +713,8 @@ class BroadcastConstructorFetcher(
                                 },
                             ),
                         ),
-                    )
-                )
+                    ),
+                ),
             )
             lastUserActionType = LastUserActionType.BC_CHANGE_CATEGORIES
         }
@@ -746,8 +745,8 @@ class BroadcastConstructorFetcher(
             messageSenderService.deleteMessage(
                 MessageParams(
                     chatId = tui,
-                    messageId = bcData?.lastConsoleMessageId!!
-                )
+                    messageId = bcData?.lastConsoleMessageId!!,
+                ),
             )
             bcData = bcData?.copy(
                 lastConsoleMessageId = null,
@@ -782,8 +781,8 @@ class BroadcastConstructorFetcher(
                         text = messageText,
                         parseMode = ParseMode.HTML,
                         replyMarkup = createKeyboard(keyboard),
-                        chatId = params.userActualizedInfo.tui
-                    )
+                        chatId = params.userActualizedInfo.tui,
+                    ),
                 )
 
                 bcData = bcData?.copy(
@@ -852,18 +851,18 @@ class BroadcastConstructorFetcher(
                                 chatId = params.userActualizedInfo.tui,
                                 text = text,
                                 replyMarkup = createKeyboard(keyboard),
-                                parseMode = ParseMode.HTML
-                            )
+                                parseMode = ParseMode.HTML,
+                            ),
                         )
 
                         else -> messageSenderService.sendMessage(
                             MessageParams(
                                 chatId = params.userActualizedInfo.tui,
-                                text =text,
+                                text = text,
                                 parseMode = ParseMode.HTML,
                                 replyMarkup = createKeyboard(keyboard),
-                                photo = InputFile(bcData?.imageHash)
-                            )
+                                photo = InputFile(bcData?.imageHash),
+                            ),
                         )
                     }
                 }.onFailure {
@@ -878,8 +877,8 @@ class BroadcastConstructorFetcher(
                         MessageParams(
                             text = failText,
                             chatId = params.userActualizedInfo.tui,
-                            parseMode = ParseMode.HTML
-                        )
+                            parseMode = ParseMode.HTML,
+                        ),
                     )
                 }.onSuccess {
                     bcData = bcData?.copy(
