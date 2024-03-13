@@ -61,6 +61,12 @@ enum class TextCommands(
         commandText = "Мероприятия недели",
         description = "присылает информацию о всех мероприятиях, запланированных на текущую неделю",
     ),
+
+    PERMISSIONS_SETUP(
+        commandText = "Выдача ролей",
+        allowedRoles = listOf(UserRole.ROOT),
+        description = "Выдача и отзыв ролей у пользователей",
+    )
     ;
 
     /** Проверяет, является ли текст командой **/
