@@ -10,6 +10,7 @@ import ru.idfedorov09.telegram.bot.data.GlobalConstants
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
+import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.Quest
 import ru.idfedorov09.telegram.bot.data.model.QuestDialogMessage
@@ -20,6 +21,7 @@ import ru.idfedorov09.telegram.bot.repo.QuestDialogMessageRepository
 import ru.idfedorov09.telegram.bot.repo.QuestRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
+import ru.idfedorov09.telegram.bot.service.SwitchKeyboardService
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 
@@ -32,6 +34,7 @@ class DialogHandleFetcher(
     private val questRepository: QuestRepository,
     private val questDialogMessageRepository: QuestDialogMessageRepository,
     private val userRepository: UserRepository,
+    private val switchKeyboardService: SwitchKeyboardService,
 ) : GeneralFetcher() {
 
     // TODO: добавить поддержку картинок, файлов, HTML/MARKDOWN-разметки
@@ -138,6 +141,9 @@ class DialogHandleFetcher(
             ),
         )
 
+        switchKeyboardService.switchKeyboard(params.author.id!!, UserKeyboardType.DEFAULT_MAIN_BOT)
+        switchKeyboardService.switchKeyboard(params.responder.id!!, UserKeyboardType.DEFAULT_MAIN_BOT)
+
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = params.author.tui!!,
@@ -150,9 +156,6 @@ class DialogHandleFetcher(
             MessageParams(
                 chatId = params.responder.tui!!,
                 text = "\uD83D\uDDA4 Спасибо за обратную связь\\! *Диалог завершен\\.*",
-                replyMarkup = ReplyKeyboardRemove().apply {
-                    removeKeyboard = true
-                },
                 parseMode = ParseMode.MARKDOWNV2
             )
         )

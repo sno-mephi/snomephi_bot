@@ -13,16 +13,21 @@ class SwitchKeyboardService(
     private val userRepository: UserRepository,
 ) {
 
+    // forceSwitch - иногда (например, при выдаче роли) требуется принудительно обновить клавиатуру
     fun switchKeyboard(
         userId: Long,
         newKeyboardType: UserKeyboardType,
+        forceSwitch: Boolean = false,
     ) {
         val user = userRepository.findById(userId).getOrNull() ?: return
         user.apply {
-            if (currentKeyboardType == newKeyboardType) return
+            if (currentKeyboardType == newKeyboardType && !forceSwitch) return
             userRepository.updateKeyboard(userId, newKeyboardType)
         }
     }
 
-    fun disableKeyboard(userId: Long) = switchKeyboard(userId, UserKeyboardType.WITHOUT_KEYBOARD)
+    fun disableKeyboard(
+        userId: Long,
+        forceSwitch: Boolean = false,
+    ) = switchKeyboard(userId, UserKeyboardType.WITHOUT_KEYBOARD, forceSwitch)
 }
