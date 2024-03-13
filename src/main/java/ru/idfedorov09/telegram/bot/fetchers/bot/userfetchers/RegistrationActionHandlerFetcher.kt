@@ -11,6 +11,7 @@ import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
+import ru.idfedorov09.telegram.bot.service.SwitchKeyboardService
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.FlowContext
 import ru.mephi.sno.libs.flow.belly.InjectData
@@ -20,6 +21,7 @@ import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 class RegistrationActionHandlerFetcher(
     private val updatesUtil: UpdatesUtil,
     private val messageSenderService: MessageSenderService,
+    private val switchKeyboardService: SwitchKeyboardService,
 ) : GeneralFetcher() {
 
     companion object {
@@ -29,8 +31,7 @@ class RegistrationActionHandlerFetcher(
     @InjectData
     fun doFetch(
         update: Update,
-        userInfo: UserActualizedInfo,
-        context: FlowContext,
+        userInfo: UserActualizedInfo
     ): UserActualizedInfo {
         if (!update.hasCallbackQuery()) return userInfo
         val chatId: String = updatesUtil.getChatId(update) ?: return userInfo
@@ -44,8 +45,7 @@ class RegistrationActionHandlerFetcher(
                 callbackMessage,
                 chatId,
                 parameters,
-                userInfo,
-                context,
+                userInfo
             )
 
             CallbackCommands.USER_DECLINE.isMatch(callbackData) -> onUserDecline(
@@ -117,8 +117,7 @@ class RegistrationActionHandlerFetcher(
         message: Message,
         chat: String,
         parameter: String?,
-        userInfo: UserActualizedInfo,
-        context: FlowContext,
+        userInfo: UserActualizedInfo
     ): UserActualizedInfo {
         var user = userInfo
 
@@ -145,15 +144,17 @@ class RegistrationActionHandlerFetcher(
                         lastUserActionType = LastUserActionType.DEFAULT,
                         studyGroup = userInfo.data,
                         data = null,
-                        isRegistered = true,
-                        currentKeyboardType = UserKeyboardType.DEFAULT_MAIN_BOT
+                        isRegistered = true
+                    )
+                    switchKeyboardService.switchKeyboard(
+                        userId = user.id!!,
+                        newKeyboardType = UserKeyboardType.DEFAULT_MAIN_BOT
                     )
                     messageSenderService.sendMessage(
                         messageParams = MessageParams(
                             chatId = chat,
                             text = RegistrationMessageText.RegistrationComplete(),
-                        ),
-                        context = context
+                        )
                     )
                 }
 

@@ -30,11 +30,5 @@ data class UserActualizedInfo(
     val isRegistered: Boolean,
 
     /** Текущая создаваемая рассылка пользователя **/
-    var bcData: Broadcast? = null,
-
-    /** Текущая выставленная юзеру клавиатура **/
-    val currentKeyboardType: UserKeyboardType,
-
-    /** Было ли выполнено переключение клавиатуры на новую **/
-    var isKeyboardSwitched: Boolean = false
+    var bcData: Broadcast? = null
 )

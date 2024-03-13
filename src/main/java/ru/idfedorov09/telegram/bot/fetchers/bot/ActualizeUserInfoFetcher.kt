@@ -90,8 +90,6 @@ class ActualizeUserInfoFetcher(
                 data = data,
                 isRegistered = isRegistered,
                 bcData = bcData,
-                currentKeyboardType = currentKeyboardType,
-                isKeyboardSwitched = isKeyboardSwitched
             )
         }
     }

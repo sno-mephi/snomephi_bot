@@ -28,12 +28,11 @@ class MessageSenderService(
      * Выставляет клавиатуру, если это требуется
      */
     fun sendMessage(
-        messageParams: MessageParams,
-        context: FlowContext? = null,
+        messageParams: MessageParams
     ): Message {
         return messageParams.run {
             if (replyMarkup == null) {
-                trySendWithSwitchKeyboard(messageParams, context)
+                trySendWithSwitchKeyboard(messageParams)
             } else {
                 MessageSenderUtil.sendMessage(bot, messageParams)
             }
@@ -41,41 +40,25 @@ class MessageSenderService(
     }
 
     private fun trySendWithSwitchKeyboard(
-        messageParams: MessageParams,
-        context: FlowContext? = null,
+        messageParams: MessageParams
     ): Message {
-        context ?: log.warn("Are you sure you're trying to change " +
-                "the keyboard for a user who isn't in the flow context?")
+        val chatId = messageParams.chatId.toLongOrNull()
+        if (chatId == null || chatId < 0) {
+            return MessageSenderUtil.sendMessage(bot, messageParams)
+        }
+        val user = userRepository.findByTui(messageParams.chatId)
+            ?: throw Exception("User not found by tui=$chatId")
+        if (user.isKeyboardSwitched) {
+            return MessageSenderUtil.sendMessage(bot, messageParams)
+        }
+        val keyboard = KeyboardUtil.changeKeyboard(
+            userKeyboardType = user.currentKeyboardType,
+            user = user
+        )
+        val messageParamsWithKeyboard = messageParams.copy(replyMarkup = keyboard)
 
-        val userActualizedInfo = context?.get<UserActualizedInfo>()
-        if (userActualizedInfo != null) {
-            if (userActualizedInfo.isKeyboardSwitched || userActualizedInfo.tui != messageParams.chatId) {
-                return MessageSenderUtil.sendMessage(bot, messageParams)
-            }
-            val keyboard = KeyboardUtil.changeKeyboard(
-                userKeyboardType = userActualizedInfo.currentKeyboardType,
-                user = userRepository.findById(userActualizedInfo.id!!).get()
-            )
-            val messageParamsWithKeyboard = messageParams.copy(replyMarkup = keyboard)
-            return MessageSenderUtil.sendMessage(bot, messageParamsWithKeyboard).also {
-                userActualizedInfo.isKeyboardSwitched = true
-            }
-        } else {
-            val chatId = messageParams.chatId.toLongOrNull()
-            if (chatId == null || chatId < 0) {
-                return MessageSenderUtil.sendMessage(bot, messageParams)
-            }
-            val user = userRepository.findByTui(messageParams.chatId)
-                ?: throw Exception("User not found by tui=$chatId")
-            val keyboard = KeyboardUtil.changeKeyboard(
-                userKeyboardType = user.currentKeyboardType,
-                user = user
-            )
-            val messageParamsWithKeyboard = messageParams.copy(replyMarkup = keyboard)
-
-            return MessageSenderUtil.sendMessage(bot, messageParamsWithKeyboard).also {
-                userRepository.updateKeyboardSwitchedForUser(messageParams.chatId, true)
-            }
+        return MessageSenderUtil.sendMessage(bot, messageParamsWithKeyboard).also {
+            userRepository.updateKeyboardSwitchedForUser(messageParams.chatId, true)
         }
     }
 
