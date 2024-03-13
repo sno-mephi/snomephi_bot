@@ -3,7 +3,6 @@ package ru.idfedorov09.telegram.bot.repo
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
-import org.springframework.data.repository.query.Param
 import org.springframework.transaction.annotation.Transactional
 import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
 import ru.idfedorov09.telegram.bot.data.model.User
@@ -22,7 +21,18 @@ interface UserRepository : JpaRepository<User, Long> {
             WHERE u.tui = :tui
         """
     )
-    fun updateKeyboardSwitchedForUser(tui: String, isSwitched: Boolean)
+    fun updateKeyboardSwitchedForUserTui(tui: String, isSwitched: Boolean)
+
+    @Transactional
+    @Modifying
+    @Query(
+        """
+            UPDATE User u 
+            SET u.isKeyboardSwitched = :isSwitched 
+            WHERE u.id = :userId
+        """
+    )
+    fun updateKeyboardSwitchedForUserId(userId: Long, isSwitched: Boolean)
 
     @Transactional
     @Modifying
@@ -30,8 +40,8 @@ interface UserRepository : JpaRepository<User, Long> {
         """
             UPDATE User u 
             SET u.isKeyboardSwitched = false, u.currentKeyboardType = :newKeyboardType
-            WHERE u.id = :id
+            WHERE u.id = :userId
         """
     )
-    fun updateKeyboard(id: Long, newKeyboardType: UserKeyboardType)
+    fun updateKeyboard(userId: Long, newKeyboardType: UserKeyboardType)
 }

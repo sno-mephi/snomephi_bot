@@ -30,4 +30,6 @@ class SwitchKeyboardService(
         userId: Long,
         forceSwitch: Boolean = false,
     ) = switchKeyboard(userId, UserKeyboardType.WITHOUT_KEYBOARD, forceSwitch)
+
+    fun reshowKeyboard(userId: Long) = userRepository.updateKeyboardSwitchedForUserId(userId, false)
 }

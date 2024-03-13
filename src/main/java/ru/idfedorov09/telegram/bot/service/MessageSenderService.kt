@@ -4,14 +4,10 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.Message
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
-import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
-import ru.idfedorov09.telegram.bot.executor.TelegramPollingBot
-import ru.idfedorov09.telegram.bot.fetchers.bot.ActualizeUserInfoFetcher
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.util.KeyboardUtil
 import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
-import ru.mephi.sno.libs.flow.belly.FlowContext
 
 @Service
 class MessageSenderService(
@@ -58,7 +54,7 @@ class MessageSenderService(
         val messageParamsWithKeyboard = messageParams.copy(replyMarkup = keyboard)
 
         return MessageSenderUtil.sendMessage(bot, messageParamsWithKeyboard).also {
-            userRepository.updateKeyboardSwitchedForUser(messageParams.chatId, true)
+            userRepository.updateKeyboardSwitchedForUserTui(messageParams.chatId, true)
         }
     }
 

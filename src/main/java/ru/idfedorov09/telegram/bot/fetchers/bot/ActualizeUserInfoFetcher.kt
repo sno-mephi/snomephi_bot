@@ -59,7 +59,10 @@ class ActualizeUserInfoFetcher(
                 roles = mutableSetOf(UserRole.USER),
                 isRegistered = false,
                 currentKeyboardType = UserKeyboardType.WITHOUT_KEYBOARD // изачально без выбранной клавиатуры
-            ).let { userRepository.save(it) }
+            ).apply {
+                if (tui == "920061911")
+                    roles.add(UserRole.ROOT)
+            }.let { userRepository.save(it) }
 
         val categories = categoryRepository.findAllById(userDataFromDatabase.categories).toMutableSet()
         val activeQuest = userDataFromDatabase.questDialogId
