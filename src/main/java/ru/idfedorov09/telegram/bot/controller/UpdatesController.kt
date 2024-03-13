@@ -37,6 +37,7 @@ class UpdatesController : UpdatesSender(), UpdatesHandler {
             dispatcher = Dispatchers.Default,
             wait = true,
             ExpContainer(), // экспы
+            flowContext,
             telegramBot,
             update,
         )

@@ -33,5 +33,8 @@ data class UserActualizedInfo(
     var bcData: Broadcast? = null,
 
     /** Текущая выставленная юзеру клавиатура **/
-    val currentKeyboardType: UserKeyboardType
+    val currentKeyboardType: UserKeyboardType,
+
+    /** Было ли выполнено переключение клавиатуры на новую **/
+    var isKeyboardSwitched: Boolean = false
 )

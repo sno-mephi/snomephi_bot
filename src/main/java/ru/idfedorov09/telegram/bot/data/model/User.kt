@@ -71,4 +71,8 @@ data class User(
     @Column(name = "current_keyboard_type", columnDefinition = "TEXT")
     @Convert(converter = UserKeyboardTypeConverter::class)
     val currentKeyboardType: UserKeyboardType = UserKeyboardType.WITHOUT_KEYBOARD,
+
+    /** Было ли выполнено переключение клавиатуры на новую **/
+    @Column(name = "is_keyboard_switched")
+    val isKeyboardSwitched: Boolean = false
 )

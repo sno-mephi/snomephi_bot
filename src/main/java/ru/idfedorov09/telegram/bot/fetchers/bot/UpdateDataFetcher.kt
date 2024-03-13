@@ -47,7 +47,8 @@ class UpdateDataFetcher(
                     data = data,
                     isRegistered = isRegistered,
                     constructorId = bcData?.id,
-                    currentKeyboardType = currentKeyboardType
+                    currentKeyboardType = currentKeyboardType,
+                    isKeyboardSwitched = isKeyboardSwitched
                 ),
             )
 
