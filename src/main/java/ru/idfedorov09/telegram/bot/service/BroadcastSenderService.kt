@@ -38,7 +38,9 @@ class BroadcastSenderService(
         runCatching {
             val firstActiveBroadcast = broadcastRepository.findFirstActiveBroadcast() ?: return
             if (firstActiveBroadcast.receivedUsersId.isEmpty()) startBroadcast(firstActiveBroadcast)
-            val firstUser = userRepository.findAll().firstOrNull { checkValidUser(it, firstActiveBroadcast) } ?: run {
+            val firstUser = userRepository.findAll().filter { it.isRegistered }.firstOrNull {
+                checkValidUser(it, firstActiveBroadcast)
+            } ?: run {
                 finishBroadcast(firstActiveBroadcast)
                 return
             }
