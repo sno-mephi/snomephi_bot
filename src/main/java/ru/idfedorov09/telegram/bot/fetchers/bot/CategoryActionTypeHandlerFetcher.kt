@@ -1,9 +1,6 @@
 package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
@@ -12,7 +9,6 @@ import ru.idfedorov09.telegram.bot.data.keyboards.CategoryKeyboards
 import ru.idfedorov09.telegram.bot.data.model.Category
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
-import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
@@ -88,8 +84,8 @@ class CategoryActionTypeHandlerFetcher(
         messageSenderService.deleteMessage(
             MessageParams(
                 chatId = data.chatId,
-                messageId = data.update.message.messageId
-            )
+                messageId = data.update.message.messageId,
+            ),
         )
         data.userInfo.data?.toInt()?.let {
             editMessage(
@@ -146,8 +142,8 @@ class CategoryActionTypeHandlerFetcher(
         messageSenderService.deleteMessage(
             MessageParams(
                 chatId = data.chatId,
-                messageId = data.update.message.messageId
-            )
+                messageId = data.update.message.messageId,
+            ),
         )
         data.userInfo.data?.toInt()?.let {
             editMessage(
@@ -188,8 +184,8 @@ class CategoryActionTypeHandlerFetcher(
         messageSenderService.deleteMessage(
             MessageParams(
                 chatId = data.chatId,
-                messageId = data.update.message.messageId
-            )
+                messageId = data.update.message.messageId,
+            ),
         )
 
         data.userInfo.data?.toInt()?.let {
@@ -212,8 +208,8 @@ class CategoryActionTypeHandlerFetcher(
                 chatId = data.chatId,
                 messageId = msgId,
                 text = text,
-                replyMarkup = keyboard
-            )
+                replyMarkup = keyboard,
+            ),
         )
     }
 
@@ -222,8 +218,8 @@ class CategoryActionTypeHandlerFetcher(
             MessageParams(
                 chatId = data.chatId,
                 text = text,
-                replyMarkup = keyboard
-            )
+                replyMarkup = keyboard,
+            ),
         ).messageId
         data.userInfo = data.userInfo.copy(
             data = lastSent.toString(),

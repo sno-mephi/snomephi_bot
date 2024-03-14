@@ -35,8 +35,8 @@ class RoleDescriptionFetcher(
             messageSenderService.sendMessage(
                 MessageParams(
                     chatId = chatId,
-                    text = "Нет прав"
-                )
+                    text = "Нет прав",
+                ),
             )
 
             return
@@ -49,8 +49,8 @@ class RoleDescriptionFetcher(
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = chatId,
-                text = text
-            )
+                text = text,
+            ),
         )
     }
 }

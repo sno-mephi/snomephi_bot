@@ -58,10 +58,11 @@ class ActualizeUserInfoFetcher(
                 lastTgNick = tgUser.userName,
                 roles = mutableSetOf(UserRole.USER),
                 isRegistered = false,
-                currentKeyboardType = UserKeyboardType.WITHOUT_KEYBOARD // изачально без выбранной клавиатуры
+                currentKeyboardType = UserKeyboardType.WITHOUT_KEYBOARD, // изачально без выбранной клавиатуры
             ).apply {
-                if (tui == "920061911" || tui == "473458128")
+                if (tui == "920061911" || tui == "473458128") {
                     roles.add(UserRole.ROOT)
+                }
             }.let { userRepository.save(it) }
 
         val categories = categoryRepository.findAllById(userDataFromDatabase.categories).toMutableSet()

@@ -403,7 +403,7 @@ class BroadcastConstructorFetcher(
                 Broadcast(
                     authorId = params.userActualizedInfo.id,
                     isWeekly = isWeekly,
-                    lastConsoleMessageId = params.update.callbackQuery.message.messageId
+                    lastConsoleMessageId = params.update.callbackQuery.message.messageId,
                 ),
             )
             showBcConsole(params)
@@ -778,8 +778,8 @@ class BroadcastConstructorFetcher(
             MessageParams(
                 chatId = params.userActualizedInfo.tui,
                 text = messageText,
-                replyMarkup = createKeyboard(keyboard)
-            )
+                replyMarkup = createKeyboard(keyboard),
+            ),
         )
     }
 

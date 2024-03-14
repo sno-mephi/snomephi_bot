@@ -247,8 +247,8 @@ class CategoryButtonHandlerFetcher(
                 chatId = data.chatId,
                 messageId = data.userInfo.data?.toInt(),
                 text = "✅ Категория #${category.suffix} успешно добавлена",
-                replyMarkup = CategoryKeyboards.confirmationDone()
-            )
+                replyMarkup = CategoryKeyboards.confirmationDone(),
+            ),
         )
     }
 
@@ -323,8 +323,8 @@ class CategoryButtonHandlerFetcher(
             messageSenderService.deleteMessage(
                 MessageParams(
                     chatId = data.chatId,
-                    messageId = it.toInt()
-                )
+                    messageId = it.toInt(),
+                ),
             )
         }
         data.userInfo = data.userInfo.copy(
@@ -337,8 +337,8 @@ class CategoryButtonHandlerFetcher(
             MessageParams(
                 chatId = data.chatId,
                 text = text,
-                replyMarkup = keyboard
-            )
+                replyMarkup = keyboard,
+            ),
         ).messageId
         data.userInfo = data.userInfo.copy(
             data = lastSent.toString(),
@@ -352,8 +352,8 @@ class CategoryButtonHandlerFetcher(
                 chatId = data.chatId,
                 messageId = msgId,
                 text = text,
-                replyMarkup = keyboard
-            )
+                replyMarkup = keyboard,
+            ),
         )
         data.userInfo = data.userInfo.copy(
             data = msgId.toString(),
@@ -366,8 +366,8 @@ class CategoryButtonHandlerFetcher(
             MessageParams(
                 chatId = data.chatId,
                 messageId = msgId,
-                replyMarkup = keyboard
-            )
+                replyMarkup = keyboard,
+            ),
         )
         data.userInfo = data.userInfo.copy(
             data = msgId.toString(),

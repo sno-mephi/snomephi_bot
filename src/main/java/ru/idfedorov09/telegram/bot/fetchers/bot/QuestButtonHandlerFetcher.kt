@@ -2,15 +2,10 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
-import org.telegram.telegrambots.meta.api.methods.ForwardMessage
 import org.telegram.telegrambots.meta.api.methods.ParseMode
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUEST_RESPONDENT_CHAT_ID
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_ANSWER
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_BAN
@@ -18,7 +13,6 @@ import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_IGNORE
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_START_DIALOG
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
-import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
@@ -100,7 +94,7 @@ class QuestButtonHandlerFetcher(
         switchKeyboardService.disableKeyboard(questionAuthor.id!!)
         switchKeyboardService.switchKeyboard(
             data.userActualizedInfo.id!!,
-            UserKeyboardType.DIALOG_QUEST
+            UserKeyboardType.DIALOG_QUEST,
         )
 
         messageSenderService.sendMessage(
@@ -108,24 +102,24 @@ class QuestButtonHandlerFetcher(
                 chatId = questionAuthor.tui!!,
                 text = "<i>С вами общается оператор по поводу обращения #${data.quest.id}</i>",
                 parseMode = ParseMode.HTML,
-            )
+            ),
         )
 
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = data.userActualizedInfo.tui,
                 text = "<i>Ты перешел в диалог с пользователем @${questionAuthor.lastTgNick}. " +
-                        "Несмотря на твою анонимность, оставайся вежливым :)</i>",
-                parseMode = ParseMode.HTML
-            )
+                    "Несмотря на твою анонимность, оставайся вежливым :)</i>",
+                parseMode = ParseMode.HTML,
+            ),
         )
 
         messageSenderService.editMessage(
             MessageParams(
                 chatId = QUEST_RESPONDENT_CHAT_ID,
                 messageId = quest.consoleMessageId!!.toInt(),
-                text = "✏\uFE0F ${data.userActualizedInfo.lastTgNick} ведет диалог"
-            )
+                text = "✏\uFE0F ${data.userActualizedInfo.lastTgNick} ведет диалог",
+            ),
         )
 
         return data.userActualizedInfo.copy(
@@ -148,8 +142,8 @@ class QuestButtonHandlerFetcher(
             MessageParams(
                 chatId = QUEST_RESPONDENT_CHAT_ID,
                 messageId = data.quest.consoleMessageId?.toInt(),
-                text = newText
-            )
+                text = newText,
+            ),
         )
         return data.userActualizedInfo
     }
@@ -164,25 +158,25 @@ class QuestButtonHandlerFetcher(
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = data.userActualizedInfo.tui,
-                text = "Кажется, ты хотел(-а) ответить на следующее сообщение:"
-            )
+                text = "Кажется, ты хотел(-а) ответить на следующее сообщение:",
+            ),
         )
 
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = data.userActualizedInfo.tui,
                 fromChatId = questionAuthor.tui.toString(),
-                messageId = firstMessage.messageId!!
-            )
+                messageId = firstMessage.messageId!!,
+            ),
         )
 
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = data.userActualizedInfo.tui,
                 text = "Ты можешь либо ответить анонимно одним сообщением, отправив его сейчас, " +
-                        "либо начать анонимный диалог с пользователем.",
-                replyMarkup = createChooseKeyboard(data.quest)
-            )
+                    "либо начать анонимный диалог с пользователем.",
+                replyMarkup = createChooseKeyboard(data.quest),
+            ),
         )
 
         return data.userActualizedInfo.copy(
@@ -211,8 +205,8 @@ class QuestButtonHandlerFetcher(
                 chatId = QUEST_RESPONDENT_CHAT_ID,
                 messageId = data.quest.consoleMessageId?.toInt(),
                 text = newText,
-                replyMarkup = createUnbanKeyboard(data.quest)
-            )
+                replyMarkup = createUnbanKeyboard(data.quest),
+            ),
         )
 
         return data.userActualizedInfo
