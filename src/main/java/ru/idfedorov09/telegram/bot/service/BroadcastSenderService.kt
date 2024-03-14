@@ -3,6 +3,8 @@ package ru.idfedorov09.telegram.bot.service
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Isolation
+import org.springframework.transaction.annotation.Transactional
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
@@ -21,7 +23,7 @@ import java.time.format.DateTimeFormatter
 import kotlin.jvm.optionals.getOrNull
 
 @Service
-class BroadcastSenderService(
+open class BroadcastSenderService(
     private val broadcastRepository: BroadcastRepository,
     private val userRepository: UserRepository,
     private val buttonRepository: ButtonRepository,
@@ -32,21 +34,34 @@ class BroadcastSenderService(
         private val log = LoggerFactory.getLogger(BroadcastSenderService::class.java)
     }
 
-    @Scheduled(fixedDelay = 700)
-    fun broadcastSender() {
+
+    // TODO: остается проблема - а если бродкастов несколько?
+    @Scheduled(fixedDelay = 150)
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    open fun broadcastSender() {
         runCatching {
-            val firstActiveBroadcast = broadcastRepository.findFirstActiveBroadcast() ?: return
-            if (firstActiveBroadcast.receivedUsersId.isEmpty()) startBroadcast(firstActiveBroadcast)
-            val firstUser = userRepository.findAll().filter { it.isRegistered }.firstOrNull {
-                checkValidUser(it, firstActiveBroadcast)
-            } ?: run {
-                finishBroadcast(firstActiveBroadcast)
-                return
-            }
+            trySendBroadcast()
+        }.onFailure { e ->
+            log.warn("Ошибка при отправке рассылки broadcastSender(): $e")
+            log.debug(e.stackTraceToString())
+        }
+    }
+
+    private fun trySendBroadcast() {
+        val firstActiveBroadcast = broadcastRepository.findFirstActiveBroadcast() ?: return
+        if (firstActiveBroadcast.receivedUsersId.isEmpty()) startBroadcast(firstActiveBroadcast)
+        val firstUser = userRepository.findAll().filter { it.isRegistered }.firstOrNull {
+            checkValidUser(it, firstActiveBroadcast)
+        } ?: run {
+            finishBroadcast(firstActiveBroadcast)
+            return
+        }
+        runCatching {
             sendBroadcast(firstUser, firstActiveBroadcast)
         }.onFailure { e ->
-            log.warn("Ошибка при работе broadcastSender: $e")
-            log.debug(e.stackTrace.toString())
+            log.warn("Ошибка при отправке рассылки trySendBroadcast(): $e")
+            log.debug("Send to user={}, broadcast={}", firstUser, firstActiveBroadcast)
+            log.debug(e.stackTraceToString())
         }
     }
 
