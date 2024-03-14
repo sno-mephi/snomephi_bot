@@ -3,8 +3,6 @@ package ru.idfedorov09.telegram.bot.service
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Isolation
-import org.springframework.transaction.annotation.Transactional
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
@@ -37,8 +35,7 @@ open class BroadcastSenderService(
 
     // TODO: остается проблема - а если бродкастов несколько?
     @Scheduled(fixedDelay = 150)
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
-    open fun broadcastSender() {
+    fun broadcastSender() {
         runCatching {
             trySendBroadcast()
         }.onFailure { e ->
