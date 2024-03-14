@@ -2,6 +2,8 @@ package ru.idfedorov09.telegram.bot.service
 
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Isolation
+import org.springframework.transaction.annotation.Transactional
 import org.telegram.telegrambots.meta.api.objects.Message
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.executor.Executor
@@ -10,7 +12,7 @@ import ru.idfedorov09.telegram.bot.util.KeyboardUtil
 import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
 
 @Service
-class MessageSenderService(
+open class MessageSenderService(
     val bot: Executor,
     val userRepository: UserRepository,
 ) {
@@ -32,7 +34,8 @@ class MessageSenderService(
         }
     }
 
-    private fun trySendWithSwitchKeyboard(messageParams: MessageParams): Message {
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    open fun trySendWithSwitchKeyboard(messageParams: MessageParams): Message {
         val chatId = messageParams.chatId.toLongOrNull()
         if (chatId == null || chatId < 0) {
             return MessageSenderUtil.sendMessage(bot, messageParams)
