@@ -27,7 +27,6 @@ class QuestStartFetcher(
     private val questDialogMessageRepository: QuestDialogMessageRepository,
     private val messageSenderService: MessageSenderService,
 ) : GeneralFetcher() {
-
     @InjectData
     fun doFetch(
         update: Update,
@@ -94,10 +93,11 @@ class QuestStartFetcher(
         // если пришла команда - ничего не делаем
         if (TextCommands.isTextCommand(messageText)) return
 
-        val quest = Quest(
-            authorId = userActualizedInfo.id,
-            questionStatus = QuestionStatus.WAIT,
-        ).let { questRepository.save(it) }
+        val quest =
+            Quest(
+                authorId = userActualizedInfo.id,
+                questionStatus = QuestionStatus.WAIT,
+            ).let { questRepository.save(it) }
 
         val questDialogMessage = QuestDialogMessage(
             questId = quest.id,
@@ -136,34 +136,35 @@ class QuestStartFetcher(
             ),
         )
 
-        val sentMessage = messageSenderService.sendMessage(
-            MessageParams(
-                chatId = QUEST_RESPONDENT_CHAT_ID,
-                text = "Выберите действие:",
-                replyMarkup = createChooseKeyboard(quest),
-            ),
-        )
+        val sentMessage =
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = QUEST_RESPONDENT_CHAT_ID,
+                    text = "Выберите действие:",
+                    replyMarkup = createChooseKeyboard(quest),
+                ),
+            )
 
         quest.copy(
             consoleMessageId = sentMessage.messageId.toString(),
         ).also { questRepository.save(it) }
     }
 
-    private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) =
-        InlineKeyboardMarkup().also { it.keyboard = keyboard }
+    private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
 
-    private fun createChooseKeyboard(quest: Quest) = createKeyboard(
-        listOf(
+    private fun createChooseKeyboard(quest: Quest) =
+        createKeyboard(
             listOf(
-                InlineKeyboardButton("\uD83D\uDCAC Ответ")
-                    .also { it.callbackData = QUEST_ANSWER.format(quest.id) },
+                listOf(
+                    InlineKeyboardButton("\uD83D\uDCAC Ответ")
+                        .also { it.callbackData = QUEST_ANSWER.format(quest.id) },
+                ),
+                listOf(
+                    InlineKeyboardButton("\uD83D\uDD07 Игнор")
+                        .also { it.callbackData = QUEST_IGNORE.format(quest.id) },
+                    InlineKeyboardButton("\uD83D\uDEAF Бан")
+                        .also { it.callbackData = QUEST_BAN.format(quest.id) },
+                ),
             ),
-            listOf(
-                InlineKeyboardButton("\uD83D\uDD07 Игнор")
-                    .also { it.callbackData = QUEST_IGNORE.format(quest.id) },
-                InlineKeyboardButton("\uD83D\uDEAF Бан")
-                    .also { it.callbackData = QUEST_BAN.format(quest.id) },
-            ),
-        ),
-    )
+        )
 }

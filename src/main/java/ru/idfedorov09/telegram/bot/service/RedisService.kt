@@ -13,7 +13,6 @@ import java.time.format.DateTimeFormatter
 class RedisService(
     private var jedis: Jedis,
 ) {
-
     companion object {
         private val log = LoggerFactory.getLogger(RedisService::class.java)
         private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
@@ -30,7 +29,10 @@ class RedisService(
     }
 
     @Synchronized
-    fun setValue(key: String, value: String?) {
+    fun setValue(
+        key: String,
+        value: String?,
+    ) {
         value ?: run {
             jedis.del(key)
             return
@@ -44,7 +46,10 @@ class RedisService(
     }
 
     @Synchronized
-    fun rpush(key: String, value: String) {
+    fun rpush(
+        key: String,
+        value: String,
+    ) {
         jedis.rpush(key, value)
     }
 

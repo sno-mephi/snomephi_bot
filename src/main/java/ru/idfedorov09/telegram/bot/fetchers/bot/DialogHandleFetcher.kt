@@ -33,7 +33,6 @@ class DialogHandleFetcher(
     private val userRepository: UserRepository,
     private val switchKeyboardService: SwitchKeyboardService,
 ) : GeneralFetcher() {
-
     // TODO: добавить поддержку картинок, файлов, HTML/MARKDOWN-разметки
     @InjectData
     fun doFetch(
@@ -66,25 +65,27 @@ class DialogHandleFetcher(
             null
         }
 
-        val params = Params(
-            messageText = messageText,
-            quest = quest,
-            author = author,
-            responder = responder,
-            isByQuestionAuthor = isByQuestionAuthor,
-            userActualizedInfo = userActualizedInfo,
-            update = update,
-            photoHash = photoHash,
-            documentHash = documentHash,
-        )
+        val params =
+            Params(
+                messageText = messageText,
+                quest = quest,
+                author = author,
+                responder = responder,
+                isByQuestionAuthor = isByQuestionAuthor,
+                userActualizedInfo = userActualizedInfo,
+                update = update,
+                photoHash = photoHash,
+                documentHash = documentHash,
+            )
 
-        val updatedUserActualizedInfo = when {
-            TextCommands.isTextCommand(params.messageText) -> handleCommands(params)
-            update.hasMessage() && update.message.hasText() -> handleMessageText(params)
-            update.hasMessage() && update.message.hasPhoto() -> handleMessagePhoto(params)
-            update.hasMessage() && update.message.hasDocument() -> handleMessageDocument(params)
-            else -> nonSupportedUpdateType(params)
-        }
+        val updatedUserActualizedInfo =
+            when {
+                TextCommands.isTextCommand(params.messageText) -> handleCommands(params)
+                update.hasMessage() && update.message.hasText() -> handleMessageText(params)
+                update.hasMessage() && update.message.hasPhoto() -> handleMessagePhoto(params)
+                update.hasMessage() && update.message.hasDocument() -> handleMessageDocument(params)
+                else -> nonSupportedUpdateType(params)
+            }
         return updatedUserActualizedInfo
     }
 
@@ -100,14 +101,15 @@ class DialogHandleFetcher(
 
     private fun handleMessageDocument(params: Params): UserActualizedInfo {
         params.apply {
-            val questDialogMessage = QuestDialogMessage(
-                questId = quest.id,
-                isByQuestionAuthor = isByQuestionAuthor,
-                authorId = userActualizedInfo.id,
-                messageText = messageText,
-                messageDocumentHash = documentHash,
-                messageId = update.message.messageId,
-            ).let { questDialogMessageRepository.save(it) }
+            val questDialogMessage =
+                QuestDialogMessage(
+                    questId = quest.id,
+                    isByQuestionAuthor = isByQuestionAuthor,
+                    authorId = userActualizedInfo.id,
+                    messageText = messageText,
+                    messageDocumentHash = documentHash,
+                    messageId = update.message.messageId,
+                ).let { questDialogMessageRepository.save(it) }
             quest.dialogHistory.add(questDialogMessage.id!!)
             questRepository.save(quest)
 
@@ -124,14 +126,15 @@ class DialogHandleFetcher(
 
     private fun handleMessagePhoto(params: Params): UserActualizedInfo {
         params.apply {
-            val questDialogMessage = QuestDialogMessage(
-                questId = quest.id,
-                isByQuestionAuthor = isByQuestionAuthor,
-                authorId = userActualizedInfo.id,
-                messageText = messageText,
-                messagePhotoHash = photoHash,
-                messageId = update.message.messageId,
-            ).let { questDialogMessageRepository.save(it) }
+            val questDialogMessage =
+                QuestDialogMessage(
+                    questId = quest.id,
+                    isByQuestionAuthor = isByQuestionAuthor,
+                    authorId = userActualizedInfo.id,
+                    messageText = messageText,
+                    messagePhotoHash = photoHash,
+                    messageId = update.message.messageId,
+                ).let { questDialogMessageRepository.save(it) }
             quest.dialogHistory.add(questDialogMessage.id!!)
             questRepository.save(quest)
 
@@ -148,13 +151,14 @@ class DialogHandleFetcher(
 
     private fun handleMessageText(params: Params): UserActualizedInfo {
         params.apply {
-            val questDialogMessage = QuestDialogMessage(
-                questId = quest.id,
-                isByQuestionAuthor = isByQuestionAuthor,
-                authorId = userActualizedInfo.id,
-                messageText = messageText,
-                messageId = update.message.messageId,
-            ).let { questDialogMessageRepository.save(it) }
+            val questDialogMessage =
+                QuestDialogMessage(
+                    questId = quest.id,
+                    isByQuestionAuthor = isByQuestionAuthor,
+                    authorId = userActualizedInfo.id,
+                    messageText = messageText,
+                    messageId = update.message.messageId,
+                ).let { questDialogMessageRepository.save(it) }
             quest.dialogHistory.add(questDialogMessage.id!!)
             questRepository.save(quest)
 

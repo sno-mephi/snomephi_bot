@@ -41,7 +41,6 @@ class QuestButtonHandlerFetcher(
     private val dialogMessageRepository: QuestDialogMessageRepository,
     private val switchKeyboardService: SwitchKeyboardService,
 ) : GeneralFetcher() {
-
     // TODO: обработать случай когда бот не может написать пользователю!
     // TODO: нельзя отвечать самому себе
     @InjectData
@@ -59,11 +58,12 @@ class QuestButtonHandlerFetcher(
 
         val questByCallbackData = getQuestByCallbackData(callbackData) ?: return userActualizedInfo
 
-        val requestData = RequestData(
-            questByCallbackData,
-            userActualizedInfo,
-            update,
-        )
+        val requestData =
+            RequestData(
+                questByCallbackData,
+                userActualizedInfo,
+                update,
+            )
         bot.execute(AnswerCallbackQuery(update.callbackQuery.id))
         return when {
             QUEST_ANSWER.isMatch(callbackData) -> clickAnswer(requestData)
@@ -78,10 +78,11 @@ class QuestButtonHandlerFetcher(
         if (data.quest.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
         if (data.userActualizedInfo.activeQuest != null) return data.userActualizedInfo
 
-        val quest = data.quest.copy(
-            responderId = data.userActualizedInfo.id,
-            questionStatus = QuestionStatus.DIALOG,
-        )
+        val quest =
+            data.quest.copy(
+                responderId = data.userActualizedInfo.id,
+                questionStatus = QuestionStatus.DIALOG,
+            )
 
         val questionAuthor = userRepository.findById(data.quest.authorId!!).get()
         questRepository.save(quest)
@@ -108,8 +109,9 @@ class QuestButtonHandlerFetcher(
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = data.userActualizedInfo.tui,
-                text = "<i>Ты перешел в диалог с пользователем @${questionAuthor.lastTgNick}. " +
-                    "Несмотря на твою анонимность, оставайся вежливым :)</i>",
+                text =
+                    "<i>Ты перешел в диалог с пользователем @${questionAuthor.lastTgNick}. " +
+                        "Несмотря на твою анонимность, оставайся вежливым :)</i>",
                 parseMode = ParseMode.HTML,
             ),
         )
@@ -173,8 +175,9 @@ class QuestButtonHandlerFetcher(
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = data.userActualizedInfo.tui,
-                text = "Ты можешь либо ответить анонимно одним сообщением, отправив его сейчас, " +
-                    "либо начать анонимный диалог с пользователем.",
+                text =
+                    "Ты можешь либо ответить анонимно одним сообщением, отправив его сейчас, " +
+                        "либо начать анонимный диалог с пользователем.",
                 replyMarkup = createChooseKeyboard(data.quest),
             ),
         )
@@ -193,9 +196,10 @@ class QuestButtonHandlerFetcher(
         )
 
         // TODO: логика банов скоро изменится, тут тоже надо будет менять код
-        val authorInBan = userRepository.findById(data.quest.authorId!!).get().copy(
-            roles = mutableSetOf(UserRole.BANNED),
-        )
+        val authorInBan =
+            userRepository.findById(data.quest.authorId!!).get().copy(
+                roles = mutableSetOf(UserRole.BANNED),
+            )
         userRepository.save(authorInBan)
 
         // TODO: а если у пользователя нет ника?
@@ -212,27 +216,28 @@ class QuestButtonHandlerFetcher(
         return data.userActualizedInfo
     }
 
-    private fun createChooseKeyboard(quest: Quest) = createKeyboard(
-        listOf(
+    private fun createChooseKeyboard(quest: Quest) =
+        createKeyboard(
             listOf(
-                InlineKeyboardButton("\uD83D\uDCAC Начать диалог")
-                    .also { it.callbackData = QUEST_START_DIALOG.format(quest.id) },
+                listOf(
+                    InlineKeyboardButton("\uD83D\uDCAC Начать диалог")
+                        .also { it.callbackData = QUEST_START_DIALOG.format(quest.id) },
+                ),
             ),
-        ),
-    )
+        )
 
-    private fun createUnbanKeyboard(quest: Quest) = createKeyboard(
-        listOf(
+    private fun createUnbanKeyboard(quest: Quest) =
+        createKeyboard(
             listOf(
-                InlineKeyboardButton("Разбанить (doesn't work)")
-                    // TODO("разбан еще не реализован")
-                    .also { it.callbackData = QUEST_BAN.format(quest.id) },
+                listOf(
+                    InlineKeyboardButton("Разбанить (doesn't work)")
+                        // TODO("разбан еще не реализован")
+                        .also { it.callbackData = QUEST_BAN.format(quest.id) },
+                ),
             ),
-        ),
-    )
+        )
 
-    private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) =
-        InlineKeyboardMarkup().also { it.keyboard = keyboard }
+    private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
 
     private fun getQuestByCallbackData(callbackData: String): Quest? {
         val questId = parseQuestId(callbackData)

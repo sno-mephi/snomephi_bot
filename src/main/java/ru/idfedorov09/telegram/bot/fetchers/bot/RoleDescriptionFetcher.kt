@@ -20,7 +20,6 @@ class RoleDescriptionFetcher(
     private val updatesUtil: UpdatesUtil,
     private val messageSenderService: MessageSenderService,
 ) : GeneralFetcher() {
-
     @InjectData
     fun doFetch(
         update: Update,
@@ -42,9 +41,10 @@ class RoleDescriptionFetcher(
             return
         }
 
-        val text = UserRole.entries.joinToString("\n\n") {
-            "- ${it}\n\t${it.description}"
-        }
+        val text =
+            UserRole.entries.joinToString("\n\n") {
+                "- ${it}\n\t${it.description}"
+            }
 
         messageSenderService.sendMessage(
             MessageParams(

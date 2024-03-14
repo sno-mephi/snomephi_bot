@@ -20,7 +20,6 @@ class WeeklyEventsFetcher(
     private val broadcastSenderService: BroadcastSenderService,
     private val messageSenderService: MessageSenderService,
 ) : GeneralFetcher() {
-
     @InjectData
     fun doFetch(
         userActualizedInfo: UserActualizedInfo,
@@ -34,9 +33,7 @@ class WeeklyEventsFetcher(
         }
     }
 
-    private fun sendWeeklyEvents(
-        userActualizedInfo: UserActualizedInfo,
-    ) {
+    private fun sendWeeklyEvents(userActualizedInfo: UserActualizedInfo) {
         val firstActiveWeeklyBroadcast = broadcastRepository.findFirstActiveWeeklyBroadcast()
         firstActiveWeeklyBroadcast ?: run {
             messageSenderService.sendMessage(

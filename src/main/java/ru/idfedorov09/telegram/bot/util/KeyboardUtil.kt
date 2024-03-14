@@ -10,7 +10,10 @@ import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.data.model.User
 
 object KeyboardUtil {
-    fun changeKeyboard(userKeyboardType: UserKeyboardType, user: User): ReplyKeyboard {
+    fun changeKeyboard(
+        userKeyboardType: UserKeyboardType,
+        user: User,
+    ): ReplyKeyboard {
         return when (userKeyboardType) {
             UserKeyboardType.WITHOUT_KEYBOARD -> deleteKeyboard(user.roles)
             UserKeyboardType.DEFAULT_MAIN_BOT -> createDefaultKeyboard(user.roles)
@@ -21,14 +24,15 @@ object KeyboardUtil {
     private fun deleteKeyboard(roles: MutableSet<UserRole>) = ReplyKeyboardRemove().apply { removeKeyboard = true }
 
     private fun createDefaultKeyboard(roles: MutableSet<UserRole>): ReplyKeyboard {
-        val keyboards = mutableListOf(
-            KeyboardRow().also {
-                it.add(TextCommands.SETTING_MAIL())
-            },
-            KeyboardRow().also {
-                it.add(TextCommands.WEEKLY_EVENTS())
-            },
-        )
+        val keyboards =
+            mutableListOf(
+                KeyboardRow().also {
+                    it.add(TextCommands.SETTING_MAIL())
+                },
+                KeyboardRow().also {
+                    it.add(TextCommands.WEEKLY_EVENTS())
+                },
+            )
         if (UserRole.ROOT in roles || UserRole.MAILER in roles) {
             keyboards.add(
                 KeyboardRow().also {
@@ -36,25 +40,28 @@ object KeyboardUtil {
                 },
             )
         }
-        val defaultKeyboard = ReplyKeyboardMarkup().also {
-            it.keyboard = keyboards
-            it.oneTimeKeyboard = true
-            it.resizeKeyboard = true
-        }
+        val defaultKeyboard =
+            ReplyKeyboardMarkup().also {
+                it.keyboard = keyboards
+                it.oneTimeKeyboard = true
+                it.resizeKeyboard = true
+            }
         return defaultKeyboard
     }
 
     private fun createDialogKeyboard(roles: MutableSet<UserRole>): ReplyKeyboard {
-        val keyboards = mutableListOf(
-            KeyboardRow().also {
-                it.add(TextCommands.QUEST_DIALOG_CLOSE())
-            },
-        )
-        val closeDialogKeyboard = ReplyKeyboardMarkup().also {
-            it.keyboard = keyboards
-            it.oneTimeKeyboard = true
-            it.resizeKeyboard = true
-        }
+        val keyboards =
+            mutableListOf(
+                KeyboardRow().also {
+                    it.add(TextCommands.QUEST_DIALOG_CLOSE())
+                },
+            )
+        val closeDialogKeyboard =
+            ReplyKeyboardMarkup().also {
+                it.keyboard = keyboards
+                it.oneTimeKeyboard = true
+                it.resizeKeyboard = true
+            }
         return closeDialogKeyboard
     }
 }

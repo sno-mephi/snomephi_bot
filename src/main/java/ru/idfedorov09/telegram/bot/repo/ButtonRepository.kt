@@ -6,7 +6,6 @@ import ru.idfedorov09.telegram.bot.data.GlobalConstants.MAX_BROADCAST_BUTTONS_CO
 import ru.idfedorov09.telegram.bot.data.model.Button
 
 interface ButtonRepository : JpaRepository<Button, Long> {
-
     @Query(
         """
             SELECT *
@@ -15,7 +14,7 @@ interface ButtonRepository : JpaRepository<Button, Long> {
                 ORDER BY last_modify_dttm DESC 
             LIMIT 1
         """,
-        nativeQuery = true
+        nativeQuery = true,
     )
     fun getLastModifiedButtonByUserId(userId: Long): Button?
 
@@ -29,7 +28,7 @@ interface ButtonRepository : JpaRepository<Button, Long> {
                 ORDER BY button_id
             LIMIT ${MAX_BROADCAST_BUTTONS_COUNT + 1}
         """,
-        nativeQuery = true
+        nativeQuery = true,
     )
     fun findAllValidButtonsForBroadcast(broadcastId: Long): List<Button>
 }

@@ -36,11 +36,12 @@ class CategoryActionTypeHandlerFetcher(
         userActualizedInfo: UserActualizedInfo,
     ): UserActualizedInfo {
         val chatId = updatesUtil.getChatId(update) ?: return userActualizedInfo
-        val requestData = RequestData(
-            chatId,
-            update,
-            userActualizedInfo,
-        )
+        val requestData =
+            RequestData(
+                chatId,
+                update,
+                userActualizedInfo,
+            )
         when (userActualizedInfo.lastUserActionType) {
             LastUserActionType.CATEGORY_INPUT_START ->
                 actionAddTitle(requestData)
@@ -95,9 +96,10 @@ class CategoryActionTypeHandlerFetcher(
                 CategoryKeyboards.inputCancel(),
             )
         }
-        data.userInfo = data.userInfo.copy(
-            lastUserActionType = LastUserActionType.CATEGORY_INPUT_TITLE,
-        )
+        data.userInfo =
+            data.userInfo.copy(
+                lastUserActionType = LastUserActionType.CATEGORY_INPUT_TITLE,
+            )
     }
 
     private fun actionAddSuffix(data: RequestData) {
@@ -153,9 +155,10 @@ class CategoryActionTypeHandlerFetcher(
                 CategoryKeyboards.inputCancel(),
             )
         }
-        data.userInfo = data.userInfo.copy(
-            lastUserActionType = LastUserActionType.CATEGORY_INPUT_SUFFIX,
-        )
+        data.userInfo =
+            data.userInfo.copy(
+                lastUserActionType = LastUserActionType.CATEGORY_INPUT_SUFFIX,
+            )
     }
 
     private fun actionAddDescription(data: RequestData) {
@@ -196,12 +199,18 @@ class CategoryActionTypeHandlerFetcher(
                 CategoryKeyboards.questionIsUnremovable(),
             )
         }
-        data.userInfo = data.userInfo.copy(
-            lastUserActionType = LastUserActionType.CATEGORY_INPUT_DESCRIPTION,
-        )
+        data.userInfo =
+            data.userInfo.copy(
+                lastUserActionType = LastUserActionType.CATEGORY_INPUT_DESCRIPTION,
+            )
     }
 
-    private fun editMessage(messageId: Int, data: RequestData, text: String, keyboard: InlineKeyboardMarkup?) {
+    private fun editMessage(
+        messageId: Int,
+        data: RequestData,
+        text: String,
+        keyboard: InlineKeyboardMarkup?,
+    ) {
         val msgId = messageId
         messageSenderService.editMessage(
             MessageParams(
@@ -213,16 +222,22 @@ class CategoryActionTypeHandlerFetcher(
         )
     }
 
-    private fun sendMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup) {
-        val lastSent = messageSenderService.sendMessage(
-            MessageParams(
-                chatId = data.chatId,
-                text = text,
-                replyMarkup = keyboard,
-            ),
-        ).messageId
-        data.userInfo = data.userInfo.copy(
-            data = lastSent.toString(),
-        )
+    private fun sendMessage(
+        data: RequestData,
+        text: String,
+        keyboard: InlineKeyboardMarkup,
+    ) {
+        val lastSent =
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = data.chatId,
+                    text = text,
+                    replyMarkup = keyboard,
+                ),
+            ).messageId
+        data.userInfo =
+            data.userInfo.copy(
+                data = lastSent.toString(),
+            )
     }
 }

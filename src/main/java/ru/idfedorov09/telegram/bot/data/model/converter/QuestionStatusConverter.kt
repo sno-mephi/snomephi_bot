@@ -6,7 +6,6 @@ import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 
 @Converter(autoApply = true)
 class QuestionStatusConverter : AttributeConverter<QuestionStatus, String> {
-
     override fun convertToDatabaseColumn(attribute: QuestionStatus?): String? {
         return attribute?.name
     }

@@ -28,7 +28,6 @@ class PermissionsFetcher(
     private val userRepository: UserRepository,
     private val switchKeyboardService: SwitchKeyboardService,
 ) : GeneralFetcher() {
-
     @InjectData
     fun doFetch(
         userActualizedInfo: UserActualizedInfo,
@@ -62,7 +61,10 @@ class PermissionsFetcher(
         }
     }
 
-    private fun callbackQueryHandler(update: Update, params: Params): UserActualizedInfo {
+    private fun callbackQueryHandler(
+        update: Update,
+        params: Params,
+    ): UserActualizedInfo {
         val callbackId = update.callbackQuery.data?.toLongOrNull()
         callbackId ?: return params.userActualizedInfo
         val callbackData = callbackDataRepository.findById(callbackId).getOrNull() ?: return params.userActualizedInfo
@@ -83,24 +85,28 @@ class PermissionsFetcher(
             messageSenderService.deleteMessage(
                 MessageParams(
                     chatId = userActualizedInfo.tui,
-                    messageId = update.callbackQuery.message.messageId
-                )
+                    messageId = update.callbackQuery.message.messageId,
+                ),
             )
             return userActualizedInfo.copy(
-                lastUserActionType = LastUserActionType.DEFAULT
+                lastUserActionType = LastUserActionType.DEFAULT,
             )
         }
     }
 
-    private fun addRoleToUser(params: Params, callbackData: String): UserActualizedInfo {
+    private fun addRoleToUser(
+        params: Params,
+        callbackData: String,
+    ): UserActualizedInfo {
         params.apply {
             val role = UserRole.valueOf(callbackData.split("_").last())
             val userId = callbackData.split("_").dropLast(1).last().toLong()
 
-            val user = userRepository.findById(userId).get().let {
-                it.roles.add(role)
-                userRepository.save(it)
-            }
+            val user =
+                userRepository.findById(userId).get().let {
+                    it.roles.add(role)
+                    userRepository.save(it)
+                }
             val text = "Роль ${role.name} успешно добавлена пользователю ${user.fullName}!"
 
             switchKeyboardService.reshowKeyboard(userId)
@@ -108,31 +114,36 @@ class PermissionsFetcher(
             messageSenderService.sendMessage(
                 MessageParams(
                     chatId = userActualizedInfo.tui,
-                    text = text
-                )
+                    text = text,
+                ),
             )
             return userActualizedInfo
         }
     }
 
-    private fun addRoleAction(params: Params, callbackData: String): UserActualizedInfo {
+    private fun addRoleAction(
+        params: Params,
+        callbackData: String,
+    ): UserActualizedInfo {
         params.apply {
-            val userId = callbackData
-                .split("_")
-                .lastOrNull()
-                ?.toLongOrNull()
-                ?: return userActualizedInfo
+            val userId =
+                callbackData
+                    .split("_")
+                    .lastOrNull()
+                    ?.toLongOrNull()
+                    ?: return userActualizedInfo
 
             val user = userRepository.findById(userId).get()
             val roles = UserRole.entries - user.roles
 
             val text = "Выбери роль, которую хочешь назначить:"
-            val buttons = roles.map {
-                CallbackData(
-                    callbackData = "#perms_perm_add_${userId}_${it.name}",
-                    metaText = it.name,
-                ).save()
-            }.toTypedArray()
+            val buttons =
+                roles.map {
+                    CallbackData(
+                        callbackData = "#perms_perm_add_${userId}_${it.name}",
+                        metaText = it.name,
+                    ).save()
+                }.toTypedArray()
 
             val keyboard = createKeyboard(*buttons)
 
@@ -140,8 +151,8 @@ class PermissionsFetcher(
                 MessageParams(
                     chatId = userActualizedInfo.tui,
                     text = text,
-                    replyMarkup = keyboard
-                )
+                    replyMarkup = keyboard,
+                ),
             )
             return userActualizedInfo
         }
@@ -149,24 +160,26 @@ class PermissionsFetcher(
 
     private fun handleTui(params: Params): UserActualizedInfo {
         params.apply {
-            val tui = update.message.text.toLongOrNull() ?: run {
-                messageSenderService.sendMessage(
-                    MessageParams(
-                        chatId = userActualizedInfo.tui,
-                        text = "Некорректный tui. Повтори попытку"
+            val tui =
+                update.message.text.toLongOrNull() ?: run {
+                    messageSenderService.sendMessage(
+                        MessageParams(
+                            chatId = userActualizedInfo.tui,
+                            text = "Некорректный tui. Повтори попытку",
+                        ),
                     )
-                )
-                return userActualizedInfo
-            }
-            val user = userRepository.findByTui(tui.toString()) ?: run {
-                messageSenderService.sendMessage(
-                    MessageParams(
-                        chatId = userActualizedInfo.tui,
-                        text = "Такого юзера нет, повтори попытку"
+                    return userActualizedInfo
+                }
+            val user =
+                userRepository.findByTui(tui.toString()) ?: run {
+                    messageSenderService.sendMessage(
+                        MessageParams(
+                            chatId = userActualizedInfo.tui,
+                            text = "Такого юзера нет, повтори попытку",
+                        ),
                     )
-                )
-                return userActualizedInfo
-            }
+                    return userActualizedInfo
+                }
 
             val text = "Нашел пользователя ${user.fullName}.\n"
             return permissionsSetupMessage(params, user.id!!, text)
@@ -175,40 +188,43 @@ class PermissionsFetcher(
 
     private fun entryUserTui(params: Params): UserActualizedInfo {
         val text = "Следующим сообщением напиши мне Telegram User Id человека, с ролями которого собираешься рофлить"
-        val cancel = CallbackData(
-            callbackData = "#perms_cancel",
-            metaText = "отмена",
-        ).save()
+        val cancel =
+            CallbackData(
+                callbackData = "#perms_cancel",
+                metaText = "отмена",
+            ).save()
 
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = params.userActualizedInfo.tui,
                 text = text,
-                replyMarkup = createKeyboard(cancel)
-            )
+                replyMarkup = createKeyboard(cancel),
+            ),
         )
 
         return params.userActualizedInfo.copy(
-            lastUserActionType = LastUserActionType.PERMS_ENTER_TUI
+            lastUserActionType = LastUserActionType.PERMS_ENTER_TUI,
         )
     }
 
     private fun permissionsSetupMessage(
         params: Params,
         userId: Long,
-        prefix: String
+        prefix: String,
     ): UserActualizedInfo {
         val text = "$prefix\nВыбери дальнейшее действие:"
-        val addRole = CallbackData(
-            callbackData = "#perm_add_role_${userId}",
-            metaText = "Выдать роль",
-        ).save()
+        val addRole =
+            CallbackData(
+                callbackData = "#perm_add_role_$userId",
+                metaText = "Выдать роль",
+            ).save()
 
         // TODO!!!
-        val removeRole = CallbackData(
-            callbackData = "#perm_remove_role_${userId}",
-            metaText = "Выдать роль (не работает)",
-        ).save()
+        val removeRole =
+            CallbackData(
+                callbackData = "#perm_remove_role_$userId",
+                metaText = "Выдать роль (не работает)",
+            ).save()
 
         // TODO: кнопка отмены?
 
@@ -217,29 +233,27 @@ class PermissionsFetcher(
             MessageParams(
                 chatId = params.userActualizedInfo.tui,
                 text = text,
-                replyMarkup = keyboard
-            )
+                replyMarkup = keyboard,
+            ),
         )
 
         return params.userActualizedInfo.copy(
-            lastUserActionType = LastUserActionType.DEFAULT
+            lastUserActionType = LastUserActionType.DEFAULT,
         )
     }
 
-    private fun createKeyboard(
-        vararg callbackData: CallbackData
-    ): InlineKeyboardMarkup {
-        val keyboard = listOf(*callbackData).map { button ->
-            InlineKeyboardButton().also {
-                it.text = button.metaText!!
-                it.callbackData = button.id?.toString()
-            }
-        }.map { listOf(it) }
+    private fun createKeyboard(vararg callbackData: CallbackData): InlineKeyboardMarkup {
+        val keyboard =
+            listOf(*callbackData).map { button ->
+                InlineKeyboardButton().also {
+                    it.text = button.metaText!!
+                    it.callbackData = button.id?.toString()
+                }
+            }.map { listOf(it) }
         return createKeyboard(keyboard)
     }
 
-    private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) =
-        InlineKeyboardMarkup().also { it.keyboard = keyboard }
+    private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
 
     private fun CallbackData.save() = callbackDataRepository.save(this)
 

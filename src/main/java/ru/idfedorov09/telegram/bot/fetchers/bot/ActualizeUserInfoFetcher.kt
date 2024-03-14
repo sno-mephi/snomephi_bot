@@ -28,7 +28,6 @@ class ActualizeUserInfoFetcher(
     private val questRepository: QuestRepository,
     private val broadcastRepository: BroadcastRepository,
 ) : GeneralFetcher() {
-
     companion object {
         private val log = org.slf4j.LoggerFactory.getLogger(ActualizeUserInfoFetcher::class.java)
     }
@@ -52,23 +51,25 @@ class ActualizeUserInfoFetcher(
 
         expContainer.isPersonal = updatesUtil.getChatId(update) == tui
 
-        val userDataFromDatabase = userRepository.findByTui(tui)
-            ?: User(
-                tui = tgUser.id.toString(),
-                lastTgNick = tgUser.userName,
-                roles = mutableSetOf(UserRole.USER),
-                isRegistered = false,
-                currentKeyboardType = UserKeyboardType.WITHOUT_KEYBOARD, // изачально без выбранной клавиатуры
-            ).apply {
-                if (tui == "920061911" || tui == "473458128") {
-                    roles.add(UserRole.ROOT)
-                }
-            }.let { userRepository.save(it) }
+        val userDataFromDatabase =
+            userRepository.findByTui(tui)
+                ?: User(
+                    tui = tgUser.id.toString(),
+                    lastTgNick = tgUser.userName,
+                    roles = mutableSetOf(UserRole.USER),
+                    isRegistered = false,
+                    currentKeyboardType = UserKeyboardType.WITHOUT_KEYBOARD, // изачально без выбранной клавиатуры
+                ).apply {
+                    if (tui == "920061911") {
+                        roles.add(UserRole.ROOT)
+                    }
+                }.let { userRepository.save(it) }
 
         val categories = categoryRepository.findAllById(userDataFromDatabase.categories).toMutableSet()
-        val activeQuest = userDataFromDatabase.questDialogId
-            ?.let { questRepository.findById(it).getOrNull() }
-            ?.let { if (it.questionStatus == QuestionStatus.DIALOG) it else null }
+        val activeQuest =
+            userDataFromDatabase.questDialogId
+                ?.let { questRepository.findById(it).getOrNull() }
+                ?.let { if (it.questionStatus == QuestionStatus.DIALOG) it else null }
 
         // обновляем ник в бдшке
         if (userDataFromDatabase.lastTgNick != tgUser.userName) {
@@ -76,9 +77,10 @@ class ActualizeUserInfoFetcher(
         }
 
         // Ищем дату о последнем создаваемом репозитории
-        val bcData = userDataFromDatabase.id?.let {
-            broadcastRepository.findLatestUnbuiltBroadcastByAuthor(it)
-        }
+        val bcData =
+            userDataFromDatabase.id?.let {
+                broadcastRepository.findLatestUnbuiltBroadcastByAuthor(it)
+            }
 
         userDataFromDatabase.apply {
             return UserActualizedInfo(

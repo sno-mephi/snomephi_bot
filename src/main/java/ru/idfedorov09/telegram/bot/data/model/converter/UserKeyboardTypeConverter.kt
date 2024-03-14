@@ -6,7 +6,6 @@ import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
 
 @Converter(autoApply = true)
 class UserKeyboardTypeConverter : AttributeConverter<UserKeyboardType, String> {
-
     override fun convertToDatabaseColumn(attribute: UserKeyboardType?): String? {
         return attribute?.name
     }

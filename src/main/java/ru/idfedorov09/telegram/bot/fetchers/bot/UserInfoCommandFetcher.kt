@@ -24,7 +24,6 @@ class UserInfoCommandFetcher(
     private val bot: Executor,
     private val messageSenderService: MessageSenderService,
 ) : GeneralFetcher() {
-
     @InjectData
     fun doFetch(
         update: Update,
@@ -33,12 +32,13 @@ class UserInfoCommandFetcher(
         val chatId = updatesUtil.getChatId(update) ?: return
         val messageText = updatesUtil.getText(update) ?: return
 
-        val params = Params(
-            messageText = messageText,
-            userActualizedInfo = userActualizedInfo,
-            update = update,
-            chatId = chatId,
-        )
+        val params =
+            Params(
+                messageText = messageText,
+                userActualizedInfo = userActualizedInfo,
+                update = update,
+                chatId = chatId,
+            )
 
         if (messageText.contains(TextCommands.USER_INFO.commandText)) {
             handleCommands(params)
@@ -56,8 +56,9 @@ class UserInfoCommandFetcher(
             return
         }
 
-        val tui: String? = Regex("""${TextCommands.USER_INFO.commandText}\s+\d+""")
-            .find(params.messageText)?.value?.let { Regex("""\d+""").find(it)?.value }
+        val tui: String? =
+            Regex("""${TextCommands.USER_INFO.commandText}\s+\d+""")
+                .find(params.messageText)?.value?.let { Regex("""\d+""").find(it)?.value }
 
         if (tui == null) {
             messageSenderService.sendMessage(
@@ -72,7 +73,10 @@ class UserInfoCommandFetcher(
         sendUserInfo(params, tui)
     }
 
-    private fun sendUserInfo(params: Params, tui: String) {
+    private fun sendUserInfo(
+        params: Params,
+        tui: String,
+    ) {
         val user = userRepository.findByTui(tui)
         if (user == null) {
             bot.execute(SendMessage(params.chatId, "Пользователь не найден"))

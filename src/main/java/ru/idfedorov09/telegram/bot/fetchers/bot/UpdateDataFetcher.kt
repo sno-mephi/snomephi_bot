@@ -21,11 +21,8 @@ class UpdateDataFetcher(
     private val questRepository: QuestRepository,
     private val broadcastRepository: BroadcastRepository,
 ) : GeneralFetcher() {
-
     @InjectData
-    fun doFetch(
-        userActualizedInfo: UserActualizedInfo?,
-    ) {
+    fun doFetch(userActualizedInfo: UserActualizedInfo?) {
         when {
             userActualizedInfo != null -> updateUser(userActualizedInfo)
         }
