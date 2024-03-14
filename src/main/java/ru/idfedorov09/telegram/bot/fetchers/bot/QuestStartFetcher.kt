@@ -1,8 +1,6 @@
 package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
-import org.telegram.telegrambots.meta.api.methods.ForwardMessage
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
@@ -15,7 +13,6 @@ import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.Quest
 import ru.idfedorov09.telegram.bot.data.model.QuestDialogMessage
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
-import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.QuestDialogMessageRepository
 import ru.idfedorov09.telegram.bot.repo.QuestRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
@@ -36,18 +33,23 @@ class QuestStartFetcher(
         update: Update,
         userActualizedInfo: UserActualizedInfo,
     ) {
-        if (!(update.hasMessage() && update.message.hasText())) return
-
-        // создаем новый вопрос если пользователь сейчас не в активном диалоге
-        if (userActualizedInfo.activeQuest != null
-            || !(userActualizedInfo.lastUserActionType == LastUserActionType.DEFAULT
-                    || userActualizedInfo.lastUserActionType == LastUserActionType.ACT_QUEST_ANS_CLICK)
-        ) {
-            return
+        update.apply {
+            if (!(hasMessage() && (message.hasText() || message.hasDocument() || message.hasPhoto()))) return
         }
 
-        // если апдейт из беседы, то игнорим
-        if (update.message.chatId.toString() != userActualizedInfo.tui) return
+        userActualizedInfo.apply {
+            // создаем новый вопрос если пользователь сейчас не в активном диалоге
+            if (activeQuest != null ||
+                !(
+                    lastUserActionType == LastUserActionType.DEFAULT ||
+                        lastUserActionType == LastUserActionType.ACT_QUEST_ANS_CLICK
+                    )
+            ) {
+                return
+            }
+            // если апдейт из беседы, то игнорим
+            if (update.message.chatId.toString() != tui) return
+        }
 
         when {
             // если была нажата кнопка на ожидание ответа, то значит следующим сообщением будет отправлен ответ
@@ -75,10 +77,23 @@ class QuestStartFetcher(
         update: Update,
         userActualizedInfo: UserActualizedInfo,
     ) {
-        val messageText = update.message.text
+        val messageText = update.message.text ?: update.message.caption
+
+        val photoHash = if (update.message.hasPhoto()) {
+            update.message.photo.last().fileId
+        } else {
+            null
+        }
+
+        val documentHash = if (update.message.hasDocument()) {
+            update.message.document.fileId
+        } else {
+            null
+        }
 
         // если пришла команда - ничего не делаем
         if (TextCommands.isTextCommand(messageText)) return
+        messageText ?: return
 
         val quest = Quest(
             authorId = userActualizedInfo.id,
@@ -91,6 +106,8 @@ class QuestStartFetcher(
             authorId = userActualizedInfo.id,
             messageText = messageText,
             messageId = update.message.messageId,
+            messageDocumentHash = documentHash,
+            messagePhotoHash = photoHash,
         ).let { questDialogMessageRepository.save(it) }
 
         quest.dialogHistory.add(questDialogMessage.id!!)
@@ -98,8 +115,8 @@ class QuestStartFetcher(
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = userActualizedInfo.tui,
-                text = "✉\uFE0F Сформировано обращение #${quest.id}. Ожидайте ответа."
-            )
+                text = "✉\uFE0F Сформировано обращение #${quest.id}. Ожидайте ответа.",
+            ),
         )
 
         // TODO: обработать случай когда у юзера нет никнейма
@@ -108,24 +125,24 @@ class QuestStartFetcher(
             MessageParams(
                 chatId = QUEST_RESPONDENT_CHAT_ID,
                 text = "\uD83D\uDCE5 Получен вопрос #${quest.id} " +
-                        "от @${userActualizedInfo.lastTgNick} (${userActualizedInfo.fullName})"
-            )
+                    "от @${userActualizedInfo.lastTgNick} (${userActualizedInfo.fullName})",
+            ),
         )
 
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = QUEST_RESPONDENT_CHAT_ID,
                 fromChatId = updatesUtil.getChatId(update).toString(),
-                messageId = update.message.messageId
-            )
+                messageId = update.message.messageId,
+            ),
         )
 
         val sentMessage = messageSenderService.sendMessage(
             MessageParams(
                 chatId = QUEST_RESPONDENT_CHAT_ID,
                 text = "Выберите действие:",
-                replyMarkup = createChooseKeyboard(quest)
-            )
+                replyMarkup = createChooseKeyboard(quest),
+            ),
         )
 
         quest.copy(

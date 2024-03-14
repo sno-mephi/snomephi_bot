@@ -55,23 +55,13 @@ class DialogHandleFetcher(
         val isByQuestionAuthor = author.tui == userActualizedInfo.tui
 
         val photoHash = if (update.message.hasPhoto()) {
-            messageSenderService.sendMessage(
-                MessageParams(
-                    chatId = GlobalConstants.TRASH_CHAT_ID,
-                    photo = InputFile(update.message.photo.last().fileId),
-                ),
-            ).photo.lastOrNull()?.fileId
+            update.message.photo.last().fileId
         } else {
             null
         }
 
         val documentHash = if (update.message.hasDocument()) {
-            messageSenderService.sendMessage(
-                MessageParams(
-                    chatId = GlobalConstants.TRASH_CHAT_ID,
-                    document = InputFile(update.message.document.fileId),
-                ),
-            ).document.fileId
+            update.message.document.fileId
         } else {
             null
         }
@@ -213,8 +203,8 @@ class DialogHandleFetcher(
             MessageParams(
                 chatId = params.responder.tui!!,
                 text = "\uD83D\uDDA4 Спасибо за обратную связь\\! *Диалог завершен\\.*",
-                parseMode = ParseMode.MARKDOWNV2
-            )
+                parseMode = ParseMode.MARKDOWNV2,
+            ),
         )
 
         messageSenderService.editMessage(
