@@ -53,29 +53,17 @@ class DialogHandleFetcher(
         val responder = userRepository.findById(quest.responderId!!).get()
         val isByQuestionAuthor = author.tui == userActualizedInfo.tui
 
-        val photoHash =
-            if (update.message.hasPhoto()) {
-                messageSenderService.sendMessage(
-                    MessageParams(
-                        chatId = GlobalConstants.TRASH_CHAT_ID,
-                        photo = InputFile(update.message.photo.last().fileId),
-                    ),
-                ).photo.lastOrNull()?.fileId
-            } else {
-                null
-            }
+        val photoHash = if (update.message.hasPhoto()) {
+            update.message.photo.last().fileId
+        } else {
+            null
+        }
 
-        val documentHash =
-            if (update.message.hasDocument()) {
-                messageSenderService.sendMessage(
-                    MessageParams(
-                        chatId = GlobalConstants.TRASH_CHAT_ID,
-                        document = InputFile(update.message.document.fileId),
-                    ),
-                ).document.fileId
-            } else {
-                null
-            }
+        val documentHash = if (update.message.hasDocument()) {
+            update.message.document.fileId
+        } else {
+            null
+        }
 
         val params =
             Params(

@@ -8,7 +8,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.BOT_TIME_ZONE
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.MAX_BROADCAST_BUTTONS_COUNT
-import ru.idfedorov09.telegram.bot.data.GlobalConstants.TRASH_CHAT_ID
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands.BROADCAST_CONSTRUCTOR
 import ru.idfedorov09.telegram.bot.data.model.Broadcast
@@ -211,18 +210,10 @@ class BroadcastConstructorFetcher(
                     ),
                 )
             } else {
-                val photoBroadcast =
-                    messageSenderService.sendMessage(
-                        MessageParams(
-                            chatId = TRASH_CHAT_ID,
-                            photo = InputFile(params.update.message.photo.last().fileId),
-                        ),
-                    ).photo.lastOrNull()?.fileId
-
-                bcData =
-                    bcData?.copy(
-                        imageHash = photoBroadcast,
-                    )
+                val photoBroadcast = params.update.message.photo.last().fileId
+                bcData = bcData?.copy(
+                    imageHash = photoBroadcast,
+                )
             }
             showBcConsole(params)
             lastUserActionType = LastUserActionType.DEFAULT
