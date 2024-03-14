@@ -20,7 +20,6 @@ class TelegramWebhookBot(
     private val onReceiver: OnReceiver,
     private val gson: Gson,
 ) {
-
     companion object {
         private val log = LoggerFactory.getLogger(TelegramWebhookBot::class.java)
     }
@@ -32,7 +31,9 @@ class TelegramWebhookBot(
 
     @PostMapping(WEBHOOK_PATH)
     @ResponseStatus(value = HttpStatus.OK)
-    fun handler(@RequestBody jsonUpdate: String?) {
+    fun handler(
+        @RequestBody jsonUpdate: String?,
+    ) {
         val update = gson.fromJson(jsonUpdate, Update::class.java)
         onReceiver.onReceive(update, executor)
     }

@@ -12,7 +12,6 @@ import kotlin.jvm.optionals.getOrNull
 class SwitchKeyboardService(
     private val userRepository: UserRepository,
 ) {
-
     // forceSwitch - иногда (например, при выдаче роли) требуется принудительно обновить клавиатуру
     fun switchKeyboard(
         userId: Long,

@@ -27,7 +27,6 @@ class BroadcastSenderService(
     private val callbackDataRepository: CallbackDataRepository,
     private val messageSenderService: MessageSenderService,
 ) {
-
     companion object {
         private val log = LoggerFactory.getLogger(BroadcastSenderService::class.java)
     }
@@ -37,10 +36,11 @@ class BroadcastSenderService(
         runCatching {
             val firstActiveBroadcast = broadcastRepository.findFirstActiveBroadcast() ?: return
             if (firstActiveBroadcast.receivedUsersId.isEmpty()) startBroadcast(firstActiveBroadcast)
-            val firstUser = userRepository.findAll().firstOrNull { checkValidUser(it, firstActiveBroadcast) } ?: run {
-                finishBroadcast(firstActiveBroadcast)
-                return
-            }
+            val firstUser =
+                userRepository.findAll().firstOrNull { checkValidUser(it, firstActiveBroadcast) } ?: run {
+                    finishBroadcast(firstActiveBroadcast)
+                    return
+                }
             sendBroadcast(firstUser, firstActiveBroadcast)
         }.onFailure { e ->
             log.warn("Ошибка при работе broadcastSender: $e")
@@ -48,20 +48,28 @@ class BroadcastSenderService(
         }
     }
 
-    fun sendBroadcast(userId: Long, broadcast: Broadcast, shouldAddToReceived: Boolean = true) {
+    fun sendBroadcast(
+        userId: Long,
+        broadcast: Broadcast,
+        shouldAddToReceived: Boolean = true,
+    ) {
         val user = userRepository.findById(userId).getOrNull() ?: return
         sendBroadcast(user, broadcast, shouldAddToReceived)
     }
 
-    private fun sendBroadcast(user: User, broadcast: Broadcast, shouldAddToReceived: Boolean = true) {
+    private fun sendBroadcast(
+        user: User,
+        broadcast: Broadcast,
+        shouldAddToReceived: Boolean = true,
+    ) {
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = user.tui!!,
                 text = broadcast.text,
                 replyMarkup = createChooseKeyboard(broadcast),
                 parseMode = ParseMode.HTML,
-                photo = broadcast.imageHash?.let { InputFile(it) }
-            )
+                photo = broadcast.imageHash?.let { InputFile(it) },
+            ),
         )
 
         if (shouldAddToReceived) {
@@ -79,24 +87,27 @@ class BroadcastSenderService(
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = author.tui!!,
-                text = msgText
-            )
+                text = msgText,
+            ),
         )
     }
 
     fun finishBroadcast(broadcast: Broadcast) {
-        val finalBroadcast = broadcast.copy(
-            isCompleted = true,
-            finishTime = LocalDateTime.now(
-                ZoneId.of("Europe/Moscow"),
-            ),
-        )
+        val finalBroadcast =
+            broadcast.copy(
+                isCompleted = true,
+                finishTime =
+                    LocalDateTime.now(
+                        ZoneId.of("Europe/Moscow"),
+                    ),
+            )
 
         broadcastRepository.save(finalBroadcast)
         val author = finalBroadcast.authorId?.let { userRepository.findById(it).getOrNull() } ?: return
 
         // TODO: нормальный формат вывода времени
-        val msgText = "Рассылка №${finalBroadcast.id} успешно завершена\n" +
+        val msgText =
+            "Рассылка №${finalBroadcast.id} успешно завершена\n" +
                 "Число пользователей, получивших сообщение: ${finalBroadcast.receivedUsersId.size}\n" +
                 "Старт рассылки: ${finalBroadcast.startTime}\n" +
                 "Конец рассылки: ${finalBroadcast.finishTime}"
@@ -104,41 +115,45 @@ class BroadcastSenderService(
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = author.tui!!,
-                text = msgText
-            )
+                text = msgText,
+            ),
         )
     }
 
-    private fun checkValidUser(user: User, broadcast: Broadcast): Boolean {
+    private fun checkValidUser(
+        user: User,
+        broadcast: Broadcast,
+    ): Boolean {
         return user.id !in broadcast.receivedUsersId && (
-                user.categories.intersect(broadcast.categoriesId).isNotEmpty() ||
-                        broadcast.categoriesId.isEmpty()
-                )
+            user.categories.intersect(broadcast.categoriesId).isNotEmpty() ||
+                broadcast.categoriesId.isEmpty()
+        )
     }
 
-    private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) =
-        InlineKeyboardMarkup().also { it.keyboard = keyboard }
+    private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
 
     private fun createChooseKeyboard(firstActiveBroadcast: Broadcast): InlineKeyboardMarkup {
-        val keyboardList = buttonRepository
-            .findAllValidButtonsForBroadcast(firstActiveBroadcast.id!!)
-            .map {
-                CallbackData(
-                    callbackData = it.callbackData,
-                    metaText = it.text,
-                    metaUrl = it.link,
-                ).save()
-            }
+        val keyboardList =
+            buttonRepository
+                .findAllValidButtonsForBroadcast(firstActiveBroadcast.id!!)
+                .map {
+                    CallbackData(
+                        callbackData = it.callbackData,
+                        metaText = it.text,
+                        metaUrl = it.link,
+                    ).save()
+                }
 
-        val keyboard = keyboardList.map { callbackData ->
-            listOf(
-                InlineKeyboardButton().also {
-                    it.text = callbackData.metaText!!
-                    it.callbackData = callbackData.id?.toString()
-                    it.url = callbackData.metaUrl
-                },
-            )
-        }
+        val keyboard =
+            keyboardList.map { callbackData ->
+                listOf(
+                    InlineKeyboardButton().also {
+                        it.text = callbackData.metaText!!
+                        it.callbackData = callbackData.id?.toString()
+                        it.url = callbackData.metaUrl
+                    },
+                )
+            }
 
         return createKeyboard(keyboard)
     }

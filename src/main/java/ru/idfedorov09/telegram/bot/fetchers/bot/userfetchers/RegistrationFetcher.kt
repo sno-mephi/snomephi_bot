@@ -31,15 +31,16 @@ class RegistrationFetcher(
         val chatId = updatesUtil.getChatId(update) ?: return userActualizedInfo
         val message = update.message.takeIf { update.hasMessage() } ?: return userActualizedInfo
 
-        val action = userActualizedInfo.lastUserActionType ?: run {
-            messageSenderService.sendMessage(
-                MessageParams(
-                    chatId = chatId,
-                    text = RegistrationMessageText.RegistrationStart()
+        val action =
+            userActualizedInfo.lastUserActionType ?: run {
+                messageSenderService.sendMessage(
+                    MessageParams(
+                        chatId = chatId,
+                        text = RegistrationMessageText.RegistrationStart(),
+                    ),
                 )
-            )
-            LastUserActionType.REGISTRATION_START
-        }
+                LastUserActionType.REGISTRATION_START
+            }
 
         var userInfo = userActualizedInfo
 
@@ -49,11 +50,12 @@ class RegistrationFetcher(
                     MessageParams(
                         chatId = chatId,
                         text = RegistrationMessageText.FullNameRequest(),
+                    ),
+                )
+                userInfo =
+                    userInfo.copy(
+                        lastUserActionType = LastUserActionType.REGISTRATION_ENTER_FULL_NAME,
                     )
-                )
-                userInfo = userInfo.copy(
-                    lastUserActionType = LastUserActionType.REGISTRATION_ENTER_FULL_NAME,
-                )
             }
 
             LastUserActionType.REGISTRATION_ENTER_FULL_NAME -> {
@@ -62,19 +64,20 @@ class RegistrationFetcher(
                         MessageParams(
                             chatId = chatId,
                             text = RegistrationMessageText.FullNameConfirmation.format(message.text),
-                            replyMarkup = createActionsKeyboard("fullName")
+                            replyMarkup = createActionsKeyboard("fullName"),
+                        ),
+                    )
+                    userInfo =
+                        userInfo.copy(
+                            lastUserActionType = LastUserActionType.REGISTRATION_CONFIRM_FULL_NAME,
+                            data = message.text,
                         )
-                    )
-                    userInfo = userInfo.copy(
-                        lastUserActionType = LastUserActionType.REGISTRATION_CONFIRM_FULL_NAME,
-                        data = message.text,
-                    )
                 } else {
                     messageSenderService.sendMessage(
                         MessageParams(
                             chatId = chatId,
-                            text = RegistrationMessageText.InvalidFullName()
-                        )
+                            text = RegistrationMessageText.InvalidFullName(),
+                        ),
                     )
                 }
             }
@@ -85,7 +88,7 @@ class RegistrationFetcher(
                         MessageParams(
                             chatId = chatId,
                             text = RegistrationMessageText.AlreadyExists.format(userInfo.lastTgNick ?: ""),
-                        )
+                        ),
                     )
                     return userInfo
                 }
@@ -94,19 +97,20 @@ class RegistrationFetcher(
                         MessageParams(
                             chatId = chatId,
                             text = RegistrationMessageText.GroupConfirmation.format(message.text),
-                            replyMarkup = createActionsKeyboard("studyGroup")
+                            replyMarkup = createActionsKeyboard("studyGroup"),
+                        ),
+                    )
+                    userInfo =
+                        userInfo.copy(
+                            lastUserActionType = LastUserActionType.REGISTRATION_CONFIRM_GROUP,
+                            data = message.text.uppercase(),
                         )
-                    )
-                    userInfo = userInfo.copy(
-                        lastUserActionType = LastUserActionType.REGISTRATION_CONFIRM_GROUP,
-                        data = message.text.uppercase(),
-                    )
                 } else {
                     messageSenderService.sendMessage(
                         MessageParams(
                             chatId = chatId,
                             text = RegistrationMessageText.InvalidGroup(),
-                        )
+                        ),
                     )
                 }
             }
@@ -123,11 +127,13 @@ class RegistrationFetcher(
         return userInfo
     }
 
-    private fun String?.isValidFullName() = this?.let {
-        it.isNotEmpty() && it.length < 80
-    } ?: false
+    private fun String?.isValidFullName() =
+        this?.let {
+            it.isNotEmpty() && it.length < 80
+        } ?: false
 
-    private fun String?.isValidGroup() = this?.let {
-        it.isNotEmpty() && "([АМСБамсб]{1})([0-9]{2})-([0-9]{3})".toRegex().matches(it)
-    } ?: false
+    private fun String?.isValidGroup() =
+        this?.let {
+            it.isNotEmpty() && "([АМСБамсб]{1})([0-9]{2})-([0-9]{3})".toRegex().matches(it)
+        } ?: false
 }

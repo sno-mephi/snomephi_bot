@@ -14,7 +14,6 @@ class MessageSenderService(
     val bot: Executor,
     val userRepository: UserRepository,
 ) {
-
     companion object {
         private val log = LoggerFactory.getLogger(MessageSenderService::class.java)
     }
@@ -23,9 +22,7 @@ class MessageSenderService(
      * Отправляет пользователю сообщение
      * Выставляет клавиатуру, если это требуется
      */
-    fun sendMessage(
-        messageParams: MessageParams
-    ): Message {
+    fun sendMessage(messageParams: MessageParams): Message {
         return messageParams.run {
             if (replyMarkup == null) {
                 trySendWithSwitchKeyboard(messageParams)
@@ -35,22 +32,22 @@ class MessageSenderService(
         }
     }
 
-    private fun trySendWithSwitchKeyboard(
-        messageParams: MessageParams
-    ): Message {
+    private fun trySendWithSwitchKeyboard(messageParams: MessageParams): Message {
         val chatId = messageParams.chatId.toLongOrNull()
         if (chatId == null || chatId < 0) {
             return MessageSenderUtil.sendMessage(bot, messageParams)
         }
-        val user = userRepository.findByTui(messageParams.chatId)
-            ?: throw Exception("User not found by tui=$chatId")
+        val user =
+            userRepository.findByTui(messageParams.chatId)
+                ?: throw Exception("User not found by tui=$chatId")
         if (user.isKeyboardSwitched) {
             return MessageSenderUtil.sendMessage(bot, messageParams)
         }
-        val keyboard = KeyboardUtil.changeKeyboard(
-            userKeyboardType = user.currentKeyboardType,
-            user = user
-        )
+        val keyboard =
+            KeyboardUtil.changeKeyboard(
+                userKeyboardType = user.currentKeyboardType,
+                user = user,
+            )
         val messageParamsWithKeyboard = messageParams.copy(replyMarkup = keyboard)
 
         return MessageSenderUtil.sendMessage(bot, messageParamsWithKeyboard).also {

@@ -16,7 +16,6 @@ import ru.mephi.sno.libs.flow.belly.FlowContext
  */
 @Configuration
 open class TelegramBotFlowConfiguration(
-
     private val actualizeUserInfoFetcher: ActualizeUserInfoFetcher,
     private val weeklyEventsFetcher: WeeklyEventsFetcher,
     private val questStartFetcher: QuestStartFetcher,
@@ -34,7 +33,6 @@ open class TelegramBotFlowConfiguration(
     private val broadcastConstructorFetcher: BroadcastConstructorFetcher,
     private val permissionsFetcher: PermissionsFetcher,
 ) {
-
     /**
      * Возвращает построенный граф; выполняется только при запуске приложения
      */
@@ -56,7 +54,6 @@ open class TelegramBotFlowConfiguration(
             }
 
             group(condition = { it.isByUser() && it.isUserRegistered() }) {
-
                 sequence {
                     fetch(categoryCommandHandlerFetcher)
                     fetch(categoryButtonHandlerFetcher)

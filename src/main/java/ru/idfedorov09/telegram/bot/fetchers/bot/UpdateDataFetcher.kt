@@ -21,11 +21,8 @@ class UpdateDataFetcher(
     private val questRepository: QuestRepository,
     private val broadcastRepository: BroadcastRepository,
 ) : GeneralFetcher() {
-
     @InjectData
-    fun doFetch(
-        userActualizedInfo: UserActualizedInfo?,
-    ) {
+    fun doFetch(userActualizedInfo: UserActualizedInfo?) {
         when {
             userActualizedInfo != null -> updateUser(userActualizedInfo)
         }
@@ -46,7 +43,7 @@ class UpdateDataFetcher(
                     questDialogId = getQuestDialogId(activeQuest),
                     data = data,
                     isRegistered = isRegistered,
-                    constructorId = bcData?.id
+                    constructorId = bcData?.id,
                 ),
             )
 

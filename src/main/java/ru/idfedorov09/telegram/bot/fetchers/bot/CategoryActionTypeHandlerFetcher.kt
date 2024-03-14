@@ -1,9 +1,6 @@
 package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
@@ -12,7 +9,6 @@ import ru.idfedorov09.telegram.bot.data.keyboards.CategoryKeyboards
 import ru.idfedorov09.telegram.bot.data.model.Category
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
-import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
@@ -40,11 +36,12 @@ class CategoryActionTypeHandlerFetcher(
         userActualizedInfo: UserActualizedInfo,
     ): UserActualizedInfo {
         val chatId = updatesUtil.getChatId(update) ?: return userActualizedInfo
-        val requestData = RequestData(
-            chatId,
-            update,
-            userActualizedInfo,
-        )
+        val requestData =
+            RequestData(
+                chatId,
+                update,
+                userActualizedInfo,
+            )
         when (userActualizedInfo.lastUserActionType) {
             LastUserActionType.CATEGORY_INPUT_START ->
                 actionAddTitle(requestData)
@@ -88,8 +85,8 @@ class CategoryActionTypeHandlerFetcher(
         messageSenderService.deleteMessage(
             MessageParams(
                 chatId = data.chatId,
-                messageId = data.update.message.messageId
-            )
+                messageId = data.update.message.messageId,
+            ),
         )
         data.userInfo.data?.toInt()?.let {
             editMessage(
@@ -99,9 +96,10 @@ class CategoryActionTypeHandlerFetcher(
                 CategoryKeyboards.inputCancel(),
             )
         }
-        data.userInfo = data.userInfo.copy(
-            lastUserActionType = LastUserActionType.CATEGORY_INPUT_TITLE,
-        )
+        data.userInfo =
+            data.userInfo.copy(
+                lastUserActionType = LastUserActionType.CATEGORY_INPUT_TITLE,
+            )
     }
 
     private fun actionAddSuffix(data: RequestData) {
@@ -146,8 +144,8 @@ class CategoryActionTypeHandlerFetcher(
         messageSenderService.deleteMessage(
             MessageParams(
                 chatId = data.chatId,
-                messageId = data.update.message.messageId
-            )
+                messageId = data.update.message.messageId,
+            ),
         )
         data.userInfo.data?.toInt()?.let {
             editMessage(
@@ -157,9 +155,10 @@ class CategoryActionTypeHandlerFetcher(
                 CategoryKeyboards.inputCancel(),
             )
         }
-        data.userInfo = data.userInfo.copy(
-            lastUserActionType = LastUserActionType.CATEGORY_INPUT_SUFFIX,
-        )
+        data.userInfo =
+            data.userInfo.copy(
+                lastUserActionType = LastUserActionType.CATEGORY_INPUT_SUFFIX,
+            )
     }
 
     private fun actionAddDescription(data: RequestData) {
@@ -188,8 +187,8 @@ class CategoryActionTypeHandlerFetcher(
         messageSenderService.deleteMessage(
             MessageParams(
                 chatId = data.chatId,
-                messageId = data.update.message.messageId
-            )
+                messageId = data.update.message.messageId,
+            ),
         )
 
         data.userInfo.data?.toInt()?.let {
@@ -200,33 +199,45 @@ class CategoryActionTypeHandlerFetcher(
                 CategoryKeyboards.questionIsUnremovable(),
             )
         }
-        data.userInfo = data.userInfo.copy(
-            lastUserActionType = LastUserActionType.CATEGORY_INPUT_DESCRIPTION,
-        )
+        data.userInfo =
+            data.userInfo.copy(
+                lastUserActionType = LastUserActionType.CATEGORY_INPUT_DESCRIPTION,
+            )
     }
 
-    private fun editMessage(messageId: Int, data: RequestData, text: String, keyboard: InlineKeyboardMarkup?) {
+    private fun editMessage(
+        messageId: Int,
+        data: RequestData,
+        text: String,
+        keyboard: InlineKeyboardMarkup?,
+    ) {
         val msgId = messageId
         messageSenderService.editMessage(
             MessageParams(
                 chatId = data.chatId,
                 messageId = msgId,
                 text = text,
-                replyMarkup = keyboard
-            )
+                replyMarkup = keyboard,
+            ),
         )
     }
 
-    private fun sendMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup) {
-        val lastSent = messageSenderService.sendMessage(
-            MessageParams(
-                chatId = data.chatId,
-                text = text,
-                replyMarkup = keyboard
+    private fun sendMessage(
+        data: RequestData,
+        text: String,
+        keyboard: InlineKeyboardMarkup,
+    ) {
+        val lastSent =
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = data.chatId,
+                    text = text,
+                    replyMarkup = keyboard,
+                ),
+            ).messageId
+        data.userInfo =
+            data.userInfo.copy(
+                data = lastSent.toString(),
             )
-        ).messageId
-        data.userInfo = data.userInfo.copy(
-            data = lastSent.toString(),
-        )
     }
 }

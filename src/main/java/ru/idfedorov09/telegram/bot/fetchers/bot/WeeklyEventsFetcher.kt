@@ -20,31 +20,27 @@ class WeeklyEventsFetcher(
     private val broadcastSenderService: BroadcastSenderService,
     private val messageSenderService: MessageSenderService,
 ) : GeneralFetcher() {
-
-
     @InjectData
     fun doFetch(
         userActualizedInfo: UserActualizedInfo,
-        update: Update
+        update: Update,
     ) {
         if (!(update.hasMessage() && update.message.hasText())) return
         val messageText = update.message.text
 
-        if (messageText.startsWith(TextCommands.WEEKLY_EVENTS.commandText))
+        if (messageText.startsWith(TextCommands.WEEKLY_EVENTS.commandText)) {
             sendWeeklyEvents(userActualizedInfo)
+        }
     }
 
-
-    private fun sendWeeklyEvents(
-        userActualizedInfo: UserActualizedInfo
-    ) {
+    private fun sendWeeklyEvents(userActualizedInfo: UserActualizedInfo) {
         val firstActiveWeeklyBroadcast = broadcastRepository.findFirstActiveWeeklyBroadcast()
         firstActiveWeeklyBroadcast ?: run {
             messageSenderService.sendMessage(
                 MessageParams(
                     chatId = userActualizedInfo.tui,
-                    text = "Мероприятия недели пока не заполнены."
-                )
+                    text = "Мероприятия недели пока не заполнены.",
+                ),
             )
             return
         }
@@ -52,9 +48,7 @@ class WeeklyEventsFetcher(
         broadcastSenderService.sendBroadcast(
             userId = userActualizedInfo.id!!,
             broadcast = firstActiveWeeklyBroadcast,
-            shouldAddToReceived = false
+            shouldAddToReceived = false,
         )
     }
-
 }
-

@@ -19,10 +19,11 @@ enum class TextCommands(
     /** Открыть меню категорий **/
     CATEGORY_CHOOSE_ACTION(
         commandText = "/category",
-        allowedRoles = listOf(
-            UserRole.CATEGORY_BUILDER,
-            UserRole.ROOT,
-        ),
+        allowedRoles =
+            listOf(
+                UserRole.CATEGORY_BUILDER,
+                UserRole.ROOT,
+            ),
         description = "настройка категорий",
     ),
 
@@ -50,10 +51,11 @@ enum class TextCommands(
 
     BROADCAST_CONSTRUCTOR(
         commandText = "Рассылка уведомлений",
-        allowedRoles = listOf(
-            UserRole.MAILER,
-            UserRole.ROOT,
-        ),
+        allowedRoles =
+            listOf(
+                UserRole.MAILER,
+                UserRole.ROOT,
+            ),
         description = "Рассылка уведомлений - открывает конструктор рассылки уведомлений для дальнейшей настройки",
     ),
 
@@ -66,7 +68,7 @@ enum class TextCommands(
         commandText = "Выдача ролей",
         allowedRoles = listOf(UserRole.ROOT),
         description = "Выдача и отзыв ролей у пользователей",
-    )
+    ),
     ;
 
     /** Проверяет, является ли текст командой **/

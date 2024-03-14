@@ -24,7 +24,6 @@ class UserInfoCommandFetcher(
     private val bot: Executor,
     private val messageSenderService: MessageSenderService,
 ) : GeneralFetcher() {
-
     @InjectData
     fun doFetch(
         update: Update,
@@ -33,12 +32,13 @@ class UserInfoCommandFetcher(
         val chatId = updatesUtil.getChatId(update) ?: return
         val messageText = updatesUtil.getText(update) ?: return
 
-        val params = Params(
-            messageText = messageText,
-            userActualizedInfo = userActualizedInfo,
-            update = update,
-            chatId = chatId,
-        )
+        val params =
+            Params(
+                messageText = messageText,
+                userActualizedInfo = userActualizedInfo,
+                update = update,
+                chatId = chatId,
+            )
 
         if (messageText.contains(TextCommands.USER_INFO.commandText)) {
             handleCommands(params)
@@ -50,21 +50,22 @@ class UserInfoCommandFetcher(
             messageSenderService.sendMessage(
                 MessageParams(
                     chatId = params.chatId,
-                    text = "Нет прав"
-                )
+                    text = "Нет прав",
+                ),
             )
             return
         }
 
-        val tui: String? = Regex("""${TextCommands.USER_INFO.commandText}\s+\d+""")
-            .find(params.messageText)?.value?.let { Regex("""\d+""").find(it)?.value }
+        val tui: String? =
+            Regex("""${TextCommands.USER_INFO.commandText}\s+\d+""")
+                .find(params.messageText)?.value?.let { Regex("""\d+""").find(it)?.value }
 
         if (tui == null) {
             messageSenderService.sendMessage(
                 MessageParams(
                     chatId = params.chatId,
                     text = "отправьте команду формата\n\"/userInfo tui\"",
-                )
+                ),
             )
             return
         }
@@ -72,7 +73,10 @@ class UserInfoCommandFetcher(
         sendUserInfo(params, tui)
     }
 
-    private fun sendUserInfo(params: Params, tui: String) {
+    private fun sendUserInfo(
+        params: Params,
+        tui: String,
+    ) {
         val user = userRepository.findByTui(tui)
         if (user == null) {
             bot.execute(SendMessage(params.chatId, "Пользователь не найден"))
@@ -102,15 +106,16 @@ class UserInfoCommandFetcher(
         } else {
             userRoles = "\nпусто"
         }
-        val msgText = "\uD83D\uDC64ФИО: $fullName\n\uD83D\uDCDAгруппа: $studyGroup\n\n\uD83D\uDD11роли:$userRoles\n\n" +
-            "\uD83D\uDCF1последний ник в tg: $lastTgNick\n\n\uD83D\uDDD2категории:$userCategories\n\ntui: $tui\n" +
-            "id: $id\n\nпоследнее действие: $lastUserActionType"
+        val msgText =
+            "\uD83D\uDC64ФИО: $fullName\n\uD83D\uDCDAгруппа: $studyGroup\n\n\uD83D\uDD11роли:$userRoles\n\n" +
+                "\uD83D\uDCF1последний ник в tg: $lastTgNick\n\n\uD83D\uDDD2категории:$userCategories\n\ntui: $tui\n" +
+                "id: $id\n\nпоследнее действие: $lastUserActionType"
 
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = params.chatId,
-                text = msgText
-            )
+                text = msgText,
+            ),
         )
     }
 
