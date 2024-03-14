@@ -1,10 +1,9 @@
 package ru.idfedorov09.telegram.bot.data.model
 
 import org.telegram.telegrambots.meta.api.objects.InputFile
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard
 
-data class MessageParams (
+data class MessageParams(
     val chatId: String,
     val photo: InputFile? = null,
     val document: InputFile? = null,

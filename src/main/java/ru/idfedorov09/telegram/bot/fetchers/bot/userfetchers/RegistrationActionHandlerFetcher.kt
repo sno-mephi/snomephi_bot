@@ -13,7 +13,6 @@ import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.service.SwitchKeyboardService
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
-import ru.mephi.sno.libs.flow.belly.FlowContext
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 
@@ -23,7 +22,6 @@ class RegistrationActionHandlerFetcher(
     private val messageSenderService: MessageSenderService,
     private val switchKeyboardService: SwitchKeyboardService,
 ) : GeneralFetcher() {
-
     companion object {
         private val log = LoggerFactory.getLogger(RegistrationFetcher::class.java)
     }
@@ -31,7 +29,7 @@ class RegistrationActionHandlerFetcher(
     @InjectData
     fun doFetch(
         update: Update,
-        userInfo: UserActualizedInfo
+        userInfo: UserActualizedInfo,
     ): UserActualizedInfo {
         if (!update.hasCallbackQuery()) return userInfo
         val chatId: String = updatesUtil.getChatId(update) ?: return userInfo
@@ -41,25 +39,28 @@ class RegistrationActionHandlerFetcher(
         val parameters = CallbackCommands.params(callbackData).firstOrNull()
 
         return when {
-            CallbackCommands.USER_CONFIRM.isMatch(callbackData) -> onUserConfirm(
-                callbackMessage,
-                chatId,
-                parameters,
-                userInfo
-            )
+            CallbackCommands.USER_CONFIRM.isMatch(callbackData) ->
+                onUserConfirm(
+                    callbackMessage,
+                    chatId,
+                    parameters,
+                    userInfo,
+                )
 
-            CallbackCommands.USER_DECLINE.isMatch(callbackData) -> onUserDecline(
-                callbackMessage,
-                chatId,
-                userInfo,
-                parameters,
-            )
+            CallbackCommands.USER_DECLINE.isMatch(callbackData) ->
+                onUserDecline(
+                    callbackMessage,
+                    chatId,
+                    userInfo,
+                    parameters,
+                )
 
-            CallbackCommands.USER_WITHOUT_GROUP.isMatch(callbackData) -> onUserWithoutGroup(
-                callbackMessage,
-                chatId,
-                userInfo,
-            )
+            CallbackCommands.USER_WITHOUT_GROUP.isMatch(callbackData) ->
+                onUserWithoutGroup(
+                    callbackMessage,
+                    chatId,
+                    userInfo,
+                )
 
             else -> userInfo
         }
@@ -79,12 +80,13 @@ class RegistrationActionHandlerFetcher(
                     messageSenderService.sendMessage(
                         MessageParams(
                             chatId = chat,
-                            text = RegistrationMessageText.FullNameRequest(" заново")
+                            text = RegistrationMessageText.FullNameRequest(" заново"),
+                        ),
+                    )
+                    user =
+                        user.copy(
+                            lastUserActionType = LastUserActionType.REGISTRATION_ENTER_FULL_NAME,
                         )
-                    )
-                    user = user.copy(
-                        lastUserActionType = LastUserActionType.REGISTRATION_ENTER_FULL_NAME,
-                    )
                 }
 
                 "studyGroup" -> {
@@ -92,12 +94,13 @@ class RegistrationActionHandlerFetcher(
                         MessageParams(
                             chatId = chat,
                             text = RegistrationMessageText.GroupRequest(" заново"),
-                            replyMarkup = userWithoutGroupActionCallback()
+                            replyMarkup = userWithoutGroupActionCallback(),
+                        ),
+                    )
+                    user =
+                        user.copy(
+                            lastUserActionType = LastUserActionType.REGISTRATION_ENTER_GROUP,
                         )
-                    )
-                    user = user.copy(
-                        lastUserActionType = LastUserActionType.REGISTRATION_ENTER_GROUP,
-                    )
                 }
 
                 else -> {}
@@ -106,8 +109,8 @@ class RegistrationActionHandlerFetcher(
                 MessageParams(
                     chatId = chat,
                     messageId = message.messageId,
-                    text = message.text
-                )
+                    text = message.text,
+                ),
             )
         }
         return user
@@ -117,7 +120,7 @@ class RegistrationActionHandlerFetcher(
         message: Message,
         chat: String,
         parameter: String?,
-        userInfo: UserActualizedInfo
+        userInfo: UserActualizedInfo,
     ): UserActualizedInfo {
         var user = userInfo
 
@@ -128,33 +131,36 @@ class RegistrationActionHandlerFetcher(
                         MessageParams(
                             chatId = chat,
                             text = RegistrationMessageText.GroupRequest(),
-                            replyMarkup = userWithoutGroupActionCallback()
+                            replyMarkup = userWithoutGroupActionCallback(),
+                        ),
+                    )
+                    user =
+                        user.copy(
+                            lastUserActionType = LastUserActionType.REGISTRATION_ENTER_GROUP,
+                            fullName = userInfo.data,
+                            data = null,
                         )
-                    )
-                    user = user.copy(
-                        lastUserActionType = LastUserActionType.REGISTRATION_ENTER_GROUP,
-                        fullName = userInfo.data,
-                        data = null,
-                    )
                 }
 
                 "studyGroup" -> {
                     // проставляем клавиатуру и отправляем сообщение
-                    user = user.copy(
-                        lastUserActionType = LastUserActionType.DEFAULT,
-                        studyGroup = userInfo.data,
-                        data = null,
-                        isRegistered = true
-                    )
+                    user =
+                        user.copy(
+                            lastUserActionType = LastUserActionType.DEFAULT,
+                            studyGroup = userInfo.data,
+                            data = null,
+                            isRegistered = true,
+                        )
                     switchKeyboardService.switchKeyboard(
                         userId = user.id!!,
-                        newKeyboardType = UserKeyboardType.DEFAULT_MAIN_BOT
+                        newKeyboardType = UserKeyboardType.DEFAULT_MAIN_BOT,
                     )
                     messageSenderService.sendMessage(
-                        messageParams = MessageParams(
-                            chatId = chat,
-                            text = RegistrationMessageText.RegistrationComplete(),
-                        )
+                        messageParams =
+                            MessageParams(
+                                chatId = chat,
+                                text = RegistrationMessageText.RegistrationComplete(),
+                            ),
                     )
                 }
 
@@ -164,8 +170,8 @@ class RegistrationActionHandlerFetcher(
             messageSenderService.deleteMessage(
                 MessageParams(
                     chatId = chat,
-                    messageId = message.messageId
-                )
+                    messageId = message.messageId,
+                ),
             )
         }
         return user
@@ -180,15 +186,15 @@ class RegistrationActionHandlerFetcher(
             MessageParams(
                 chatId = chat,
                 text = RegistrationMessageText.WithoutGroupConfirmation(),
-                replyMarkup = createActionsKeyboard("studyGroup")
-            )
+                replyMarkup = createActionsKeyboard("studyGroup"),
+            ),
         )
         messageSenderService.editMessage(
             MessageParams(
                 chatId = chat,
                 messageId = message.messageId,
-                text = message.text
-            )
+                text = message.text,
+            ),
         )
         return userInfo.copy(lastUserActionType = LastUserActionType.REGISTRATION_CONFIRM_GROUP)
     }

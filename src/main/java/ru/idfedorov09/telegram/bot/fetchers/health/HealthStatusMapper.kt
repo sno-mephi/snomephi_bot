@@ -7,7 +7,6 @@ import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 
 @Component
 class HealthStatusMapper : GeneralFetcher() {
-
     @InjectData
     fun doFetch(): HealthStatus {
         return HealthStatus("is alive")

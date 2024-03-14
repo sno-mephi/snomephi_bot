@@ -14,7 +14,6 @@ import ru.mephi.sno.libs.flow.belly.FlowContext
 
 @RestController
 class HealthStatusController {
-
     @Autowired
     @Qualifier(QUALIFIER_FLOW_HEALTH_STATUS)
     private lateinit var flowBuilder: FlowBuilder

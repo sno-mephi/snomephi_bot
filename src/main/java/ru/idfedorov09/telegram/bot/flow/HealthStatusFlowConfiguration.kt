@@ -10,7 +10,6 @@ import ru.mephi.sno.libs.flow.belly.FlowBuilder
 open class HealthStatusFlowConfiguration(
     private val healthStatusMapper: HealthStatusMapper,
 ) {
-
     @Bean(QUALIFIER_FLOW_HEALTH_STATUS)
     open fun flowBuilder(): FlowBuilder {
         val flowBuilder = FlowBuilder()

@@ -43,22 +43,23 @@ class SettingMailFetcher(
     }
 
     private fun sendSettingMessage(userActualizedInfo: UserActualizedInfo) {
-        val allCategoriesInfo = categoryRepository.findAll().filter{it.isUnremovable == false }.map {
-            "<b>• ${it.title}\n</b>" +
-                "<i>${it.description?.let { "$it\n" }}</i>" +
-                if (userActualizedInfo.categories.contains(it)) {
-                    "<b>Включено</b>"
-                } else {
-                    "<b>Выключено</b>"
-                } + " - /toggle_${it.suffix}"
-        }.joinToString(separator = "\n\n") { it }
+        val allCategoriesInfo =
+            categoryRepository.findAll().filter { it.isUnremovable == false }.map {
+                "<b>• ${it.title}\n</b>" +
+                    "<i>${it.description?.let { "$it\n" }}</i>" +
+                    if (userActualizedInfo.categories.contains(it)) {
+                        "<b>Включено</b>"
+                    } else {
+                        "<b>Выключено</b>"
+                    } + " - /toggle_${it.suffix}"
+            }.joinToString(separator = "\n\n") { it }
         val mailText = "<b>Настройка уведомлений</b>\n\nВыберите интересующие вас направления:\n\n$allCategoriesInfo"
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = userActualizedInfo.tui,
                 text = mailText,
-                parseMode = ParseMode.HTML
-            )
+                parseMode = ParseMode.HTML,
+            ),
         )
     }
 
@@ -77,16 +78,16 @@ class SettingMailFetcher(
             messageSenderService.sendMessage(
                 MessageParams(
                     chatId = chatId,
-                    text = "❌Уведомления о мероприятиях ${category.title} выключены."
-                )
+                    text = "❌Уведомления о мероприятиях ${category.title} выключены.",
+                ),
             )
         } else {
             userCategories.add(category)
             messageSenderService.sendMessage(
                 MessageParams(
                     chatId = chatId,
-                    text = "✅Уведомления о мероприятиях  ${category.title} включены."
-                )
+                    text = "✅Уведомления о мероприятиях  ${category.title} включены.",
+                ),
             )
         }
     }

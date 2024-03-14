@@ -11,7 +11,6 @@ import ru.idfedorov09.telegram.bot.config.BotContainer
 class Executor(
     private val botContainer: BotContainer,
 ) : TelegramLongPollingBot() {
-
     companion object {
         private val log = LoggerFactory.getLogger(Executor::class.java)
     }
@@ -23,6 +22,7 @@ class Executor(
     }
 
     override fun onUpdateReceived(update: Update) {}
+
     override fun getBotUsername(): String {
         return botContainer.BOT_NAME
     }

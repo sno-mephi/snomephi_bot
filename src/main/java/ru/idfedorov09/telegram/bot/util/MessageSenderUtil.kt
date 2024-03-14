@@ -13,7 +13,6 @@ import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.executor.Executor
 
 object MessageSenderUtil {
-
     fun sendMessage(
         bot: Executor,
         messageParams: MessageParams,

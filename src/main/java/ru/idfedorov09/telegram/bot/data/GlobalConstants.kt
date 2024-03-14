@@ -3,7 +3,6 @@ package ru.idfedorov09.telegram.bot.data
 import java.time.ZoneId
 
 object GlobalConstants {
-
     const val HEALTH_PATH = "/is_alive"
     const val WEBHOOK_PATH = "/"
 

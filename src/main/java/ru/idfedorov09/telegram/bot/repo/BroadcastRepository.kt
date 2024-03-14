@@ -45,6 +45,4 @@ interface BroadcastRepository : JpaRepository<Broadcast, Long> {
         nativeQuery = true,
     )
     fun findFirstActiveWeeklyBroadcast(): Broadcast?
-
-
 }

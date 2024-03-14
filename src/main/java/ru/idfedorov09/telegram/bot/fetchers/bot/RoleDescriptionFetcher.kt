@@ -20,7 +20,6 @@ class RoleDescriptionFetcher(
     private val updatesUtil: UpdatesUtil,
     private val messageSenderService: MessageSenderService,
 ) : GeneralFetcher() {
-
     @InjectData
     fun doFetch(
         update: Update,
@@ -35,22 +34,23 @@ class RoleDescriptionFetcher(
             messageSenderService.sendMessage(
                 MessageParams(
                     chatId = chatId,
-                    text = "Нет прав"
-                )
+                    text = "Нет прав",
+                ),
             )
 
             return
         }
 
-        val text = UserRole.entries.joinToString("\n\n") {
-            "- ${it}\n\t${it.description}"
-        }
+        val text =
+            UserRole.entries.joinToString("\n\n") {
+                "- ${it}\n\t${it.description}"
+            }
 
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = chatId,
-                text = text
-            )
+                text = text,
+            ),
         )
     }
 }

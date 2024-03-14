@@ -10,7 +10,10 @@ import ru.idfedorov09.telegram.bot.data.model.User
 interface UserRepository : JpaRepository<User, Long> {
     fun findByTui(tui: String): User?
 
-    fun findByFullNameAndStudyGroup(fullName: String, studyGroup: String): User?
+    fun findByFullNameAndStudyGroup(
+        fullName: String,
+        studyGroup: String,
+    ): User?
 
     @Transactional
     @Modifying
@@ -19,9 +22,12 @@ interface UserRepository : JpaRepository<User, Long> {
             UPDATE User u 
             SET u.isKeyboardSwitched = :isSwitched 
             WHERE u.tui = :tui
-        """
+        """,
     )
-    fun updateKeyboardSwitchedForUserTui(tui: String, isSwitched: Boolean)
+    fun updateKeyboardSwitchedForUserTui(
+        tui: String,
+        isSwitched: Boolean,
+    )
 
     @Transactional
     @Modifying
@@ -30,9 +36,12 @@ interface UserRepository : JpaRepository<User, Long> {
             UPDATE User u 
             SET u.isKeyboardSwitched = :isSwitched 
             WHERE u.id = :userId
-        """
+        """,
     )
-    fun updateKeyboardSwitchedForUserId(userId: Long, isSwitched: Boolean)
+    fun updateKeyboardSwitchedForUserId(
+        userId: Long,
+        isSwitched: Boolean,
+    )
 
     @Transactional
     @Modifying
@@ -41,7 +50,10 @@ interface UserRepository : JpaRepository<User, Long> {
             UPDATE User u 
             SET u.isKeyboardSwitched = false, u.currentKeyboardType = :newKeyboardType
             WHERE u.id = :userId
-        """
+        """,
     )
-    fun updateKeyboard(userId: Long, newKeyboardType: UserKeyboardType)
+    fun updateKeyboard(
+        userId: Long,
+        newKeyboardType: UserKeyboardType,
+    )
 }

@@ -20,7 +20,6 @@ class OnReceiver(
     private val userQueue: UserQueue,
     private val updatesHandler: UpdatesController,
 ) {
-
     companion object {
         private val log = LoggerFactory.getLogger(OnReceiver::class.java)
     }
@@ -28,13 +27,19 @@ class OnReceiver(
     private val updatingRequestDispatcher = Executors.newFixedThreadPool(Int.MAX_VALUE).asCoroutineDispatcher()
 
     /** Обрабатывает отдельное обновление **/
-    private fun execOne(update: Update, executor: TelegramLongPollingBot) {
+    private fun execOne(
+        update: Update,
+        executor: TelegramLongPollingBot,
+    ) {
         log.info("Update received: $update")
         updatesHandler.handle(executor, update)
     }
 
     /** Обрабатывает пришедшее обновление, затем обрабатывая все, что есть в очереди **/
-    private fun exec(update: Update, executor: TelegramLongPollingBot) {
+    private fun exec(
+        update: Update,
+        executor: TelegramLongPollingBot,
+    ) {
         val chatId = updatesUtil.getChatId(update)
 
         if (chatId == null) {
@@ -58,7 +63,10 @@ class OnReceiver(
 
     // TODO: убрать GlobalScope
     @OptIn(DelicateCoroutinesApi::class)
-    fun onReceive(update: Update, executor: TelegramLongPollingBot) {
+    fun onReceive(
+        update: Update,
+        executor: TelegramLongPollingBot,
+    ) {
         GlobalScope.launch(updatingRequestDispatcher) {
             exec(update, executor)
         }
