@@ -93,7 +93,6 @@ class QuestStartFetcher(
 
         // если пришла команда - ничего не делаем
         if (TextCommands.isTextCommand(messageText)) return
-        messageText ?: return
 
         val quest = Quest(
             authorId = userActualizedInfo.id,
