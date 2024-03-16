@@ -1,7 +1,6 @@
 package ru.idfedorov09.telegram.bot.util
 
 import org.telegram.telegrambots.meta.api.methods.ForwardMessage
-import org.telegram.telegrambots.meta.api.methods.invoices.SendInvoice
 import org.telegram.telegrambots.meta.api.methods.send.*
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup
@@ -93,7 +92,8 @@ object MessageSenderUtil {
     ): Message {
         return params.run {
             if (text == null && photo == null && document == null && stiker == null && voice == null &&
-                videoNote == null && audio == null && video == null) {
+                videoNote == null && audio == null && video == null
+            ) {
                 throw NullPointerException("Text or photo or document should be not null.")
             }
 
@@ -116,7 +116,7 @@ object MessageSenderUtil {
                     SendVideoNote().also {
                         it.videoNote = videoNote
                         it.chatId = chatId
-                    }
+                    },
                 )
             } else if (video != null) {
                 bot.execute(
@@ -126,18 +126,18 @@ object MessageSenderUtil {
                         it.caption = text
                         it.replyMarkup = replyMarkup
                         it.parseMode = parseMode
-                    }
+                    },
                 )
             } else if (audio != null) {
-              bot.execute(
-                  SendAudio().also {
-                      it.chatId = chatId
-                      it.audio = audio
-                      it.caption = text
-                      it.replyMarkup = replyMarkup
-                      it.parseMode = parseMode
-                  }
-              )
+                bot.execute(
+                    SendAudio().also {
+                        it.chatId = chatId
+                        it.audio = audio
+                        it.caption = text
+                        it.replyMarkup = replyMarkup
+                        it.parseMode = parseMode
+                    },
+                )
             } else if (document != null) {
                 bot.execute(
                     SendDocument().also {

@@ -4,8 +4,6 @@ import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.Update
-import org.telegram.telegrambots.meta.api.objects.Video
-import org.telegram.telegrambots.meta.api.objects.Voice
 import ru.idfedorov09.telegram.bot.data.GlobalConstants
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
@@ -55,47 +53,55 @@ class DialogHandleFetcher(
         val responder = userRepository.findById(quest.responderId!!).get()
         val isByQuestionAuthor = author.tui == userActualizedInfo.tui
 
-        val photoHash = if (update.message.hasPhoto()) {
-            update.message.photo.last().fileId
-        } else {
-            null
-        }
+        val photoHash =
+            if (update.message.hasPhoto()) {
+                update.message.photo.last().fileId
+            } else {
+                null
+            }
 
-        val documentHash = if (update.message.hasDocument()) {
-            update.message.document.fileId
-        } else {
-            null
-        }
+        val documentHash =
+            if (update.message.hasDocument()) {
+                update.message.document.fileId
+            } else {
+                null
+            }
 
-        val audioHash = if (update.message.hasAudio()) {
-            update.message.audio.fileId
-        } else {
-            null
-        }
+        val audioHash =
+            if (update.message.hasAudio()) {
+                update.message.audio.fileId
+            } else {
+                null
+            }
 
-        val videoHash = if (update.message.hasVideo()){
-            update.message.video.fileId
-        } else {
-            null
-        }
+        val videoHash =
+            if (update.message.hasVideo())
+                {
+                    update.message.video.fileId
+                } else {
+                null
+            }
 
-        val stickerHash = if (update.message.hasSticker()) {
-            update.message.sticker.fileId
-        } else {
-            null
-        }
+        val stickerHash =
+            if (update.message.hasSticker()) {
+                update.message.sticker.fileId
+            } else {
+                null
+            }
 
-        val voiceHash = if (update.message.hasVoice()) {
-            update.message.voice.fileId
-        } else {
-            null
-        }
+        val voiceHash =
+            if (update.message.hasVoice()) {
+                update.message.voice.fileId
+            } else {
+                null
+            }
 
-        val videoNoteHash = if (update.message.hasVideoNote()) {
-            update.message.videoNote.fileId
-        } else {
-            null
-        }
+        val videoNoteHash =
+            if (update.message.hasVideoNote()) {
+                update.message.videoNote.fileId
+            } else {
+                null
+            }
 
         val params =
             Params(
@@ -207,7 +213,7 @@ class DialogHandleFetcher(
             messageSenderService.sendMessage(
                 MessageParams(
                     chatId = if (isByQuestionAuthor) responder.tui!! else author.tui!!,
-                    video = InputFile(videoNoteHash)
+                    video = InputFile(videoNoteHash),
                 ),
             )
             return userActualizedInfo
@@ -230,7 +236,7 @@ class DialogHandleFetcher(
             messageSenderService.sendMessage(
                 MessageParams(
                     chatId = if (isByQuestionAuthor) responder.tui!! else author.tui!!,
-                    voice = InputFile(voiceHash)
+                    voice = InputFile(voiceHash),
                 ),
             )
             return userActualizedInfo
@@ -253,7 +259,7 @@ class DialogHandleFetcher(
             messageSenderService.sendMessage(
                 MessageParams(
                     chatId = if (isByQuestionAuthor) responder.tui!! else author.tui!!,
-                    stiker = InputFile(stikerHash)
+                    stiker = InputFile(stikerHash),
                 ),
             )
             return userActualizedInfo

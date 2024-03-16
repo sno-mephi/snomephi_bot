@@ -42,7 +42,7 @@ class QuestStartFetcher(
                 !(
                     lastUserActionType == LastUserActionType.DEFAULT ||
                         lastUserActionType == LastUserActionType.ACT_QUEST_ANS_CLICK
-                    )
+                )
             ) {
                 return
             }
@@ -78,17 +78,19 @@ class QuestStartFetcher(
     ) {
         val messageText = update.message.text ?: update.message.caption
 
-        val photoHash = if (update.message.hasPhoto()) {
-            update.message.photo.last().fileId
-        } else {
-            null
-        }
+        val photoHash =
+            if (update.message.hasPhoto()) {
+                update.message.photo.last().fileId
+            } else {
+                null
+            }
 
-        val documentHash = if (update.message.hasDocument()) {
-            update.message.document.fileId
-        } else {
-            null
-        }
+        val documentHash =
+            if (update.message.hasDocument()) {
+                update.message.document.fileId
+            } else {
+                null
+            }
 
         // если пришла команда - ничего не делаем
         if (TextCommands.isTextCommand(messageText)) return
@@ -99,15 +101,16 @@ class QuestStartFetcher(
                 questionStatus = QuestionStatus.WAIT,
             ).let { questRepository.save(it) }
 
-        val questDialogMessage = QuestDialogMessage(
-            questId = quest.id,
-            isByQuestionAuthor = true,
-            authorId = userActualizedInfo.id,
-            messageText = messageText,
-            messageId = update.message.messageId,
-            messageDocumentHash = documentHash,
-            messagePhotoHash = photoHash,
-        ).let { questDialogMessageRepository.save(it) }
+        val questDialogMessage =
+            QuestDialogMessage(
+                questId = quest.id,
+                isByQuestionAuthor = true,
+                authorId = userActualizedInfo.id,
+                messageText = messageText,
+                messageId = update.message.messageId,
+                messageDocumentHash = documentHash,
+                messagePhotoHash = photoHash,
+            ).let { questDialogMessageRepository.save(it) }
 
         quest.dialogHistory.add(questDialogMessage.id!!)
 
@@ -123,8 +126,9 @@ class QuestStartFetcher(
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = QUEST_RESPONDENT_CHAT_ID,
-                text = "\uD83D\uDCE5 Получен вопрос #${quest.id} " +
-                    "от @${userActualizedInfo.lastTgNick} (${userActualizedInfo.fullName})",
+                text =
+                    "\uD83D\uDCE5 Получен вопрос #${quest.id} " +
+                        "от @${userActualizedInfo.lastTgNick} (${userActualizedInfo.fullName})",
             ),
         )
 
