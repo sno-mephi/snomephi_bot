@@ -34,7 +34,6 @@ open class TelegramBotFlowConfiguration(
     private val permissionsFetcher: PermissionsFetcher,
     private val helpCommandFetcher: HelpCommandFetcher,
 ) {
-
     /**
      * Возвращает построенный граф; выполняется только при запуске приложения
      */

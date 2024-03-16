@@ -6,9 +6,9 @@ enum class TextCommands(
     /** текст команды **/
     val commandText: String,
     /** роли которым доступна эта команда **/
-    private val allowedRoles: List<UserRole> = listOf(UserRole.USER),
-    private val description: String? = "",
-    private val isFullCommand: Boolean = true,
+    val allowedRoles: List<UserRole> = listOf(UserRole.USER),
+    val description: String? = "",
+    val isFullCommand: Boolean = true,
 ) {
     QUEST_DIALOG_CLOSE(
         commandText = "❌ Завершить диалог",
@@ -24,12 +24,12 @@ enum class TextCommands(
                 UserRole.CATEGORY_BUILDER,
                 UserRole.ROOT,
             ),
-        description = "настройка категорий",
+        description = "Настройка категорий",
     ),
 
     SETTING_MAIL(
         commandText = "Настройка уведомлений",
-        description = "помогает настроить рассылку нужных вам уведомлений о мероприятих и кружках",
+        description = "Помогает настроить рассылку нужных вам уведомлений о мероприятих и кружках",
     ),
 
     TOGGLE(
@@ -40,13 +40,13 @@ enum class TextCommands(
     USER_INFO(
         commandText = "/userInfo",
         allowedRoles = listOf(UserRole.ROOT),
-        description = "присылает полную информацию о пользователе",
+        description = "Присылает полную информацию о пользователе",
     ),
 
     ROLE_DESCRIPTION(
         commandText = "/role",
         allowedRoles = listOf(UserRole.ROOT),
-        description = "присылает полный список ролей пользователя",
+        description = "Присылает полный список ролей пользователя",
     ),
 
     BROADCAST_CONSTRUCTOR(
@@ -61,7 +61,7 @@ enum class TextCommands(
 
     WEEKLY_EVENTS(
         commandText = "Мероприятия недели",
-        description = "присылает информацию о всех мероприятиях, запланированных на текущую неделю",
+        description = "Присылает информацию о всех мероприятиях, запланированных на текущую неделю",
     ),
 
     PERMISSIONS_SETUP(
@@ -71,7 +71,13 @@ enum class TextCommands(
     ),
 
     HELP_COMMAND(
-        "/help",
+        commandText = "/help",
+        description = "Узнать все актуальные команды",
+    ),
+
+    RESET(
+        commandText = "/reset",
+        description = "Удаление своего аккаунта",
     ),
     ;
 
