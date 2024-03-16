@@ -10,7 +10,7 @@ import ru.idfedorov09.telegram.bot.util.KeyboardUtil
 import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
 
 @Service
-class MessageSenderService(
+open class MessageSenderService(
     val bot: Executor,
     val userRepository: UserRepository,
 ) {
