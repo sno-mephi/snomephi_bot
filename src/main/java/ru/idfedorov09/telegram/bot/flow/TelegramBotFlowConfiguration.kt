@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUALIFIER_FLOW_TG_BOT
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
+import ru.idfedorov09.telegram.bot.fetchers.PermissionsFetcher
 import ru.idfedorov09.telegram.bot.fetchers.bot.*
 import ru.idfedorov09.telegram.bot.fetchers.bot.userfetchers.RegistrationActionHandlerFetcher
 import ru.idfedorov09.telegram.bot.fetchers.bot.userfetchers.RegistrationFetcher
@@ -15,7 +16,6 @@ import ru.mephi.sno.libs.flow.belly.FlowContext
  */
 @Configuration
 open class TelegramBotFlowConfiguration(
-
     private val actualizeUserInfoFetcher: ActualizeUserInfoFetcher,
     private val weeklyEventsFetcher: WeeklyEventsFetcher,
     private val questStartFetcher: QuestStartFetcher,
@@ -31,9 +31,9 @@ open class TelegramBotFlowConfiguration(
     private val userInfoCommandFetcher: UserInfoCommandFetcher,
     private val settingMailFetcher: SettingMailFetcher,
     private val broadcastConstructorFetcher: BroadcastConstructorFetcher,
+    private val permissionsFetcher: PermissionsFetcher,
     private val deleteUserFetcher: DeleteUserFetcher,
 ) {
-
     /**
      * Возвращает построенный граф; выполняется только при запуске приложения
      */
@@ -55,7 +55,6 @@ open class TelegramBotFlowConfiguration(
             }
 
             group(condition = { it.isByUser() && it.isUserRegistered() }) {
-
                 sequence {
                     fetch(deleteUserFetcher)
                     fetch(categoryCommandHandlerFetcher)
@@ -65,7 +64,7 @@ open class TelegramBotFlowConfiguration(
                     fetch(questButtonHandlerFetcher)
                     fetch(dialogHandleFetcher)
                     fetch(broadcastConstructorFetcher)
-
+                    fetch(permissionsFetcher)
                 }
 
                 fetch(roleDescriptionFetcher)

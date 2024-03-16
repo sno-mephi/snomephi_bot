@@ -2,6 +2,10 @@ package ru.idfedorov09.telegram.bot.repo
 
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
+import org.springframework.data.jpa.repository.Modifying
+import org.springframework.transaction.annotation.Isolation
+import org.springframework.transaction.annotation.Transactional
+import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
 import ru.idfedorov09.telegram.bot.data.model.User
 
 interface UserRepository : JpaRepository<User, Long> {
@@ -9,8 +13,8 @@ interface UserRepository : JpaRepository<User, Long> {
     @Query(
         """
             SELECT *
-                FROM users_table
-                WHERE 1 = 1
+            FROM users_table
+            WHERE 1 = 1
                 and tui = :userTui
                 and is_deleted = False
             LIMIT 1
@@ -19,6 +23,47 @@ interface UserRepository : JpaRepository<User, Long> {
     )
     fun findByTui(userTui: String): User?
 
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    @Modifying
+    @Query(
+        """
+            UPDATE User u 
+            SET u.isKeyboardSwitched = :isSwitched 
+            WHERE u.tui = :tui
+        """,
+    )
+    fun updateKeyboardSwitchedForUserTui(
+        tui: String,
+        isSwitched: Boolean,
+    )
+
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    @Modifying
+    @Query(
+        """
+            UPDATE User u 
+            SET u.isKeyboardSwitched = :isSwitched 
+            WHERE u.id = :userId
+        """,
+    )
+    fun updateKeyboardSwitchedForUserId(
+        userId: Long,
+        isSwitched: Boolean,
+    )
+
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    @Modifying
+    @Query(
+        """
+            UPDATE User u 
+            SET u.isKeyboardSwitched = false, u.currentKeyboardType = :newKeyboardType
+            WHERE u.id = :userId
+        """,
+    )
+    fun updateKeyboard(
+        userId: Long,
+        newKeyboardType: UserKeyboardType,
+    )
 
     @Query(
         """

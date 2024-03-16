@@ -4,27 +4,27 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 
-fun userWithoutGroupActionCallback() = InlineKeyboardMarkup(
-    listOf(
+fun userWithoutGroupActionCallback() =
+    InlineKeyboardMarkup(
         listOf(
-            InlineKeyboardButton("👾Я не из МИФИ").also {
-                it.callbackData = CallbackCommands.USER_WITHOUT_GROUP.data
-            },
+            listOf(
+                InlineKeyboardButton("👾Я не из МИФИ").also {
+                    it.callbackData = CallbackCommands.USER_WITHOUT_GROUP.data
+                },
+            ),
         ),
-    ),
-)
+    )
 
-fun createActionsKeyboard(
-    parameter: String,
-) = InlineKeyboardMarkup(
-    listOf(
+fun createActionsKeyboard(parameter: String) =
+    InlineKeyboardMarkup(
         listOf(
-            InlineKeyboardButton("✅ Подтвердить").also {
-                it.callbackData = CallbackCommands.USER_CONFIRM.data.format(parameter)
-            },
-            InlineKeyboardButton("❌ Отменить").also {
-                it.callbackData = CallbackCommands.USER_DECLINE.data.format(parameter)
-            },
+            listOf(
+                InlineKeyboardButton("✅ Подтвердить").also {
+                    it.callbackData = CallbackCommands.USER_CONFIRM.data.format(parameter)
+                },
+                InlineKeyboardButton("❌ Отменить").also {
+                    it.callbackData = CallbackCommands.USER_DECLINE.data.format(parameter)
+                },
+            ),
         ),
-    ),
-)
+    )

@@ -1,14 +1,14 @@
 package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.keyboards.CategoryKeyboards
+import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
-import ru.idfedorov09.telegram.bot.executor.Executor
+import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
@@ -18,7 +18,7 @@ import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
  */
 @Component
 class CategoryCommandHandlerFetcher(
-    private val bot: Executor,
+    private val messageSenderService: MessageSenderService,
     private val updatesUtil: UpdatesUtil,
 ) : GeneralFetcher() {
     private data class RequestData(
@@ -35,11 +35,12 @@ class CategoryCommandHandlerFetcher(
         if (update.message == null || !update.message.hasText()) return userActualizedInfo
         val messageText = update.message.text
         val chatId = updatesUtil.getChatId(update) ?: return userActualizedInfo
-        val requestData = RequestData(
-            chatId,
-            update,
-            userActualizedInfo,
-        )
+        val requestData =
+            RequestData(
+                chatId,
+                update,
+                userActualizedInfo,
+            )
         when (messageText) {
             TextCommands.CATEGORY_CHOOSE_ACTION.commandText ->
                 commandChooseAction(requestData)
@@ -55,9 +56,10 @@ class CategoryCommandHandlerFetcher(
                 CategoryKeyboards.choosingAction(),
             )
         } else {
-            data.userInfo = data.userInfo.copy(
-                lastUserActionType = LastUserActionType.DEFAULT,
-            )
+            data.userInfo =
+                data.userInfo.copy(
+                    lastUserActionType = LastUserActionType.DEFAULT,
+                )
             sendMessage(
                 data,
                 "🔒 Действие недоступно для вас",
@@ -65,19 +67,39 @@ class CategoryCommandHandlerFetcher(
         }
     }
 
-    private fun sendMessage(data: RequestData, text: String) {
-        val lastSent = bot.execute(SendMessage(data.chatId, text)).messageId
-        data.userInfo = data.userInfo.copy(
-            data = lastSent.toString(),
-        )
+    private fun sendMessage(
+        data: RequestData,
+        text: String,
+    ) {
+        val lastSent =
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = data.chatId,
+                    text = text,
+                ),
+            ).chatId
+        data.userInfo =
+            data.userInfo.copy(
+                data = lastSent.toString(),
+            )
     }
 
-    private fun sendMessage(data: RequestData, text: String, keyboard: InlineKeyboardMarkup) {
-        val msg = SendMessage(data.chatId, text)
-        msg.replyMarkup = keyboard
-        val lastSent = bot.execute(msg).messageId
-        data.userInfo = data.userInfo.copy(
-            data = lastSent.toString(),
-        )
+    private fun sendMessage(
+        data: RequestData,
+        text: String,
+        keyboard: InlineKeyboardMarkup,
+    ) {
+        val lastSent =
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = data.chatId,
+                    text = text,
+                    replyMarkup = keyboard,
+                ),
+            ).messageId
+        data.userInfo =
+            data.userInfo.copy(
+                data = lastSent.toString(),
+            )
     }
 }

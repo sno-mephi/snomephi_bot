@@ -24,5 +24,5 @@ data class CallbackData(
     @Column(name = "callback_data", columnDefinition = "TEXT")
     val callbackData: String? = null,
     val metaText: String? = null,
-    val metaUrl: String? = null
+    val metaUrl: String? = null,
 )

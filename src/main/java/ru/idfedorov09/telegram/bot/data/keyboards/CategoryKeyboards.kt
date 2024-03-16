@@ -29,7 +29,11 @@ object CategoryKeyboards {
         )
     }
 
-    fun choosingCategory(page: Long, pageSize: Long, catRep: CategoryRepository): InlineKeyboardMarkup {
+    fun choosingCategory(
+        page: Long,
+        pageSize: Long,
+        catRep: CategoryRepository,
+    ): InlineKeyboardMarkup {
         val body = choosingCategoryBody(page, pageSize, catRep)
         val nav = choosingCategoryNav(page, pageSize, catRep)
         body.addAll(nav)
@@ -70,29 +74,32 @@ object CategoryKeyboards {
         catRep: CategoryRepository,
     ): MutableList<MutableList<InlineKeyboardButton>> {
         val catCount = catRep.count()
-        val pageCount = if (catCount % pageSize != 0L || catCount == 0L) {
-            catCount / pageSize + 1
-        } else {
-            catCount / pageSize
-        }
+        val pageCount =
+            if (catCount % pageSize != 0L || catCount == 0L) {
+                catCount / pageSize + 1
+            } else {
+                catCount / pageSize
+            }
         return mutableListOf(
             mutableListOf(
                 InlineKeyboardButton("⬅️ Назад").also {
-                    it.callbackData = if (pageCount != 1L) {
-                        CallbackCommands.CATEGORY_PAGE.format((page - 1).mod(pageCount))
-                    } else {
-                        CallbackCommands.VOID.data
-                    }
+                    it.callbackData =
+                        if (pageCount != 1L) {
+                            CallbackCommands.CATEGORY_PAGE.format((page - 1).mod(pageCount))
+                        } else {
+                            CallbackCommands.VOID.data
+                        }
                 },
                 InlineKeyboardButton("${page + 1}/$pageCount").also {
                     it.callbackData = CallbackCommands.VOID.data
                 },
                 InlineKeyboardButton("Вперёд ➡️").also {
-                    it.callbackData = if (pageCount != 1L) {
-                        CallbackCommands.CATEGORY_PAGE.format((page + 1).mod(pageCount))
-                    } else {
-                        CallbackCommands.VOID.data
-                    }
+                    it.callbackData =
+                        if (pageCount != 1L) {
+                            CallbackCommands.CATEGORY_PAGE.format((page + 1).mod(pageCount))
+                        } else {
+                            CallbackCommands.VOID.data
+                        }
                 },
             ),
             mutableListOf(
@@ -103,7 +110,10 @@ object CategoryKeyboards {
         )
     }
 
-    fun confirmationAction(catId: Long, prevPage: Long): InlineKeyboardMarkup {
+    fun confirmationAction(
+        catId: Long,
+        prevPage: Long,
+    ): InlineKeyboardMarkup {
         return InlineKeyboardMarkup(
             mutableListOf(
                 mutableListOf(
