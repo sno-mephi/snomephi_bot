@@ -1,9 +1,7 @@
 package ru.idfedorov09.telegram.bot.util
 
 import org.telegram.telegrambots.meta.api.methods.ForwardMessage
-import org.telegram.telegrambots.meta.api.methods.send.SendDocument
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage
-import org.telegram.telegrambots.meta.api.methods.send.SendPhoto
+import org.telegram.telegrambots.meta.api.methods.send.*
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
@@ -93,39 +91,148 @@ object MessageSenderUtil {
         params: MessageParams,
     ): Message {
         return params.run {
-            if (text == null && photo == null && document == null) {
-                throw NullPointerException("Text or photo or document should be not null.")
+            if (text == null && photo == null && document == null && sticker == null && voice == null &&
+                videoNote == null && audio == null && video == null
+            ) {
+                throw NullPointerException("Text or photo or document or sticker or voice or videoNote or " +
+                        "audio or video should be not null.")
             }
-            if (document != null) {
-                bot.execute(
-                    SendDocument().also {
-                        it.document = document
-                        it.caption = text
-                        it.chatId = chatId
-                        it.replyMarkup = replyMarkup
-                        it.parseMode = parseMode
-                    },
-                )
-            } else if (photo != null) {
-                bot.execute(
-                    SendPhoto().also {
-                        it.chatId = chatId
-                        it.caption = text
-                        it.photo = photo
-                        it.replyMarkup = replyMarkup
-                        it.parseMode = parseMode
-                    },
-                )
-            } else {
-                bot.execute(
-                    SendMessage().also {
-                        it.chatId = chatId
-                        it.text = text!!
-                        it.replyMarkup = replyMarkup
-                        it.parseMode = parseMode
-                    },
-                )
+            when {
+                sticker != null -> sendSticker(bot,this)
+                voice != null -> sendVoice(bot,this)
+                videoNote != null -> sendVideoNote(bot,this)
+                video != null -> sendVideo(bot,this)
+                audio != null -> sendAudio(bot,this)
+                document != null -> sendDocument(bot,this)
+                photo != null -> sendPhoto(bot,this)
+                else -> sendText(bot,this)
             }
+        }
+    }
+
+    private fun sendSticker(
+        bot: Executor,
+        params: MessageParams,
+    ): Message {
+        return params.run {
+            bot.execute(
+                SendSticker().also {
+                    it.sticker = sticker!!
+                    it.chatId = chatId
+                },
+            )
+        }
+    }
+
+    private fun sendVoice(
+        bot: Executor,
+        params: MessageParams,
+    ): Message {
+        return params.run {
+            bot.execute(
+                SendVoice().also {
+                    it.voice = voice!!
+                    it.chatId = chatId
+                },
+            )
+        }
+    }
+
+    private fun sendVideoNote(
+        bot: Executor,
+        params: MessageParams,
+    ): Message {
+        return params.run {
+            bot.execute(
+                SendVideoNote().also {
+                    it.videoNote = videoNote!!
+                    it.chatId = chatId
+                },
+            )
+        }
+    }
+
+    private fun sendVideo(
+        bot: Executor,
+        params: MessageParams,
+    ): Message {
+        return params.run {
+            bot.execute(
+                SendVideo().also {
+                    it.chatId = chatId
+                    it.video = video!!
+                    it.caption = text
+                    it.replyMarkup = replyMarkup
+                    it.parseMode = parseMode
+                },
+            )
+        }
+    }
+
+    private fun sendAudio(
+        bot: Executor,
+        params: MessageParams,
+    ): Message {
+        return params.run {
+            bot.execute(
+                SendAudio().also {
+                    it.chatId = chatId
+                    it.audio = audio!!
+                    it.caption = text
+                    it.replyMarkup = replyMarkup
+                    it.parseMode = parseMode
+                },
+            )
+        }
+    }
+
+    private fun sendDocument(
+        bot: Executor,
+        params: MessageParams,
+    ): Message {
+       return  params.run {
+            bot.execute(
+                SendDocument().also {
+                    it.document = document!!
+                    it.caption = text
+                    it.chatId = chatId
+                    it.replyMarkup = replyMarkup
+                    it.parseMode = parseMode
+                },
+            )
+        }
+    }
+
+    private fun sendPhoto(
+        bot: Executor,
+        params: MessageParams,
+    ): Message {
+        return params.run {
+            bot.execute(
+                SendPhoto().also {
+                    it.chatId = chatId
+                    it.caption = text
+                    it.photo = photo!!
+                    it.replyMarkup = replyMarkup
+                    it.parseMode = parseMode
+                },
+            )
+        }
+    }
+
+    private fun sendText(
+        bot: Executor,
+        params: MessageParams,
+    ): Message {
+        return params.run {
+            bot.execute(
+                SendMessage().also {
+                    it.chatId = chatId
+                    it.text = text!!
+                    it.replyMarkup = replyMarkup
+                    it.parseMode = parseMode
+                },
+            )
         }
     }
 

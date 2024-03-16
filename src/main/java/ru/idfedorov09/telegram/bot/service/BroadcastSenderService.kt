@@ -150,7 +150,7 @@ open class BroadcastSenderService(
         val msgText =
                 "Рассылка №${finalBroadcast.id} успешно завершена\n" +
                 "Число пользователей, получивших сообщение: ${finalBroadcast.receivedUsersId.size}\n" +
-                "Число пользователей, не получивших сообщение: ${finalBroadcast.failedUsersId.size}" +
+                "Число пользователей, не получивших сообщение: ${finalBroadcast.failedUsersId.size}\n" +
                 "Старт рассылки: ${finalBroadcast.startTime?.format(formatter)}\n" +
                 "Конец рассылки: ${finalBroadcast.finishTime?.format(formatter)}"
 
