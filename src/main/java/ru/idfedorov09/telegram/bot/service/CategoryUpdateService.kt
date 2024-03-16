@@ -13,7 +13,7 @@ class CategoryUpdateService (
     private val userRepository: UserRepository,
     private val categoryRepository: CategoryRepository,
 ) {
-    fun switchCategory(
+    fun toggleCategory(
         userId: Long?,
         categoryId: Long,
     ) {

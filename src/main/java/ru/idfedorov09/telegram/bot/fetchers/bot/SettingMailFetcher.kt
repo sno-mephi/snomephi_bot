@@ -75,7 +75,7 @@ class SettingMailFetcher(
         if (userActualizedInfo.lastUserActionType == LastUserActionType.BC_CHANGE_CATEGORIES) return
         if (category.isUnremovable == true) return
         category.id?.let {
-            categoryUpdateService.switchCategory(
+            categoryUpdateService.toggleCategory(
                 userId = userActualizedInfo.id,
                 categoryId = it,
             )
