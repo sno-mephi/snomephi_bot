@@ -21,6 +21,16 @@ data class QuestDialogMessage(
     val messagePhotoHash: String? = null,
     @Column(name = "message_document_hash", columnDefinition = "TEXT")
     val messageDocumentHash: String? = null,
+    @Column(name = "stiker_hash", columnDefinition = "TEXT")
+    val stikerHash: String? = null,
+    @Column(name = "voice_hash", columnDefinition = "TEXT")
+    val voiceHash: String? = null,
+    @Column(name = "video_hash", columnDefinition = "TEXT")
+    val videoHash: String? = null,
+    @Column(name = "video_note_hash", columnDefinition = "TEXT")
+    val videoNoteHash: String? = null,
+    @Column(name = "audio_hash", columnDefinition = "TEXT")
+    val audioHash: String? = null,
     @Column(name = "message_id")
     val messageId: Int? = null,
 )
