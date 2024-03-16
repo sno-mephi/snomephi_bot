@@ -55,6 +55,8 @@ data class User(
     val isRegistered: Boolean = false,
     @Column(name = "last_constructor_id")
     val constructorId: Long? = null,
+    @Column(name = "is_deleted")
+    val isDeleted: Boolean = false,
     /** тип текущей инлайн клавиатуры **/
     @Column(name = "current_keyboard_type", columnDefinition = "TEXT", updatable = false)
     @Convert(converter = UserKeyboardTypeConverter::class)

@@ -79,6 +79,7 @@ enum class TextCommands(
         commandText = "/reset",
         description = "удаление своего аккаунта",
     ),
+
     ;
 
     /** Проверяет, является ли текст командой **/

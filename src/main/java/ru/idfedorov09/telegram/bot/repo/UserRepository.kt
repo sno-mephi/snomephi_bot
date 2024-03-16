@@ -10,12 +10,18 @@ import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
 import ru.idfedorov09.telegram.bot.data.model.User
 
 interface UserRepository : JpaRepository<User, Long> {
-    fun findByTui(tui: String): User?
-
-    fun findByFullNameAndStudyGroup(
-        fullName: String,
-        studyGroup: String,
-    ): User?
+    @Query(
+        """
+            SELECT *
+            FROM users_table
+            WHERE 1 = 1
+                and tui = :userTui
+                and is_deleted = False
+            LIMIT 1
+        """,
+        nativeQuery = true,
+    )
+    fun findByTui(userTui: String): User?
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     @Modifying
@@ -101,4 +107,46 @@ interface UserRepository : JpaRepository<User, Long> {
         @Param("category_id") categoryId: Long,
         @Param("user_id") userId: Long
     )
+
+    @Query(
+        """
+            SELECT *
+            FROM users_table
+            WHERE 1 = 1
+                and full_name = :fullName
+                and study_group = :studyGroup
+                and is_deleted = False
+            LIMIT 1
+        """,
+        nativeQuery = true,
+    )
+    fun findByFullNameAndStudyGroup(
+        fullName: String,
+        studyGroup: String,
+    ): User?
+
+    @Query(
+        """
+            SELECT *
+            FROM users_table
+            WHERE 1 = 1
+                and id = :userId
+                and is_deleted = False
+            LIMIT 1
+        """,
+        nativeQuery = true,
+    )
+    fun findActiveUsersById(userId: Long?): User?
+
+
+    @Query(
+        """
+            SELECT *
+            FROM users_table
+            WHERE 1 = 1
+                and is_deleted = False
+        """,
+        nativeQuery = true,
+    )
+    fun findAllActiveUsers(): List<User?>
 }

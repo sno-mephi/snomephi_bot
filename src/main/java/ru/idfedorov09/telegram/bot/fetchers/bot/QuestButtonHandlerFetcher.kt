@@ -84,7 +84,7 @@ class QuestButtonHandlerFetcher(
                 questionStatus = QuestionStatus.DIALOG,
             )
 
-        val questionAuthor = userRepository.findById(data.quest.authorId!!).get()
+        val questionAuthor = userRepository.findActiveUsersById(data.quest.authorId!!)!!
         questRepository.save(quest)
         userRepository.save(
             questionAuthor.copy(
@@ -154,7 +154,7 @@ class QuestButtonHandlerFetcher(
         if (data.quest.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
         if (data.userActualizedInfo.activeQuest != null) return data.userActualizedInfo
 
-        val questionAuthor = userRepository.findById(data.quest.authorId!!).get()
+        val questionAuthor = userRepository.findActiveUsersById(data.quest.authorId!!)!!
         val firstMessage = dialogMessageRepository.findById(data.quest.dialogHistory.first()).get()
 
         messageSenderService.sendMessage(
@@ -197,7 +197,7 @@ class QuestButtonHandlerFetcher(
 
         // TODO: логика банов скоро изменится, тут тоже надо будет менять код
         val authorInBan =
-            userRepository.findById(data.quest.authorId!!).get().copy(
+            userRepository.findActiveUsersById(data.quest.authorId!!)!!.copy(
                 roles = mutableSetOf(UserRole.BANNED),
             )
         userRepository.save(authorInBan)

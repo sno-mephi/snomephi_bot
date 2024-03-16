@@ -49,8 +49,8 @@ class DialogHandleFetcher(
 
         val messageText = update.message.text ?: update.message.caption
         val quest = userActualizedInfo.activeQuest
-        val author = userRepository.findById(quest.authorId!!).get()
-        val responder = userRepository.findById(quest.responderId!!).get()
+        val author = userRepository.findActiveUsersById(quest.authorId!!)!!
+        val responder = userRepository.findActiveUsersById(quest.responderId!!)!!
         val isByQuestionAuthor = author.tui == userActualizedInfo.tui
 
         val photoHash =
