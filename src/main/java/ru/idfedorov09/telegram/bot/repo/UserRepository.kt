@@ -3,6 +3,7 @@ package ru.idfedorov09.telegram.bot.repo
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
+import org.springframework.transaction.annotation.Isolation
 import org.springframework.data.repository.query.Param
 import org.springframework.transaction.annotation.Transactional
 import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
@@ -16,7 +17,7 @@ interface UserRepository : JpaRepository<User, Long> {
         studyGroup: String,
     ): User?
 
-    @Transactional
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     @Modifying
     @Query(
         """
@@ -30,7 +31,7 @@ interface UserRepository : JpaRepository<User, Long> {
         isSwitched: Boolean,
     )
 
-    @Transactional
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     @Modifying
     @Query(
         """
@@ -44,7 +45,7 @@ interface UserRepository : JpaRepository<User, Long> {
         isSwitched: Boolean,
     )
 
-    @Transactional
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     @Modifying
     @Query(
         """

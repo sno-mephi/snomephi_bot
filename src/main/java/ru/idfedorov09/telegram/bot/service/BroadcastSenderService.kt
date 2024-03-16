@@ -21,7 +21,7 @@ import java.time.format.DateTimeFormatter
 import kotlin.jvm.optionals.getOrNull
 
 @Service
-class BroadcastSenderService(
+open class BroadcastSenderService(
     private val broadcastRepository: BroadcastRepository,
     private val userRepository: UserRepository,
     private val buttonRepository: ButtonRepository,
@@ -32,21 +32,33 @@ class BroadcastSenderService(
         private val log = LoggerFactory.getLogger(BroadcastSenderService::class.java)
     }
 
-    @Scheduled(fixedDelay = 700)
+
+    // TODO: остается проблема - а если бродкастов несколько?
+    @Scheduled(fixedDelay = 150)
     fun broadcastSender() {
         runCatching {
-            val firstActiveBroadcast = broadcastRepository.findFirstActiveBroadcast() ?: return
-            if (firstActiveBroadcast.receivedUsersId.isEmpty()) startBroadcast(firstActiveBroadcast)
-            val firstUser = userRepository.findAll().filter { it.isRegistered }.firstOrNull {
-                checkValidUser(it, firstActiveBroadcast)
-            } ?: run {
-                finishBroadcast(firstActiveBroadcast)
-                return
-            }
+            trySendBroadcast()
+        }.onFailure { e ->
+            log.warn("Ошибка при отправке рассылки broadcastSender(): $e")
+            log.debug(e.stackTraceToString())
+        }
+    }
+
+    private fun trySendBroadcast() {
+        val firstActiveBroadcast = broadcastRepository.findFirstActiveBroadcast() ?: return
+        if (firstActiveBroadcast.receivedUsersId.isEmpty()) startBroadcast(firstActiveBroadcast)
+        val firstUser = userRepository.findAll().filter { it.isRegistered }.firstOrNull {
+            checkValidUser(it, firstActiveBroadcast)
+        } ?: run {
+            finishBroadcast(firstActiveBroadcast)
+            return
+        }
+        runCatching {
             sendBroadcast(firstUser, firstActiveBroadcast)
         }.onFailure { e ->
-            log.warn("Ошибка при работе broadcastSender: $e")
-            log.debug(e.stackTrace.toString())
+            log.warn("Ошибка при отправке рассылки trySendBroadcast(): $e")
+            log.debug("Send to user={}, broadcast={}", firstUser, firstActiveBroadcast)
+            log.debug(e.stackTraceToString())
         }
     }
 
