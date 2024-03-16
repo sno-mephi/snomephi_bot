@@ -9,6 +9,7 @@ import ru.idfedorov09.telegram.bot.data.model.Category
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository
+import ru.idfedorov09.telegram.bot.service.CategoryUpdateService
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
@@ -20,6 +21,7 @@ import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 @Component
 class SettingMailFetcher(
     private val categoryRepository: CategoryRepository,
+    private val categoryUpdateService: CategoryUpdateService,
     private val messageSenderService: MessageSenderService,
 ) : GeneralFetcher() {
     @InjectData
@@ -32,7 +34,7 @@ class SettingMailFetcher(
         val userCategories = userActualizedInfo.categories
         messageText.apply {
             when {
-                startsWith(TextCommands.TOGGLE.commandText) -> toggle(messageText, userActualizedInfo, userCategories)
+                startsWith(TextCommands.TOGGLE.commandText) -> toggle(messageText, userActualizedInfo)
                 equals(TextCommands.SETTING_MAIL.commandText) -> sendSettingMessage(userActualizedInfo)
             }
         }
@@ -66,15 +68,19 @@ class SettingMailFetcher(
     private fun toggle(
         messageText: String,
         userActualizedInfo: UserActualizedInfo,
-        userCategories: MutableSet<Category>,
     ) {
         val chatId = userActualizedInfo.tui
         val categorySuffix = messageText.substringAfter("/toggle_")
         val category = categoryRepository.findBySuffix(categorySuffix) ?: return
         if (userActualizedInfo.lastUserActionType == LastUserActionType.BC_CHANGE_CATEGORIES) return
         if (category.isUnremovable == true) return
+        category.id?.let {
+            categoryUpdateService.toggleCategory(
+                userId = userActualizedInfo.id,
+                categoryId = it,
+            )
+        }
         if (userActualizedInfo.categories.contains(category)) {
-            userCategories.remove(category)
             messageSenderService.sendMessage(
                 MessageParams(
                     chatId = chatId,
@@ -82,7 +88,6 @@ class SettingMailFetcher(
                 ),
             )
         } else {
-            userCategories.add(category)
             messageSenderService.sendMessage(
                 MessageParams(
                     chatId = chatId,

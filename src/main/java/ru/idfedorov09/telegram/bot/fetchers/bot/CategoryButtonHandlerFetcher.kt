@@ -10,6 +10,7 @@ import ru.idfedorov09.telegram.bot.data.model.Category
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository
+import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
@@ -23,6 +24,7 @@ class CategoryButtonHandlerFetcher(
     private val updatesUtil: UpdatesUtil,
     private val messageSenderService: MessageSenderService,
     private val categoryRepository: CategoryRepository,
+    private val userRepository: UserRepository,
 ) : GeneralFetcher() {
     private data class RequestData(
         val chatId: String,
@@ -273,6 +275,10 @@ class CategoryButtonHandlerFetcher(
                 replyMarkup = CategoryKeyboards.confirmationDone(),
             ),
         )
+        // TODO: Пока что нет логики, которая делает isSetupByDefault = false
+        if (category.isSetupByDefault){
+            category.id?.let { userRepository.addCategoryForAllUser(it) }
+        }
     }
 
     private fun actionDeleteCategory(

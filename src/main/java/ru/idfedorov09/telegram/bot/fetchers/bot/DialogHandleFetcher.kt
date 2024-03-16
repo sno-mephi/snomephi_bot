@@ -49,8 +49,8 @@ class DialogHandleFetcher(
 
         val messageText = update.message.text ?: update.message.caption
         val quest = userActualizedInfo.activeQuest
-        val author = userRepository.findByUserId(quest.authorId!!)!!
-        val responder = userRepository.findByUserId(quest.responderId!!)!!
+        val author = userRepository.findActiveUsersById(quest.authorId!!)!!
+        val responder = userRepository.findActiveUsersById(quest.responderId!!)!!
         val isByQuestionAuthor = author.tui == userActualizedInfo.tui
 
         val photoHash =
@@ -67,6 +67,42 @@ class DialogHandleFetcher(
                 null
             }
 
+        val audioHash =
+            if (update.message.hasAudio()) {
+                update.message.audio.fileId
+            } else {
+                null
+            }
+
+        val videoHash =
+            if (update.message.hasVideo())
+                {
+                    update.message.video.fileId
+                } else {
+                null
+            }
+
+        val stickerHash =
+            if (update.message.hasSticker()) {
+                update.message.sticker.fileId
+            } else {
+                null
+            }
+
+        val voiceHash =
+            if (update.message.hasVoice()) {
+                update.message.voice.fileId
+            } else {
+                null
+            }
+
+        val videoNoteHash =
+            if (update.message.hasVideoNote()) {
+                update.message.videoNote.fileId
+            } else {
+                null
+            }
+
         val params =
             Params(
                 messageText = messageText,
@@ -78,6 +114,11 @@ class DialogHandleFetcher(
                 update = update,
                 photoHash = photoHash,
                 documentHash = documentHash,
+                stickerHash = stickerHash,
+                voiceHash = voiceHash,
+                videoNoteHash = videoNoteHash,
+                videoHash = videoHash,
+                audioHash = audioHash,
             )
 
         val updatedUserActualizedInfo =
@@ -86,6 +127,11 @@ class DialogHandleFetcher(
                 update.hasMessage() && update.message.hasText() -> handleMessageText(params)
                 update.hasMessage() && update.message.hasPhoto() -> handleMessagePhoto(params)
                 update.hasMessage() && update.message.hasDocument() -> handleMessageDocument(params)
+                update.hasMessage() && update.message.hasSticker() -> handleMessageStiker(params)
+                update.hasMessage() && update.message.hasVoice() -> handleMessageVoice(params)
+                update.hasMessage() && update.message.hasAudio() -> handleMessageAudio(params)
+                update.hasMessage() && update.message.hasVideo() -> handleMessageVideo(params)
+                update.hasMessage() && update.message.hasVideoNote() -> handleMessageVideoNote(params)
                 else -> nonSupportedUpdateType(params)
             }
         return updatedUserActualizedInfo
@@ -99,6 +145,129 @@ class DialogHandleFetcher(
             ),
         )
         return params.userActualizedInfo
+    }
+
+    private fun handleMessage(params: Params) {
+
+    }
+
+    private fun handleMessageAudio(params: Params): UserActualizedInfo {
+        params.apply {
+            val questDialogMessage =
+                QuestDialogMessage(
+                    questId = quest.id,
+                    isByQuestionAuthor = isByQuestionAuthor,
+                    authorId = userActualizedInfo.id,
+                    messageText = messageText,
+                    audioHash = audioHash,
+                    messageId = update.message.messageId,
+                ).let { questDialogMessageRepository.save(it) }
+            quest.dialogHistory.add(questDialogMessage.id!!)
+            questRepository.save(quest)
+
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = if (isByQuestionAuthor) responder.tui!! else author.tui!!,
+                    text = messageText,
+                    audio = InputFile(audioHash),
+                ),
+            )
+            return userActualizedInfo
+        }
+    }
+
+    private fun handleMessageVideo(params: Params): UserActualizedInfo {
+        params.apply {
+            val questDialogMessage =
+                QuestDialogMessage(
+                    questId = quest.id,
+                    isByQuestionAuthor = isByQuestionAuthor,
+                    authorId = userActualizedInfo.id,
+                    messageText = messageText,
+                    videoHash = videoHash,
+                    messageId = update.message.messageId,
+                ).let { questDialogMessageRepository.save(it) }
+            quest.dialogHistory.add(questDialogMessage.id!!)
+            questRepository.save(quest)
+
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = if (isByQuestionAuthor) responder.tui!! else author.tui!!,
+                    text = messageText,
+                    video = InputFile(videoHash),
+                ),
+            )
+            return userActualizedInfo
+        }
+    }
+
+    private fun handleMessageVideoNote(params: Params): UserActualizedInfo {
+        params.apply {
+            val questDialogMessage =
+                QuestDialogMessage(
+                    questId = quest.id,
+                    isByQuestionAuthor = isByQuestionAuthor,
+                    authorId = userActualizedInfo.id,
+                    videoNoteHash = videoNoteHash,
+                    messageId = update.message.messageId,
+                ).let { questDialogMessageRepository.save(it) }
+            quest.dialogHistory.add(questDialogMessage.id!!)
+            questRepository.save(quest)
+
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = if (isByQuestionAuthor) responder.tui!! else author.tui!!,
+                    video = InputFile(videoNoteHash),
+                ),
+            )
+            return userActualizedInfo
+        }
+    }
+
+    private fun handleMessageVoice(params: Params): UserActualizedInfo {
+        params.apply {
+            val questDialogMessage =
+                QuestDialogMessage(
+                    questId = quest.id,
+                    isByQuestionAuthor = isByQuestionAuthor,
+                    authorId = userActualizedInfo.id,
+                    voiceHash = voiceHash,
+                    messageId = update.message.messageId,
+                ).let { questDialogMessageRepository.save(it) }
+            quest.dialogHistory.add(questDialogMessage.id!!)
+            questRepository.save(quest)
+
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = if (isByQuestionAuthor) responder.tui!! else author.tui!!,
+                    voice = InputFile(voiceHash),
+                ),
+            )
+            return userActualizedInfo
+        }
+    }
+
+    private fun handleMessageStiker(params: Params): UserActualizedInfo {
+        params.apply {
+            val questDialogMessage =
+                QuestDialogMessage(
+                    questId = quest.id,
+                    isByQuestionAuthor = isByQuestionAuthor,
+                    authorId = userActualizedInfo.id,
+                    stickerHash = stickerHash,
+                    messageId = update.message.messageId,
+                ).let { questDialogMessageRepository.save(it) }
+            quest.dialogHistory.add(questDialogMessage.id!!)
+            questRepository.save(quest)
+
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = if (isByQuestionAuthor) responder.tui!! else author.tui!!,
+                    sticker = InputFile(stickerHash),
+                ),
+            )
+            return userActualizedInfo
+        }
     }
 
     private fun handleMessageDocument(params: Params): UserActualizedInfo {
@@ -233,6 +402,11 @@ class DialogHandleFetcher(
         val messageText: String?,
         val photoHash: String?,
         val documentHash: String?,
+        val stickerHash: String?,
+        val voiceHash: String?,
+        val videoNoteHash: String?,
+        val audioHash: String?,
+        val videoHash: String?,
         val quest: Quest,
         val author: User,
         val responder: User,

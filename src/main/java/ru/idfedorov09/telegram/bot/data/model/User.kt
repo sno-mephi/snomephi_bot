@@ -35,7 +35,7 @@ data class User(
     @Column(name = "study_group")
     val studyGroup: String? = null,
     /** id рассылок, на которые подписан юзер **/
-    @Column(name = "categories")
+    @Column(name = "categories", updatable = false)
     val categories: MutableSet<Long> = mutableSetOf(),
     /** поле для временных данных юзера **/
     @Column(name = "data", columnDefinition = "TEXT")

@@ -103,7 +103,7 @@ class PermissionsFetcher(
             val userId = callbackData.split("_").dropLast(1).last().toLong()
 
             val user =
-                userRepository.findById(userId).get().let {
+                userRepository.findActiveUsersById(userId)!!.let {
                     it.roles.add(role)
                     userRepository.save(it)
                 }
@@ -133,7 +133,7 @@ class PermissionsFetcher(
                     ?.toLongOrNull()
                     ?: return userActualizedInfo
 
-            val user = userRepository.findById(userId).get()
+            val user = userRepository.findActiveUsersById(userId)!!
             val roles = UserRole.entries - user.roles
 
             val text = "Выбери роль, которую хочешь назначить:"

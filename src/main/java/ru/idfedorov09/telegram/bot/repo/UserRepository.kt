@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.transaction.annotation.Isolation
+import org.springframework.data.repository.query.Param
 import org.springframework.transaction.annotation.Transactional
 import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
 import ru.idfedorov09.telegram.bot.data.model.User
@@ -64,6 +65,49 @@ interface UserRepository : JpaRepository<User, Long> {
         newKeyboardType: UserKeyboardType,
     )
 
+    @Transactional
+    @Modifying
+    @Query(
+        """
+            UPDATE users_table
+            SET categories = array_append(categories, :category_id)
+        """,
+        nativeQuery = true
+    )
+    fun addCategoryForAllUser(
+        @Param("category_id") categoryId: Long,
+    )
+
+    @Transactional
+    @Modifying
+    @Query(
+        """
+            UPDATE users_table
+            SET categories = array_append(categories, :category_id)
+            WHERE id = :user_id 
+        """,
+        nativeQuery = true
+    )
+    fun addCategory(
+        @Param("category_id") categoryId: Long,
+        @Param("user_id") userId: Long
+    )
+
+    @Transactional
+    @Modifying
+    @Query(
+        """
+            UPDATE users_table
+            SET categories = array_remove(categories, :category_id)
+            WHERE id = :user_id 
+        """,
+        nativeQuery = true
+    )
+    fun removeCategory(
+        @Param("category_id") categoryId: Long,
+        @Param("user_id") userId: Long
+    )
+
     @Query(
         """
             SELECT *
@@ -92,5 +136,17 @@ interface UserRepository : JpaRepository<User, Long> {
         """,
         nativeQuery = true,
     )
-    fun findByUserId(userId: Long?): User?
+    fun findActiveUsersById(userId: Long?): User?
+
+
+    @Query(
+        """
+            SELECT *
+            FROM users_table
+            WHERE 1 = 1
+                and is_deleted = False
+        """,
+        nativeQuery = true,
+    )
+    fun findAllActiveUsers(): List<User?>
 }
