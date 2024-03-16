@@ -24,6 +24,7 @@ data class UserActualizedInfo(
     /** Временные данные **/
     var data: String? = null,
     val isRegistered: Boolean,
+    var isDeleted: Boolean = false,
     /** Текущая создаваемая рассылка пользователя **/
     var bcData: Broadcast? = null,
 )

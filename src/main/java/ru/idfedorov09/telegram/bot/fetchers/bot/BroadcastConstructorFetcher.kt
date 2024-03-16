@@ -211,9 +211,10 @@ class BroadcastConstructorFetcher(
                 )
             } else {
                 val photoBroadcast = params.update.message.photo.last().fileId
-                bcData = bcData?.copy(
-                    imageHash = photoBroadcast,
-                )
+                bcData =
+                    bcData?.copy(
+                        imageHash = photoBroadcast,
+                    )
             }
             showBcConsole(params)
             lastUserActionType = LastUserActionType.DEFAULT

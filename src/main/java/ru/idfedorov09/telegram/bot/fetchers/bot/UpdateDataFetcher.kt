@@ -44,6 +44,7 @@ class UpdateDataFetcher(
                     data = data,
                     isRegistered = isRegistered,
                     constructorId = bcData?.id,
+                    isDeleted = isDeleted,
                 ),
             )
 

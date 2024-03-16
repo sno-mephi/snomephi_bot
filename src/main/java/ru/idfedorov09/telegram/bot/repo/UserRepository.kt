@@ -1,15 +1,14 @@
 package ru.idfedorov09.telegram.bot.repo
 
 import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.Query
 import org.springframework.data.jpa.repository.Modifying
+import org.springframework.data.jpa.repository.Query
 import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
 import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
 import ru.idfedorov09.telegram.bot.data.model.User
 
 interface UserRepository : JpaRepository<User, Long> {
-
     @Query(
         """
             SELECT *
@@ -19,7 +18,7 @@ interface UserRepository : JpaRepository<User, Long> {
                 and is_deleted = False
             LIMIT 1
         """,
-        nativeQuery = true
+        nativeQuery = true,
     )
     fun findByTui(userTui: String): User?
 
@@ -75,10 +74,12 @@ interface UserRepository : JpaRepository<User, Long> {
                 and is_deleted = False
             LIMIT 1
         """,
-        nativeQuery = true
+        nativeQuery = true,
     )
-    fun findByFullNameAndStudyGroup(fullName: String, studyGroup: String): User?
-
+    fun findByFullNameAndStudyGroup(
+        fullName: String,
+        studyGroup: String,
+    ): User?
 
     @Query(
         """
@@ -89,8 +90,7 @@ interface UserRepository : JpaRepository<User, Long> {
                 and is_deleted = False
             LIMIT 1
         """,
-        nativeQuery = true
+        nativeQuery = true,
     )
     fun findByUserId(userId: Long?): User?
-
 }

@@ -53,17 +53,19 @@ class DialogHandleFetcher(
         val responder = userRepository.findByUserId(quest.responderId!!)!!
         val isByQuestionAuthor = author.tui == userActualizedInfo.tui
 
-        val photoHash = if (update.message.hasPhoto()) {
-            update.message.photo.last().fileId
-        } else {
-            null
-        }
+        val photoHash =
+            if (update.message.hasPhoto()) {
+                update.message.photo.last().fileId
+            } else {
+                null
+            }
 
-        val documentHash = if (update.message.hasDocument()) {
-            update.message.document.fileId
-        } else {
-            null
-        }
+        val documentHash =
+            if (update.message.hasDocument()) {
+                update.message.document.fileId
+            } else {
+                null
+            }
 
         val params =
             Params(

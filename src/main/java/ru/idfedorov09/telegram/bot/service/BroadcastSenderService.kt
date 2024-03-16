@@ -28,11 +28,9 @@ open class BroadcastSenderService(
     private val callbackDataRepository: CallbackDataRepository,
     private val messageSenderService: MessageSenderService,
 ) {
-
     companion object {
         private val log = LoggerFactory.getLogger(BroadcastSenderService::class.java)
     }
-
 
     // TODO: остается проблема - а если бродкастов несколько?
     @Scheduled(fixedDelay = 150)
@@ -48,12 +46,13 @@ open class BroadcastSenderService(
     private fun trySendBroadcast() {
         val firstActiveBroadcast = broadcastRepository.findFirstActiveBroadcast() ?: return
         if (firstActiveBroadcast.receivedUsersId.isEmpty()) startBroadcast(firstActiveBroadcast)
-        val firstUser = userRepository.findAll().filter { it.isRegistered }.firstOrNull {
-            checkValidUser(it, firstActiveBroadcast)
-        } ?: run {
-            finishBroadcast(firstActiveBroadcast)
-            return
-        }
+        val firstUser =
+            userRepository.findAll().filter { it.isRegistered }.firstOrNull {
+                checkValidUser(it, firstActiveBroadcast)
+            } ?: run {
+                finishBroadcast(firstActiveBroadcast)
+                return
+            }
         runCatching {
             sendBroadcast(firstUser, firstActiveBroadcast)
         }.onFailure { e ->
@@ -122,10 +121,11 @@ open class BroadcastSenderService(
 
         val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
 
-        val msgText = "Рассылка №${finalBroadcast.id} успешно завершена\n" +
-            "Число пользователей, получивших сообщение: ${finalBroadcast.receivedUsersId.size}\n" +
-            "Старт рассылки: ${finalBroadcast.startTime?.format(formatter)}\n" +
-            "Конец рассылки: ${finalBroadcast.finishTime?.format(formatter)}"
+        val msgText =
+            "Рассылка №${finalBroadcast.id} успешно завершена\n" +
+                "Число пользователей, получивших сообщение: ${finalBroadcast.receivedUsersId.size}\n" +
+                "Старт рассылки: ${finalBroadcast.startTime?.format(formatter)}\n" +
+                "Конец рассылки: ${finalBroadcast.finishTime?.format(formatter)}"
 
         messageSenderService.sendMessage(
             MessageParams(
@@ -142,7 +142,7 @@ open class BroadcastSenderService(
         return user.id !in broadcast.receivedUsersId && (
             user.categories.intersect(broadcast.categoriesId).isNotEmpty() ||
                 broadcast.categoriesId.isEmpty()
-            )
+        )
     }
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
