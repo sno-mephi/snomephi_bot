@@ -91,13 +91,14 @@ object MessageSenderUtil {
         params: MessageParams,
     ): Message {
         return params.run {
-            if (text == null && photo == null && document == null && stiker == null && voice == null &&
+            if (text == null && photo == null && document == null && sticker == null && voice == null &&
                 videoNote == null && audio == null && video == null
             ) {
-                throw NullPointerException("Text or photo or document should be not null.")
+                throw NullPointerException("Text or photo or document or sticker or voice or videoNote or " +
+                        "audio or video should be not null.")
             }
             when {
-                stiker != null -> sendSticker(bot,this)
+                sticker != null -> sendSticker(bot,this)
                 voice != null -> sendVoice(bot,this)
                 videoNote != null -> sendVideoNote(bot,this)
                 video != null -> sendVideo(bot,this)
@@ -116,7 +117,7 @@ object MessageSenderUtil {
         return params.run {
             bot.execute(
                 SendSticker().also {
-                    it.sticker = stiker!!
+                    it.sticker = sticker!!
                     it.chatId = chatId
                 },
             )

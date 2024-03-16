@@ -114,7 +114,7 @@ class DialogHandleFetcher(
                 update = update,
                 photoHash = photoHash,
                 documentHash = documentHash,
-                stikerHash = stickerHash,
+                stickerHash = stickerHash,
                 voiceHash = voiceHash,
                 videoNoteHash = videoNoteHash,
                 videoHash = videoHash,
@@ -254,7 +254,7 @@ class DialogHandleFetcher(
                     questId = quest.id,
                     isByQuestionAuthor = isByQuestionAuthor,
                     authorId = userActualizedInfo.id,
-                    stikerHash = stikerHash,
+                    stickerHash = stickerHash,
                     messageId = update.message.messageId,
                 ).let { questDialogMessageRepository.save(it) }
             quest.dialogHistory.add(questDialogMessage.id!!)
@@ -263,7 +263,7 @@ class DialogHandleFetcher(
             messageSenderService.sendMessage(
                 MessageParams(
                     chatId = if (isByQuestionAuthor) responder.tui!! else author.tui!!,
-                    stiker = InputFile(stikerHash),
+                    sticker = InputFile(stickerHash),
                 ),
             )
             return userActualizedInfo
@@ -402,7 +402,7 @@ class DialogHandleFetcher(
         val messageText: String?,
         val photoHash: String?,
         val documentHash: String?,
-        val stikerHash: String?,
+        val stickerHash: String?,
         val voiceHash: String?,
         val videoNoteHash: String?,
         val audioHash: String?,

@@ -7,7 +7,7 @@ data class MessageParams(
     val chatId: String,
     val photo: InputFile? = null,
     val document: InputFile? = null,
-    val stiker: InputFile? = null,
+    val sticker: InputFile? = null,
     val voice: InputFile? = null,
     val audio: InputFile? = null,
     val videoNote: InputFile? = null,
