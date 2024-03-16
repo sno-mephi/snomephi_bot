@@ -18,7 +18,6 @@ import ru.idfedorov09.telegram.bot.repo.UserRepository
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import kotlin.jvm.optionals.getOrNull
 
 @Service
 open class BroadcastSenderService(
@@ -48,7 +47,7 @@ open class BroadcastSenderService(
         val firstActiveBroadcast = broadcastRepository.findFirstActiveBroadcast() ?: return
         if (firstActiveBroadcast.receivedUsersId.isEmpty()) startBroadcast(firstActiveBroadcast)
         val firstUser =
-            userRepository.findUsersAll().filter { it!!.isRegistered }.firstOrNull {
+            userRepository.findAllActiveUsers().filter { it!!.isRegistered }.firstOrNull {
                 checkValidUser(it!!, firstActiveBroadcast)
             } ?: run {
                 finishBroadcast(firstActiveBroadcast)
@@ -75,7 +74,7 @@ open class BroadcastSenderService(
         broadcast: Broadcast,
         shouldAddToReceived: Boolean = true,
     ) {
-        val user = userRepository.findByUserId(userId) ?: return
+        val user = userRepository.findActiveUsersById(userId) ?: return
         sendBroadcast(user, broadcast, shouldAddToReceived)
     }
 
@@ -119,7 +118,7 @@ open class BroadcastSenderService(
     }
 
     private fun startBroadcast(broadcast: Broadcast) {
-        val author = broadcast.authorId?.let { userRepository.findByUserId(it) } ?: return
+        val author = broadcast.authorId?.let { userRepository.findActiveUsersById(it) } ?: return
         val msgText = "Рассылка №${broadcast.id} успешно запущена"
 
         runCatching {
@@ -143,7 +142,7 @@ open class BroadcastSenderService(
             )
 
         broadcastRepository.save(finalBroadcast)
-        val author = finalBroadcast.authorId?.let { userRepository.findByUserId(it)} ?: return
+        val author = finalBroadcast.authorId?.let { userRepository.findActiveUsersById(it)} ?: return
 
         val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
 
