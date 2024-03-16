@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
 import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
+import ru.idfedorov09.telegram.bot.data.model.Button
 import ru.idfedorov09.telegram.bot.data.model.User
 
 interface UserRepository : JpaRepository<User, Long> {
@@ -93,4 +94,16 @@ interface UserRepository : JpaRepository<User, Long> {
         nativeQuery = true,
     )
     fun findByUserId(userId: Long?): User?
+
+
+    @Query(
+        """
+            SELECT *
+            FROM users_table
+            WHERE 1 = 1
+                and is_deleted = False
+        """,
+        nativeQuery = true,
+    )
+    fun findUsersAll(): List<User?>
 }

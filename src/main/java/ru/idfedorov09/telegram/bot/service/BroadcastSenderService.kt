@@ -48,8 +48,8 @@ open class BroadcastSenderService(
         val firstActiveBroadcast = broadcastRepository.findFirstActiveBroadcast() ?: return
         if (firstActiveBroadcast.receivedUsersId.isEmpty()) startBroadcast(firstActiveBroadcast)
         val firstUser =
-            userRepository.findAll().filter { it.isRegistered }.firstOrNull {
-                checkValidUser(it, firstActiveBroadcast)
+            userRepository.findUsersAll().filter { it!!.isRegistered }.firstOrNull {
+                checkValidUser(it!!, firstActiveBroadcast)
             } ?: run {
                 finishBroadcast(firstActiveBroadcast)
                 return
@@ -143,7 +143,7 @@ open class BroadcastSenderService(
             )
 
         broadcastRepository.save(finalBroadcast)
-        val author = finalBroadcast.authorId?.let { userRepository.findById(it).getOrNull() } ?: return
+        val author = finalBroadcast.authorId?.let { userRepository.findByUserId(it)} ?: return
 
         val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
 

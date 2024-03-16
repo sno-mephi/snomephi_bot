@@ -18,7 +18,7 @@ class SwitchKeyboardService(
         newKeyboardType: UserKeyboardType,
         forceSwitch: Boolean = false,
     ) {
-        val user = userRepository.findById(userId).getOrNull() ?: return
+        val user = userRepository.findByUserId(userId) ?: return
         user.apply {
             if (currentKeyboardType == newKeyboardType && !forceSwitch) return
             userRepository.updateKeyboard(userId, newKeyboardType)
