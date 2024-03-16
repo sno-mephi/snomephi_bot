@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import ru.idfedorov09.telegram.bot.data.model.Category
+import ru.idfedorov09.telegram.bot.data.model.User
 
 interface CategoryRepository : JpaRepository<Category, Long> {
     @Query(
@@ -18,6 +19,16 @@ interface CategoryRepository : JpaRepository<Category, Long> {
         @Param("page") page: Long,
         @Param("pageSize") pageSize: Long,
     ): List<Category>
+
+
+    @Query(
+        """
+            SELECT COUNT(*)
+            FROM category_table
+        """,
+        nativeQuery = true,
+    )
+    fun categoryCount(): Long
 
     fun findByChangedByTui(changingByTui: String): Category?
 

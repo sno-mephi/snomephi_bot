@@ -151,7 +151,7 @@ class CategoryActionTypeHandlerFetcher(
             editMessage(
                 it,
                 data,
-                "✏️ Введите описание категории (до 1024 символов):",
+                "✏️ Введите описание категории (до 140 символов):",
                 CategoryKeyboards.inputCancel(),
             )
         }
@@ -166,7 +166,7 @@ class CategoryActionTypeHandlerFetcher(
         val messageText = data.update.message.text
         if (TextCommands.isTextCommand(messageText)) return
         val category = categoryRepository.findByChangedByTui(data.userInfo.tui) ?: return
-        if (messageText.length > 1024) {
+        if (messageText.length > 140) {
             sendMessage(
                 data,
                 "❗Слишком длинное сообщение",
