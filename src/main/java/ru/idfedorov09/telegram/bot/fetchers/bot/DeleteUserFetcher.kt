@@ -1,8 +1,6 @@
 package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
@@ -11,6 +9,7 @@ import ru.idfedorov09.telegram.bot.data.model.*
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
+import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 import kotlin.jvm.optionals.getOrNull
@@ -22,6 +21,7 @@ import kotlin.jvm.optionals.getOrNull
 class DeleteUserFetcher(
     private val userRepository: UserRepository,
     private val callbackDataRepository: CallbackDataRepository,
+    private val messageSenderService: MessageSenderService,
 ) : GeneralFetcher() {
     @InjectData
     fun doFetch(
@@ -64,12 +64,13 @@ class DeleteUserFetcher(
                 }
             }.map { listOf(it) }
 
-        params.bot.execute(
-            SendMessage().also {
-                it.text = "Вы действительно хотите удалить аккаунт?"
-                it.chatId = params.userActualizedInfo.tui
-                it.replyMarkup = createKeyboard(keyboard)
-            },
+
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = params.userActualizedInfo.tui,
+                text =  "Вы действительно хотите удалить аккаунт?",
+                replyMarkup = createKeyboard(keyboard)
+            ),
         )
         return params.userActualizedInfo
     }
@@ -90,17 +91,20 @@ class DeleteUserFetcher(
     }
 
     private fun deleteAccount(params: Params): UserActualizedInfo {
-        params.bot.execute(
-            DeleteMessage().also {
-                it.chatId = params.userActualizedInfo.tui
-                it.messageId = params.update.callbackQuery.message.messageId
-            },
+
+
+        messageSenderService.deleteMessage(
+            MessageParams(
+                chatId = params.userActualizedInfo.tui,
+                messageId = params.update.callbackQuery.message.messageId
+            ),
         )
-        params.bot.execute(
-            SendMessage().also {
-                it.text = "Аккаунт удалён"
-                it.chatId = params.userActualizedInfo.tui
-            },
+
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = params.userActualizedInfo.tui,
+                text =  "Аккаунт удалён",
+            ),
         )
 
         params.userActualizedInfo.isDeleted = true
@@ -109,19 +113,21 @@ class DeleteUserFetcher(
     }
 
     private fun noDeleteAccount(params: Params): UserActualizedInfo  {
-        params.bot.execute(
-            DeleteMessage().also {
-                it.chatId = params.userActualizedInfo.tui
-                it.messageId = params.update.callbackQuery.message.messageId
-            },
+
+        messageSenderService.deleteMessage(
+            MessageParams(
+                chatId = params.userActualizedInfo.tui,
+                messageId = params.update.callbackQuery.message.messageId
+            ),
         )
 
-        params.bot.execute(
-            SendMessage().also {
-                it.text = "Хорошо, продолжаем работу"
-                it.chatId = params.userActualizedInfo.tui
-            },
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = params.userActualizedInfo.tui,
+                text =  "Хорошо, продолжаем работу",
+            ),
         )
+
         return params.userActualizedInfo
     }
 

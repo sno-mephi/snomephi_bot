@@ -67,8 +67,8 @@ interface UserRepository : JpaRepository<User, Long> {
     @Query(
         """
             SELECT *
-                FROM users_table
-                WHERE 1 = 1
+            FROM users_table
+            WHERE 1 = 1
                 and full_name = :fullName
                 and study_group = :studyGroup
                 and is_deleted = False
@@ -84,8 +84,8 @@ interface UserRepository : JpaRepository<User, Long> {
     @Query(
         """
             SELECT *
-                FROM users_table
-                WHERE 1 = 1
+            FROM users_table
+            WHERE 1 = 1
                 and id = :userId
                 and is_deleted = False
             LIMIT 1
