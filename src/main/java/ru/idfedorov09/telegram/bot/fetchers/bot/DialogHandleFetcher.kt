@@ -147,6 +147,10 @@ class DialogHandleFetcher(
         return params.userActualizedInfo
     }
 
+    private fun handleMessage(params: Params) {
+
+    }
+
     private fun handleMessageAudio(params: Params): UserActualizedInfo {
         params.apply {
             val questDialogMessage =

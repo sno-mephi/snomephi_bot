@@ -96,78 +96,142 @@ object MessageSenderUtil {
             ) {
                 throw NullPointerException("Text or photo or document should be not null.")
             }
-
-            if (stiker != null) {
-                bot.execute(
-                    SendSticker().also {
-                        it.sticker = stiker
-                        it.chatId = chatId
-                    },
-                )
-            } else if (voice != null) {
-                bot.execute(
-                    SendVoice().also {
-                        it.voice = voice
-                        it.chatId = chatId
-                    },
-                )
-            } else if (videoNote != null) {
-                bot.execute(
-                    SendVideoNote().also {
-                        it.videoNote = videoNote
-                        it.chatId = chatId
-                    },
-                )
-            } else if (video != null) {
-                bot.execute(
-                    SendVideo().also {
-                        it.chatId = chatId
-                        it.video = video
-                        it.caption = text
-                        it.replyMarkup = replyMarkup
-                        it.parseMode = parseMode
-                    },
-                )
-            } else if (audio != null) {
-                bot.execute(
-                    SendAudio().also {
-                        it.chatId = chatId
-                        it.audio = audio
-                        it.caption = text
-                        it.replyMarkup = replyMarkup
-                        it.parseMode = parseMode
-                    },
-                )
-            } else if (document != null) {
-                bot.execute(
-                    SendDocument().also {
-                        it.document = document
-                        it.caption = text
-                        it.chatId = chatId
-                        it.replyMarkup = replyMarkup
-                        it.parseMode = parseMode
-                    },
-                )
-            } else if (photo != null) {
-                bot.execute(
-                    SendPhoto().also {
-                        it.chatId = chatId
-                        it.caption = text
-                        it.photo = photo
-                        it.replyMarkup = replyMarkup
-                        it.parseMode = parseMode
-                    },
-                )
-            } else {
-                bot.execute(
-                    SendMessage().also {
-                        it.chatId = chatId
-                        it.text = text!!
-                        it.replyMarkup = replyMarkup
-                        it.parseMode = parseMode
-                    },
-                )
+            when {
+                stiker != null -> sendSticker(bot,this)
+                voice != null -> sendVoice(bot,this)
+                videoNote != null -> sendVideoNote(bot,this)
+                video != null -> sendVideo(bot,this)
+                audio != null -> sendAudio(bot,this)
+                document != null -> sendDocument(bot,this)
+                photo != null -> sendPhoto(bot,this)
+                else -> sendText(bot,this)
             }
+        }
+    }
+
+    private fun sendSticker(
+        bot: Executor,
+        params: MessageParams,
+    ): Message {
+        return params.run {
+            bot.execute(
+                SendSticker().also {
+                    it.sticker = stiker!!
+                    it.chatId = chatId
+                },
+            )
+        }
+    }
+
+    private fun sendVoice(
+        bot: Executor,
+        params: MessageParams,
+    ): Message {
+        return params.run {
+            bot.execute(
+                SendVoice().also {
+                    it.voice = voice!!
+                    it.chatId = chatId
+                },
+            )
+        }
+    }
+
+    private fun sendVideoNote(
+        bot: Executor,
+        params: MessageParams,
+    ): Message {
+        return params.run {
+            bot.execute(
+                SendVideoNote().also {
+                    it.videoNote = videoNote!!
+                    it.chatId = chatId
+                },
+            )
+        }
+    }
+
+    private fun sendVideo(
+        bot: Executor,
+        params: MessageParams,
+    ): Message {
+        return params.run {
+            bot.execute(
+                SendVideo().also {
+                    it.chatId = chatId
+                    it.video = video!!
+                    it.caption = text
+                    it.replyMarkup = replyMarkup
+                    it.parseMode = parseMode
+                },
+            )
+        }
+    }
+
+    private fun sendAudio(
+        bot: Executor,
+        params: MessageParams,
+    ): Message {
+        return params.run {
+            bot.execute(
+                SendAudio().also {
+                    it.chatId = chatId
+                    it.audio = audio!!
+                    it.caption = text
+                    it.replyMarkup = replyMarkup
+                    it.parseMode = parseMode
+                },
+            )
+        }
+    }
+
+    private fun sendDocument(
+        bot: Executor,
+        params: MessageParams,
+    ): Message {
+       return  params.run {
+            bot.execute(
+                SendDocument().also {
+                    it.document = document!!
+                    it.caption = text
+                    it.chatId = chatId
+                    it.replyMarkup = replyMarkup
+                    it.parseMode = parseMode
+                },
+            )
+        }
+    }
+
+    private fun sendPhoto(
+        bot: Executor,
+        params: MessageParams,
+    ): Message {
+        return params.run {
+            bot.execute(
+                SendPhoto().also {
+                    it.chatId = chatId
+                    it.caption = text
+                    it.photo = photo!!
+                    it.replyMarkup = replyMarkup
+                    it.parseMode = parseMode
+                },
+            )
+        }
+    }
+
+    private fun sendText(
+        bot: Executor,
+        params: MessageParams,
+    ): Message {
+        return params.run {
+            bot.execute(
+                SendMessage().also {
+                    it.chatId = chatId
+                    it.text = text!!
+                    it.replyMarkup = replyMarkup
+                    it.parseMode = parseMode
+                },
+            )
         }
     }
 
