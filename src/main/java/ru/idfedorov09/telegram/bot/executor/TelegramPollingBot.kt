@@ -19,7 +19,6 @@ class TelegramPollingBot(
     private val botContainer: BotContainer,
     private val updateReceiver: OnReceiver,
 ) : TelegramLongPollingBot() {
-
     companion object {
         private val log = LoggerFactory.getLogger(TelegramPollingBot::class.java)
     }

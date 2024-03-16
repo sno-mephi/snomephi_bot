@@ -1,5 +1,16 @@
+buildscript {
+	repositories {
+		maven {
+			url 'https://plugins.gradle.org/m2/'
+		}
+	}
+	dependencies {
+		classpath("org.jlleitschuh.gradle:ktlint-gradle:12.1.0")
+	}
+}
+
 plugins {
-	id 'java'
+	id "java"
 	id 'org.springframework.boot' version '3.1.2'
 	id 'io.spring.dependency-management' version '1.1.2'
 	id 'org.jetbrains.kotlin.jvm' version '1.9.0'
@@ -25,28 +36,32 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
 
 repositories {
 	mavenCentral()
-	maven { url 'https://jitpack.io' }
+	maven {
+		url 'https://jitpack.io'
+	}
+	maven {
+		url = uri("https://plugins.gradle.org/m2/")
+	}
 }
 
+allprojects {
+	apply plugin: "org.jlleitschuh.gradle.ktlint"
+	ktlint {
+		debug = true
+	}
+}
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-	implementation 'org.postgresql:postgresql:42.7.2'
-	implementation 'org.hibernate:hibernate-core:6.2.5.Final'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.postgresql:postgresql:42.7.2'
 
 	implementation 'redis.clients:jedis:5.1.1'
-
 
 	implementation 'com.google.code.gson:gson:2.10.1'
 	implementation 'org.telegram:telegrambots:6.7.0'
 	implementation 'com.squareup.okhttp3:okhttp:4.12.0'
-	implementation 'org.telegram:telegrambots-spring-boot-starter:6.7.0'
-	implementation 'org.apache.commons:commons-lang3:3.13.0'
 
-
-	//Kotlin
+	// Kotlin
 	implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
 	implementation "org.jetbrains.kotlin:kotlin-reflect:1.9.10"
 

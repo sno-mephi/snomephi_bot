@@ -11,7 +11,6 @@ class UserQueue(
     private val gson: Gson,
     private val botContainer: BotContainer,
 ) {
-
     fun getQueueKey(chatId: String): String {
         return botContainer.messageQueuePrefix + chatId
     }
@@ -25,12 +24,18 @@ class UserQueue(
         return gson.fromJson(jsonUpdate, Update::class.java)
     }
 
-    fun push(update: Update?, chatId: String) {
+    fun push(
+        update: Update?,
+        chatId: String,
+    ) {
         val jsonUpdate = gson.toJson(update, Update::class.java)
         this.push(jsonUpdate, chatId)
     }
 
-    fun push(string: String?, chatId: String) {
+    fun push(
+        string: String?,
+        chatId: String,
+    ) {
         redisService.rpush(getQueueKey(chatId), string!!)
     }
 }

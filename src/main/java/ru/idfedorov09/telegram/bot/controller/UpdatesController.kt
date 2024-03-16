@@ -16,7 +16,6 @@ import ru.mephi.sno.libs.flow.belly.FlowContext
 
 @Component
 class UpdatesController : UpdatesSender(), UpdatesHandler {
-
     @Autowired
     @Qualifier(QUALIFIER_FLOW_TG_BOT)
     private lateinit var flowBuilder: FlowBuilder
@@ -26,7 +25,10 @@ class UpdatesController : UpdatesSender(), UpdatesHandler {
     }
 
     // @Async("infinityThread") // if u need full async execution
-    override fun handle(telegramBot: TelegramLongPollingBot, update: Update) {
+    override fun handle(
+        telegramBot: TelegramLongPollingBot,
+        update: Update,
+    ) {
         // Во время каждой прогонки графа создается свой контекст,
         // в который кладется бот и само обновление
         val flowContext = FlowContext()

@@ -72,4 +72,7 @@ enum class LastUserActionType {
 
     /** изменение категорий рассылки **/
     BC_CHANGE_CATEGORIES,
+
+    /** ввод tui человека для прав **/
+    PERMS_ENTER_TUI,
 }

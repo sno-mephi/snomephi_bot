@@ -2,16 +2,16 @@ package ru.idfedorov09.telegram.bot.fetchers.bot.userfetchers
 
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.RegistrationMessageText
+import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
+import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
-import ru.idfedorov09.telegram.bot.executor.Executor
+import ru.idfedorov09.telegram.bot.service.MessageSenderService
+import ru.idfedorov09.telegram.bot.service.SwitchKeyboardService
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
@@ -19,8 +19,9 @@ import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 @Component
 class RegistrationActionHandlerFetcher(
     private val updatesUtil: UpdatesUtil,
+    private val messageSenderService: MessageSenderService,
+    private val switchKeyboardService: SwitchKeyboardService,
 ) : GeneralFetcher() {
-
     companion object {
         private val log = LoggerFactory.getLogger(RegistrationFetcher::class.java)
     }
@@ -28,7 +29,6 @@ class RegistrationActionHandlerFetcher(
     @InjectData
     fun doFetch(
         update: Update,
-        bot: Executor,
         userInfo: UserActualizedInfo,
     ): UserActualizedInfo {
         if (!update.hasCallbackQuery()) return userInfo
@@ -39,28 +39,28 @@ class RegistrationActionHandlerFetcher(
         val parameters = CallbackCommands.params(callbackData).firstOrNull()
 
         return when {
-            CallbackCommands.USER_CONFIRM.isMatch(callbackData) -> onUserConfirm(
-                callbackMessage,
-                chatId,
-                bot,
-                parameters,
-                userInfo,
-            )
+            CallbackCommands.USER_CONFIRM.isMatch(callbackData) ->
+                onUserConfirm(
+                    callbackMessage,
+                    chatId,
+                    parameters,
+                    userInfo,
+                )
 
-            CallbackCommands.USER_DECLINE.isMatch(callbackData) -> onUserDecline(
-                callbackMessage,
-                chatId,
-                bot,
-                userInfo,
-                parameters,
-            )
+            CallbackCommands.USER_DECLINE.isMatch(callbackData) ->
+                onUserDecline(
+                    callbackMessage,
+                    chatId,
+                    userInfo,
+                    parameters,
+                )
 
-            CallbackCommands.USER_WITHOUT_GROUP.isMatch(callbackData) -> onUserWithoutGroup(
-                callbackMessage,
-                chatId,
-                bot,
-                userInfo,
-            )
+            CallbackCommands.USER_WITHOUT_GROUP.isMatch(callbackData) ->
+                onUserWithoutGroup(
+                    callbackMessage,
+                    chatId,
+                    userInfo,
+                )
 
             else -> userInfo
         }
@@ -69,7 +69,6 @@ class RegistrationActionHandlerFetcher(
     private fun onUserDecline(
         message: Message,
         chat: String,
-        bot: Executor,
         userInfo: UserActualizedInfo,
         parameter: String?,
     ): UserActualizedInfo {
@@ -78,39 +77,40 @@ class RegistrationActionHandlerFetcher(
         parameter?.let {
             when (it) {
                 "fullName" -> {
-                    bot.execute(
-                        SendMessage(
-                            chat,
-                            RegistrationMessageText.FullNameRequest(" заново"),
+                    messageSenderService.sendMessage(
+                        MessageParams(
+                            chatId = chat,
+                            text = RegistrationMessageText.FullNameRequest(" заново"),
                         ),
                     )
-                    user = user.copy(
-                        lastUserActionType = LastUserActionType.REGISTRATION_ENTER_FULL_NAME,
-                    )
+                    user =
+                        user.copy(
+                            lastUserActionType = LastUserActionType.REGISTRATION_ENTER_FULL_NAME,
+                        )
                 }
 
                 "studyGroup" -> {
-                    bot.execute(
-                        SendMessage().apply {
-                            chatId = chat
-                            text = RegistrationMessageText.GroupRequest(" заново")
-                            replyMarkup = userWithoutGroupActionCallback()
-                        },
+                    messageSenderService.sendMessage(
+                        MessageParams(
+                            chatId = chat,
+                            text = RegistrationMessageText.GroupRequest(" заново"),
+                            replyMarkup = userWithoutGroupActionCallback(),
+                        ),
                     )
-                    user = user.copy(
-                        lastUserActionType = LastUserActionType.REGISTRATION_ENTER_GROUP,
-                    )
+                    user =
+                        user.copy(
+                            lastUserActionType = LastUserActionType.REGISTRATION_ENTER_GROUP,
+                        )
                 }
 
                 else -> {}
             }
-            bot.execute(
-                EditMessageText().apply {
-                    replyMarkup = null
-                    chatId = chat
-                    messageId = message.messageId
-                    text = message.text
-                },
+            messageSenderService.editMessage(
+                MessageParams(
+                    chatId = chat,
+                    messageId = message.messageId,
+                    text = message.text,
+                ),
             )
         }
         return user
@@ -119,7 +119,6 @@ class RegistrationActionHandlerFetcher(
     private fun onUserConfirm(
         message: Message,
         chat: String,
-        bot: Executor,
         parameter: String?,
         userInfo: UserActualizedInfo,
     ): UserActualizedInfo {
@@ -128,42 +127,50 @@ class RegistrationActionHandlerFetcher(
         parameter?.let {
             when (it) {
                 "fullName" -> {
-                    bot.execute(
-                        SendMessage().apply {
-                            chatId = chat
-                            text = RegistrationMessageText.GroupRequest()
-                            replyMarkup = userWithoutGroupActionCallback()
-                        },
+                    messageSenderService.sendMessage(
+                        MessageParams(
+                            chatId = chat,
+                            text = RegistrationMessageText.GroupRequest(),
+                            replyMarkup = userWithoutGroupActionCallback(),
+                        ),
                     )
-                    user = user.copy(
-                        lastUserActionType = LastUserActionType.REGISTRATION_ENTER_GROUP,
-                        fullName = userInfo.data,
-                        data = null,
-                    )
+                    user =
+                        user.copy(
+                            lastUserActionType = LastUserActionType.REGISTRATION_ENTER_GROUP,
+                            fullName = userInfo.data,
+                            data = null,
+                        )
                 }
 
                 "studyGroup" -> {
-                    bot.execute(
-                        SendMessage(
-                            chat,
-                            RegistrationMessageText.RegistrationComplete(),
-                        ),
+                    // проставляем клавиатуру и отправляем сообщение
+                    user =
+                        user.copy(
+                            lastUserActionType = LastUserActionType.DEFAULT,
+                            studyGroup = userInfo.data,
+                            data = null,
+                            isRegistered = true,
+                        )
+                    switchKeyboardService.switchKeyboard(
+                        userId = user.id!!,
+                        newKeyboardType = UserKeyboardType.DEFAULT_MAIN_BOT,
                     )
-                    user = user.copy(
-                        lastUserActionType = LastUserActionType.DEFAULT,
-                        studyGroup = userInfo.data,
-                        data = null,
-                        isRegistered = true,
+                    messageSenderService.sendMessage(
+                        messageParams =
+                            MessageParams(
+                                chatId = chat,
+                                text = RegistrationMessageText.RegistrationComplete(),
+                            ),
                     )
                 }
 
                 else -> {}
             }
 
-            bot.execute(
-                DeleteMessage(
-                    chat,
-                    message.messageId,
+            messageSenderService.deleteMessage(
+                MessageParams(
+                    chatId = chat,
+                    messageId = message.messageId,
                 ),
             )
         }
@@ -173,23 +180,21 @@ class RegistrationActionHandlerFetcher(
     private fun onUserWithoutGroup(
         message: Message,
         chat: String,
-        bot: Executor,
         userInfo: UserActualizedInfo,
     ): UserActualizedInfo {
-        bot.execute(
-            SendMessage().apply {
-                this.chatId = chat
-                this.text = RegistrationMessageText.WithoutGroupConfirmation()
-                this.replyMarkup = createActionsKeyboard("studyGroup")
-            },
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = chat,
+                text = RegistrationMessageText.WithoutGroupConfirmation(),
+                replyMarkup = createActionsKeyboard("studyGroup"),
+            ),
         )
-        bot.execute(
-            EditMessageText().apply {
-                replyMarkup = null
-                chatId = chat
-                messageId = message.messageId
-                text = message.text
-            },
+        messageSenderService.editMessage(
+            MessageParams(
+                chatId = chat,
+                messageId = message.messageId,
+                text = message.text,
+            ),
         )
         return userInfo.copy(lastUserActionType = LastUserActionType.REGISTRATION_CONFIRM_GROUP)
     }

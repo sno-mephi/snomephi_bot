@@ -54,7 +54,10 @@ class UpdatesUtil(
         return null
     }
 
-    fun getByPattern(update: Update?, pattern: String): String? {
+    fun getByPattern(
+        update: Update?,
+        pattern: String,
+    ): String? {
         val updateJson = gson.toJson(update)
         var result: String? = null
         val r = Pattern.compile(pattern)
