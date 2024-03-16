@@ -102,10 +102,11 @@ class UserInfoCommandFetcher(
             } else {
                 userRoles = "\nпусто"
             }
-            val msgText = "\uD83D\uDC64ФИО: ${fullName ?: "-"}\n\uD83D\uDCDAгруппа: ${studyGroup ?: "-"}" +
-                "\n\n\uD83D\uDD11роли:${userRoles ?: "-"}\n\n\uD83D\uDCF1последний ник в tg: " +
-                "$lastTgNick\n\n\uD83D\uDDD2категории:${userCategories ?: "-"}\n\ntui: ${tui ?: "-"}\n" +
-                "id: ${id ?: "-"}\n\nпоследнее действие: ${lastUserActionType ?: "-"}"
+            val msgText =
+                "\uD83D\uDC64ФИО: ${fullName ?: "-"}\n\uD83D\uDCDAгруппа: ${studyGroup ?: "-"}" +
+                    "\n\n\uD83D\uDD11роли:${userRoles ?: "-"}\n\n\uD83D\uDCF1последний ник в tg: " +
+                    "$lastTgNick\n\n\uD83D\uDDD2категории:${userCategories ?: "-"}\n\ntui: ${tui ?: "-"}\n" +
+                    "id: ${id ?: "-"}\n\nпоследнее действие: ${lastUserActionType ?: "-"}"
             messageSenderService.sendMessage(
                 MessageParams(
                     chatId = params.chatId,

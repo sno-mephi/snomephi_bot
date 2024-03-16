@@ -19,6 +19,9 @@ data class Broadcast(
     /** список юзеров, получивших рассылку **/
     @Column(name = "received_users_id")
     val receivedUsersId: MutableList<Long> = mutableListOf(),
+    /** список юзеров, на которых словили исключение при отправке бродкаста **/
+    @Column(name = "failed_users_id")
+    val failedUsersId: MutableList<Long> = mutableListOf(),
     /** флаг завершения рассылки **/
     @Column(name = "is_completed")
     val isCompleted: Boolean = false,
