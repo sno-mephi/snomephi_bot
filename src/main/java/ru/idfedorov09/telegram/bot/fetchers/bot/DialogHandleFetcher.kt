@@ -48,8 +48,8 @@ class DialogHandleFetcher(
 
         val messageText = update.message.text
         val quest = userActualizedInfo.activeQuest
-        val author = userRepository.findById(quest.authorId!!).get()
-        val responder = userRepository.findById(quest.responderId!!).get()
+        val author = userRepository.findByUserId(quest.authorId!!)!!
+        val responder = userRepository.findByUserId(quest.responderId!!)!!
         val isByQuestionAuthor = author.tui == userActualizedInfo.tui
 
         val params = Params(

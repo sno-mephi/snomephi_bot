@@ -31,6 +31,7 @@ open class TelegramBotFlowConfiguration(
     private val userInfoCommandFetcher: UserInfoCommandFetcher,
     private val settingMailFetcher: SettingMailFetcher,
     private val broadcastConstructorFetcher: BroadcastConstructorFetcher,
+    private val deleteUserFetcher: DeleteUserFetcher,
 ) {
 
     /**
@@ -56,6 +57,7 @@ open class TelegramBotFlowConfiguration(
             group(condition = { it.isByUser() && it.isUserRegistered() }) {
 
                 sequence {
+                    fetch(deleteUserFetcher)
                     fetch(categoryCommandHandlerFetcher)
                     fetch(categoryButtonHandlerFetcher)
                     fetch(categoryActionTypeHandlerFetcher)

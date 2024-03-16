@@ -50,7 +50,7 @@ class BroadcastSenderService(
     }
 
     fun sendBroadcast(userId: Long, broadcast: Broadcast, shouldAddToReceived: Boolean = true) {
-        val user = userRepository.findById(userId).getOrNull() ?: return
+        val user = userRepository.findByUserId(userId) ?: return
         sendBroadcast(user, broadcast, shouldAddToReceived)
     }
 
@@ -84,7 +84,7 @@ class BroadcastSenderService(
     }
 
     private fun startBroadcast(broadcast: Broadcast) {
-        val author = broadcast.authorId?.let { userRepository.findById(it).getOrNull() } ?: return
+        val author = broadcast.authorId?.let { userRepository.findByUserId(it) } ?: return
         val msg = "Рассылка №${broadcast.id} успешно запущена"
         bot.execute(
             SendMessage().also {
@@ -103,7 +103,7 @@ class BroadcastSenderService(
         )
 
         broadcastRepository.save(finalBroadcast)
-        val author = finalBroadcast.authorId?.let { userRepository.findById(it).getOrNull() } ?: return
+        val author = finalBroadcast.authorId?.let { userRepository.findByUserId(it) } ?: return
 
         // TODO: нормальный формат вывода времени
         val msgText = "Рассылка №${finalBroadcast.id} успешно завершена\n" +
