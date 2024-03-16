@@ -32,7 +32,6 @@ open class BroadcastSenderService(
         private val log = LoggerFactory.getLogger(BroadcastSenderService::class.java)
     }
 
-
     // TODO: остается проблема - а если бродкастов несколько?
     @Scheduled(fixedDelay = 150)
     fun broadcastSender() {
@@ -47,18 +46,26 @@ open class BroadcastSenderService(
     private fun trySendBroadcast() {
         val firstActiveBroadcast = broadcastRepository.findFirstActiveBroadcast() ?: return
         if (firstActiveBroadcast.receivedUsersId.isEmpty()) startBroadcast(firstActiveBroadcast)
-        val firstUser = userRepository.findAll().filter { it.isRegistered }.firstOrNull {
-            checkValidUser(it, firstActiveBroadcast)
-        } ?: run {
-            finishBroadcast(firstActiveBroadcast)
-            return
-        }
+        val firstUser =
+            userRepository.findAll().filter { it.isRegistered }.firstOrNull {
+                checkValidUser(it, firstActiveBroadcast)
+            } ?: run {
+                finishBroadcast(firstActiveBroadcast)
+                return
+            }
         runCatching {
             sendBroadcast(firstUser, firstActiveBroadcast)
         }.onFailure { e ->
             log.warn("Ошибка при отправке рассылки trySendBroadcast(): $e")
             log.debug("Send to user={}, broadcast={}", firstUser, firstActiveBroadcast)
             log.debug(e.stackTraceToString())
+
+            if (e.message?.contains("429") != true) {
+                addUserToFailedList(
+                    userId = firstUser.id!!,
+                    broadcast = firstActiveBroadcast,
+                )
+            }
         }
     }
 
@@ -87,23 +94,41 @@ open class BroadcastSenderService(
         )
 
         if (shouldAddToReceived) {
-            user.id?.let {
-                broadcast.receivedUsersId.add(it)
-                broadcastRepository.save(broadcast)
-            }
+            addUserToReceivedList(
+                userId = user.id!!,
+                broadcast = broadcast,
+            )
         }
+    }
+
+    private fun addUserToReceivedList(
+        userId: Long,
+        broadcast: Broadcast,
+    ) {
+        broadcast.receivedUsersId.add(userId)
+        broadcastRepository.save(broadcast)
+    }
+
+    private fun addUserToFailedList(
+        userId: Long,
+        broadcast: Broadcast,
+    ) {
+        broadcast.failedUsersId.add(userId)
+        broadcastRepository.save(broadcast)
     }
 
     private fun startBroadcast(broadcast: Broadcast) {
         val author = broadcast.authorId?.let { userRepository.findById(it).getOrNull() } ?: return
         val msgText = "Рассылка №${broadcast.id} успешно запущена"
 
-        messageSenderService.sendMessage(
-            MessageParams(
-                chatId = author.tui!!,
-                text = msgText,
-            ),
-        )
+        runCatching {
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = author.tui!!,
+                    text = msgText,
+                ),
+            )
+        }
     }
 
     fun finishBroadcast(broadcast: Broadcast) {
@@ -121,17 +146,21 @@ open class BroadcastSenderService(
 
         val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
 
-        val msgText = "Рассылка №${finalBroadcast.id} успешно завершена\n" +
-            "Число пользователей, получивших сообщение: ${finalBroadcast.receivedUsersId.size}\n" +
-            "Старт рассылки: ${finalBroadcast.startTime?.format(formatter)}\n" +
-            "Конец рассылки: ${finalBroadcast.finishTime?.format(formatter)}"
+        val msgText =
+                "Рассылка №${finalBroadcast.id} успешно завершена\n" +
+                "Число пользователей, получивших сообщение: ${finalBroadcast.receivedUsersId.size}\n" +
+                "Число пользователей, не получивших сообщение: ${finalBroadcast.failedUsersId.size}" +
+                "Старт рассылки: ${finalBroadcast.startTime?.format(formatter)}\n" +
+                "Конец рассылки: ${finalBroadcast.finishTime?.format(formatter)}"
 
-        messageSenderService.sendMessage(
-            MessageParams(
-                chatId = author.tui!!,
-                text = msgText,
-            ),
-        )
+        runCatching {
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = author.tui!!,
+                    text = msgText,
+                ),
+            )
+        }
     }
 
     private fun checkValidUser(
@@ -141,7 +170,7 @@ open class BroadcastSenderService(
         return user.id !in broadcast.receivedUsersId && (
             user.categories.intersect(broadcast.categoriesId).isNotEmpty() ||
                 broadcast.categoriesId.isEmpty()
-            )
+        ) && user.id !in broadcast.failedUsersId
     }
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
