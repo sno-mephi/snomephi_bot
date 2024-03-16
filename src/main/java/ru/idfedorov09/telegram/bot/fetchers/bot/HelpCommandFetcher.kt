@@ -29,13 +29,10 @@ class HelpCommandFetcher(
 
         if (messageText.startsWith(TextCommands.HELP_COMMAND.commandText)) {
 
-            var finalText = ""
-            for (command in TextCommands.values()) {
-                if (command.isFullCommand && command.allowedRoles.intersect(userActualizedInfo.roles).isNotEmpty()) {
-                    finalText += "▪"+ command.commandText+ " - " + command.description + "\n"
-                }
-            }
 
+            val finalText = TextCommands.values().filter { it.isFullCommand && it.allowedRoles.intersect(userActualizedInfo.roles).isNotEmpty() }.joinToString(separator = "\n") {
+                "▪" + it.commandText+ " - " + it.description
+            }
 
             messageSenderService.sendMessage(
                 MessageParams(

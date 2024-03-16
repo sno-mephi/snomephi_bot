@@ -12,7 +12,7 @@ enum class TextCommands(
 ) {
     QUEST_DIALOG_CLOSE(
         commandText = "❌ Завершить диалог",
-        description = "Завершает диало",
+        description = "завершает диало",
         isFullCommand = false,
     ),
 
@@ -24,12 +24,12 @@ enum class TextCommands(
                 UserRole.CATEGORY_BUILDER,
                 UserRole.ROOT,
             ),
-        description = "Настройка категорий",
+        description = "настройка категорий",
     ),
 
     SETTING_MAIL(
         commandText = "Настройка уведомлений",
-        description = "Помогает настроить рассылку нужных вам уведомлений о мероприятих и кружках",
+        description = "помогает настроить рассылку нужных вам уведомлений о мероприятих и кружках",
     ),
 
     TOGGLE(
@@ -40,13 +40,13 @@ enum class TextCommands(
     USER_INFO(
         commandText = "/userInfo",
         allowedRoles = listOf(UserRole.ROOT),
-        description = "Присылает полную информацию о пользователе",
+        description = "присылает полную информацию о пользователе",
     ),
 
     ROLE_DESCRIPTION(
         commandText = "/role",
         allowedRoles = listOf(UserRole.ROOT),
-        description = "Присылает полный список ролей пользователя",
+        description = "присылает полный список ролей пользователя",
     ),
 
     BROADCAST_CONSTRUCTOR(
@@ -56,28 +56,28 @@ enum class TextCommands(
                 UserRole.MAILER,
                 UserRole.ROOT,
             ),
-        description = "Рассылка уведомлений - открывает конструктор рассылки уведомлений для дальнейшей настройки",
+        description = "рассылка уведомлений - открывает конструктор рассылки уведомлений для дальнейшей настройки",
     ),
 
     WEEKLY_EVENTS(
         commandText = "Мероприятия недели",
-        description = "Присылает информацию о всех мероприятиях, запланированных на текущую неделю",
+        description = "присылает информацию о всех мероприятиях, запланированных на текущую неделю",
     ),
 
     PERMISSIONS_SETUP(
         commandText = "Выдача ролей",
         allowedRoles = listOf(UserRole.ROOT),
-        description = "Выдача и отзыв ролей у пользователей",
+        description = "выдача и отзыв ролей у пользователей",
     ),
 
     HELP_COMMAND(
         commandText = "/help",
-        description = "Узнать все актуальные команды",
+        description = "узнать все актуальные команды",
     ),
 
     RESET(
         commandText = "/reset",
-        description = "Удаление своего аккаунта",
+        description = "удаление своего аккаунта",
     ),
     ;
 
