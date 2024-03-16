@@ -14,7 +14,7 @@ import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
-
+import ru.idfedorov09.telegram.bot.data.GlobalConstants.MAX_CATEGORY_COUNTS
 /**
  * Фетчер, обрабатывающий нажатия на кнопки категорий
  */
@@ -343,10 +343,10 @@ class CategoryButtonHandlerFetcher(
             )
         }
 
-        if (categoryRepository.categoryCount() > 25) {
+        if (categoryRepository.categoryCount() > MAX_CATEGORY_COUNTS) {
             editMessage(
                 data,
-                "❗Превышен лимит категорий (>25)",
+                "❗Превышен лимит категорий (>${MAX_CATEGORY_COUNTS})",
                 CategoryKeyboards.inputCancel(),
             )
             data.userInfo.lastUserActionType = LastUserActionType.CATEGORY_ADDING
