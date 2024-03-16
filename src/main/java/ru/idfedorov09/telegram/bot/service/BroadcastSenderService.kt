@@ -32,6 +32,7 @@ open class BroadcastSenderService(
         private val log = LoggerFactory.getLogger(BroadcastSenderService::class.java)
     }
 
+
     // TODO: остается проблема - а если бродкастов несколько?
     @Scheduled(fixedDelay = 150)
     fun broadcastSender() {
