@@ -1,20 +1,23 @@
 package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
-import org.telegram.telegrambots.meta.api.methods.ParseMode
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
+import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
+import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
+
 
 /**
 фетчер для рассылки команд /help
  */
 @Component
-class HelpCommandFetcher() : GeneralFetcher() {
+class HelpCommandFetcher(
+    private val messageSenderService: MessageSenderService,
+) : GeneralFetcher() {
     @InjectData
     fun doFetch(
         userActualizedInfo: UserActualizedInfo,
@@ -33,12 +36,12 @@ class HelpCommandFetcher() : GeneralFetcher() {
                 }
             }
 
-            bot.execute(
-                SendMessage().also {
-                    it.chatId = userActualizedInfo.tui
-                    it.text = finalText
-                    it.parseMode = ParseMode.HTML
-                },
+
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = userActualizedInfo.tui,
+                    text = finalText,
+                ),
             )
         }
     }
