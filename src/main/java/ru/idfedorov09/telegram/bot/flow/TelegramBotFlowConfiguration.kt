@@ -32,6 +32,7 @@ open class TelegramBotFlowConfiguration(
     private val settingMailFetcher: SettingMailFetcher,
     private val broadcastConstructorFetcher: BroadcastConstructorFetcher,
     private val permissionsFetcher: PermissionsFetcher,
+    private val helpCommandFetcher: HelpCommandFetcher,
     private val deleteUserFetcher: DeleteUserFetcher,
 ) {
     /**
@@ -69,6 +70,7 @@ open class TelegramBotFlowConfiguration(
 
                 fetch(roleDescriptionFetcher)
                 fetch(userInfoCommandFetcher)
+                fetch(helpCommandFetcher)
                 fetch(weeklyEventsFetcher)
                 fetch(questStartFetcher)
             }

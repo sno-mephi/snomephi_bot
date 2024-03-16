@@ -6,13 +6,13 @@ enum class TextCommands(
     /** текст команды **/
     val commandText: String,
     /** роли которым доступна эта команда **/
-    private val allowedRoles: List<UserRole> = listOf(UserRole.USER),
-    private val description: String? = "",
-    private val isFullCommand: Boolean = true,
+    val allowedRoles: List<UserRole> = listOf(UserRole.USER),
+    val description: String? = "",
+    val isFullCommand: Boolean = true,
 ) {
     QUEST_DIALOG_CLOSE(
         commandText = "❌ Завершить диалог",
-        description = "Завершает диало",
+        description = "завершает диало",
         isFullCommand = false,
     ),
 
@@ -56,7 +56,7 @@ enum class TextCommands(
                 UserRole.MAILER,
                 UserRole.ROOT,
             ),
-        description = "Рассылка уведомлений - открывает конструктор рассылки уведомлений для дальнейшей настройки",
+        description = "рассылка уведомлений - открывает конструктор рассылки уведомлений для дальнейшей настройки",
     ),
 
     WEEKLY_EVENTS(
@@ -67,7 +67,17 @@ enum class TextCommands(
     PERMISSIONS_SETUP(
         commandText = "Выдача ролей",
         allowedRoles = listOf(UserRole.ROOT),
-        description = "Выдача и отзыв ролей у пользователей",
+        description = "выдача и отзыв ролей у пользователей",
+    ),
+
+    HELP_COMMAND(
+        commandText = "/help",
+        description = "узнать все актуальные команды",
+    ),
+
+    RESET(
+        commandText = "/reset",
+        description = "удаление своего аккаунта",
     ),
 
     ;
