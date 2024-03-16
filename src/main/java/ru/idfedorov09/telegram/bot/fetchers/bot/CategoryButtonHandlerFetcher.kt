@@ -15,7 +15,7 @@ import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
-
+import ru.idfedorov09.telegram.bot.data.GlobalConstants.MAX_CATEGORY_COUNTS
 /**
  * Фетчер, обрабатывающий нажатия на кнопки категорий
  */
@@ -201,11 +201,11 @@ class CategoryButtonHandlerFetcher(
                 editMessage(
                     data,
                     "❓ Вы действительно хотите удалить категорию с\n" +
-                        "названием:\t" +
-                        "${category.get().title}\n" +
-                        "тэгом:\t${category.get().suffix}\n" +
-                        "описанием:\t${category.get().description}\n" +
-                        "неснимаемая:\t${category.get().isUnremovable}\n",
+                            "названием:\t" +
+                            "${category.get().title}\n" +
+                            "тэгом:\t${category.get().suffix}\n" +
+                            "описанием:\t${category.get().description}\n" +
+                            "неснимаемая:\t${category.get().isUnremovable}\n",
                     CategoryKeyboards.confirmationAction(catId, prevPage),
                 )
 
@@ -213,11 +213,11 @@ class CategoryButtonHandlerFetcher(
                 editMessage(
                     data,
                     "❓ Вы действительно хотите изменить категорию с\n" +
-                        "названием:\t" +
-                        "${category.get().title}\n" +
-                        "тэгом:\t${category.get().suffix}\n" +
-                        "описанием:\t${category.get().description}\n" +
-                        "неснимаемая:\t${category.get().isUnremovable}\n",
+                            "названием:\t" +
+                            "${category.get().title}\n" +
+                            "тэгом:\t${category.get().suffix}\n" +
+                            "описанием:\t${category.get().description}\n" +
+                            "неснимаемая:\t${category.get().isUnremovable}\n",
                     CategoryKeyboards.confirmationAction(catId, prevPage),
                 )
 
@@ -305,7 +305,7 @@ class CategoryButtonHandlerFetcher(
             sendMessage(
                 data,
                 "❌ Категорию #${category.get().suffix} удалить не получилось, " +
-                    "тк сейчас ее именяет другой пользователь",
+                        "тк сейчас ее именяет другой пользователь",
                 CategoryKeyboards.confirmationDone(),
             )
         }
@@ -348,11 +348,22 @@ class CategoryButtonHandlerFetcher(
                 ),
             )
         }
-        editMessage(
-            data,
-            "✏️ Введите заголовок категории (до 64 символов):",
-            CategoryKeyboards.inputCancel(),
-        )
+
+        if (categoryRepository.categoryCount() > MAX_CATEGORY_COUNTS) {
+            editMessage(
+                data,
+                "❗Превышен лимит категорий (>${MAX_CATEGORY_COUNTS})",
+                CategoryKeyboards.inputCancel(),
+            )
+            data.userInfo.lastUserActionType = LastUserActionType.CATEGORY_ADDING
+            return
+        } else {
+            editMessage(
+                data,
+                "✏️Введите заголовок категории (до 64 символов):",
+                CategoryKeyboards.inputCancel(),
+            )
+        }
     }
 
     private fun clickExit(data: RequestData) {

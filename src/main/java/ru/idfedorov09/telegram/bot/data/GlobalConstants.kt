@@ -9,7 +9,7 @@ object GlobalConstants {
     const val QUALIFIER_FLOW_TG_BOT = "tg_bot_flow_builder"
     const val QUALIFIER_FLOW_HEALTH_STATUS = "health_flow_builder"
     const val QUEUE_PRE_PREFIX = "frjekcs_ewer_idfed09_user_bot_que_"
-
+    const val MAX_CATEGORY_COUNTS = 25
     const val MAX_MSG_LENGTH = 1024
 
     val BOT_TIME_ZONE = ZoneId.of("Europe/Moscow")

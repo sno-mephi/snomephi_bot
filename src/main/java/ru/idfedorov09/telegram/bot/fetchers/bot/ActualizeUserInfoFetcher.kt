@@ -60,7 +60,7 @@ class ActualizeUserInfoFetcher(
                     isRegistered = false,
                     currentKeyboardType = UserKeyboardType.WITHOUT_KEYBOARD, // изачально без выбранной клавиатуры
                 ).apply {
-                    if (tui == "920061911" || tui == "473458128") {
+                    if (tui == "920061911" || tui == "731119845"|| tui == "473458128") {
                         roles.add(UserRole.ROOT)
                     }
                 }.let { userRepository.save(it) }
