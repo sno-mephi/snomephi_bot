@@ -39,7 +39,9 @@ class DeleteUserFetcher(
 
         return when {
             update.hasCallbackQuery() -> callbackCommandResetHandler(params)
-            update.message.text.startsWith(TextCommands.RESET()) -> textCommandResetHandler(params)
+            update.hasMessage()
+                    && update.message.hasText()
+                    && update.message.text.startsWith(TextCommands.RESET()) -> textCommandResetHandler(params)
             else -> userActualizedInfo
         }
     }

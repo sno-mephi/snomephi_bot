@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
+import ru.idfedorov09.telegram.bot.annotation.FetcherPerms
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
@@ -29,6 +30,7 @@ class PermissionsFetcher(
     private val switchKeyboardService: SwitchKeyboardService,
 ) : GeneralFetcher() {
     @InjectData
+    @FetcherPerms(UserRole.ROOT)
     fun doFetch(
         userActualizedInfo: UserActualizedInfo,
         update: Update,

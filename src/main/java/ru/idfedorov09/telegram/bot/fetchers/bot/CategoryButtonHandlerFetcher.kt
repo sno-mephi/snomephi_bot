@@ -3,6 +3,7 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
+import ru.idfedorov09.telegram.bot.annotation.FetcherPerms
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.keyboards.CategoryKeyboards
@@ -16,6 +17,7 @@ import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.MAX_CATEGORY_COUNTS
+import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 
 /**
@@ -37,6 +39,7 @@ class CategoryButtonHandlerFetcher(
     val pageSize: Long = 6
 
     @InjectData
+    @FetcherPerms(UserRole.CATEGORY_BUILDER)
     fun doFetch(
         update: Update,
         userActualizedInfo: UserActualizedInfo,

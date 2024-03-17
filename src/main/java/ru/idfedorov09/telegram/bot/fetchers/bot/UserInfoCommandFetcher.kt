@@ -3,7 +3,9 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
+import ru.idfedorov09.telegram.bot.annotation.FetcherPerms
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
+import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
@@ -28,6 +30,7 @@ class UserInfoCommandFetcher(
     private val categoryRepository: CategoryRepository,
 ) : DefaultFetcher() {
     @InjectData
+    @FetcherPerms(UserRole.ROOT)
     fun doFetch(
         update: Update,
         userActualizedInfo: UserActualizedInfo,

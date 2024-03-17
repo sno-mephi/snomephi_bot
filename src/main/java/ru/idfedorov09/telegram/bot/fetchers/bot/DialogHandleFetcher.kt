@@ -34,7 +34,7 @@ class DialogHandleFetcher(
     private val userRepository: UserRepository,
     private val switchKeyboardService: SwitchKeyboardService,
 ) : DefaultFetcher() {
-    // TODO: добавить поддержку картинок, файлов, HTML/MARKDOWN-разметки
+
     @InjectData
     fun doFetch(
         update: Update,

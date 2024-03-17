@@ -2,6 +2,7 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.Update
+import ru.idfedorov09.telegram.bot.annotation.FetcherPerms
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
@@ -22,6 +23,7 @@ class RoleDescriptionFetcher(
     private val messageSenderService: MessageSenderService,
 ) : DefaultFetcher() {
     @InjectData
+    @FetcherPerms(UserRole.ROOT)
     fun doFetch(
         update: Update,
         userActualizedInfo: UserActualizedInfo,
