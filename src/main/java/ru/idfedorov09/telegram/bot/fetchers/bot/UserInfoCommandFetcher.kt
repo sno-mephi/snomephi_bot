@@ -7,6 +7,7 @@ import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
+import ru.idfedorov09.telegram.bot.repo.CategoryRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
@@ -23,6 +24,7 @@ class UserInfoCommandFetcher(
     private val userRepository: UserRepository,
     private val bot: Executor,
     private val messageSenderService: MessageSenderService,
+    private val categoryRepository: CategoryRepository,
 ) : GeneralFetcher() {
     @InjectData
     fun doFetch(
@@ -83,29 +85,21 @@ class UserInfoCommandFetcher(
             return
         }
 
-        var userCategories = ""
-
         user.apply {
-            if (categories.isNotEmpty()) {
-                for (s in categories) {
-                    userCategories += String.format("\n-%s", s)
-                }
+            val userCategories = if (categories.isNotEmpty()) {
+                "\n" + categories.map { categoryRepository.findById(it).get().suffix }.joinToString(separator = ", ")
             } else {
-                userCategories = "\nпусто"
+                "\nпусто"
             }
-
-            var userRoles = ""
-            if (roles.isNotEmpty()) {
-                for (s in roles) {
-                    userRoles += String.format("\n-%s", s)
-                }
+            val userRoles = if (roles.isNotEmpty()) {
+                "\n" + roles.joinToString(separator = ", ")
             } else {
-                userRoles = "\nпусто"
+                "\nпусто"
             }
             val msgText =
-                "\uD83D\uDC64ФИО: ${fullName ?: "-"}\n\uD83D\uDCDAгруппа: ${studyGroup ?: "-"}" +
+                "\uD83D\uDC64ФИО: ${fullName ?: "-"}\n\uD83D\uDCDAгруппа: ${studyGroup ?: "Не из МИФИ"}" +
                     "\n\n\uD83D\uDD11роли:${userRoles ?: "-"}\n\n\uD83D\uDCF1последний ник в tg: " +
-                    "$lastTgNick\n\n\uD83D\uDDD2категории:${userCategories ?: "-"}\n\ntui: ${tui ?: "-"}\n" +
+                    "@$lastTgNick\n\n\uD83D\uDDD2категории:${userCategories ?: "-"}\n\ntui: ${tui ?: "-"}\n" +
                     "id: ${id ?: "-"}\n\nпоследнее действие: ${lastUserActionType ?: "-"}"
             messageSenderService.sendMessage(
                 MessageParams(
