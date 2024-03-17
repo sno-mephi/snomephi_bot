@@ -107,7 +107,7 @@ class UserInfoCommandFetcher(
             val msgText =
                 "\uD83D\uDC64ФИО: ${fullName ?: "-"}\n\uD83D\uDCDAгруппа: ${studyGroup ?: "Не из МИФИ"}" +
                     "\n\n\uD83D\uDD11роли:${userRoles ?: "-"}\n\n\uD83D\uDCF1последний ник в tg: " +
-                    "$userNick}\n\n\uD83D\uDDD2категории:${userCategories ?: "-"}\n\ntui: ${tui ?: "-"}\n" +
+                    "$userNick\n\n\uD83D\uDDD2категории:${userCategories ?: "-"}\n\ntui: ${tui ?: "-"}\n" +
                     "id: ${id ?: "-"}\n\nпоследнее действие: ${lastUserActionType ?: "-"}"
             messageSenderService.sendMessage(
                 MessageParams(
