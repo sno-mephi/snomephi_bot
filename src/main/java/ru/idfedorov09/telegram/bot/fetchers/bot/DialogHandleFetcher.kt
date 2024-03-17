@@ -386,7 +386,7 @@ class DialogHandleFetcher(
             MessageParams(
                 chatId = GlobalConstants.QUEST_RESPONDENT_CHAT_ID,
                 messageId = params.quest.consoleMessageId!!.toInt(),
-                text = "✅ @${params.responder.lastTgNick} пообщался(-ась)",
+                text = "✅ @${userName(params.responder.lastTgNick, params.responder.fullName)} пообщался(-ась)",
             ),
         )
 
@@ -394,6 +394,13 @@ class DialogHandleFetcher(
             lastUserActionType = null,
         )
     }
+
+    private fun userName(lastTgNick: String?, fullName: String?) =
+        if (lastTgNick == null){
+            "$fullName"
+        } else {
+            "@${lastTgNick} (${fullName})"
+        }
 
     /**
      * Вспомогательный класс для передачи параметров

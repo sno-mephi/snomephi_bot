@@ -110,7 +110,8 @@ class QuestButtonHandlerFetcher(
             MessageParams(
                 chatId = data.userActualizedInfo.tui,
                 text =
-                    "<i>Ты перешел в диалог с пользователем @${questionAuthor.lastTgNick}. " +
+                    "<i>Ты перешел в диалог с пользователем @${userName(questionAuthor.lastTgNick, 
+                        questionAuthor.fullName)}. " +
                         "Несмотря на твою анонимность, оставайся вежливым :)</i>",
                 parseMode = ParseMode.HTML,
             ),
@@ -120,7 +121,8 @@ class QuestButtonHandlerFetcher(
             MessageParams(
                 chatId = QUEST_RESPONDENT_CHAT_ID,
                 messageId = quest.consoleMessageId!!.toInt(),
-                text = "✏\uFE0F ${data.userActualizedInfo.lastTgNick} ведет диалог",
+                text = "✏\uFE0F ${userName(data.userActualizedInfo.lastTgNick, data.userActualizedInfo.fullName)} " +
+                        "ведет диалог",
             ),
         )
 
@@ -138,8 +140,8 @@ class QuestButtonHandlerFetcher(
             ),
         )
 
-        // TODO: а если у пользователя нет ника?
-        val newText = "\uD83D\uDFE1 Проигнорировано пользователем @${data.userActualizedInfo.lastTgNick}."
+        val newText = "\uD83D\uDFE1 Проигнорировано пользователем @${userName(data.userActualizedInfo.lastTgNick,
+            data.userActualizedInfo.fullName)}."
         messageSenderService.editMessage(
             MessageParams(
                 chatId = QUEST_RESPONDENT_CHAT_ID,
@@ -202,8 +204,8 @@ class QuestButtonHandlerFetcher(
             )
         userRepository.save(authorInBan)
 
-        // TODO: а если у пользователя нет ника?
-        val newText = "\uD83D\uDD34 Автор забанен пользователем @${data.userActualizedInfo.lastTgNick}."
+        val newText = "\uD83D\uDD34 Автор забанен пользователем @${userName(data.userActualizedInfo.lastTgNick, 
+            data.userActualizedInfo.fullName)}."
         messageSenderService.editMessage(
             MessageParams(
                 chatId = QUEST_RESPONDENT_CHAT_ID,
@@ -256,6 +258,14 @@ class QuestButtonHandlerFetcher(
             }
         return questId
     }
+
+    private fun userName(lastTgNick: String?, fullName: String?) =
+        if (lastTgNick == null){
+            "$fullName"
+        } else {
+            "@${lastTgNick} (${fullName})"
+        }
+
 
     private data class RequestData(
         val quest: Quest,

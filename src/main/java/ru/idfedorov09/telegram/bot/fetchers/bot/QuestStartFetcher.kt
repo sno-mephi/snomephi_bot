@@ -121,14 +121,13 @@ class QuestStartFetcher(
             ),
         )
 
-        // TODO: обработать случай когда у юзера нет никнейма
         // TODO: добавить время обращения
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = QUEST_RESPONDENT_CHAT_ID,
                 text =
                     "\uD83D\uDCE5 Получен вопрос #${quest.id} " +
-                        "от @${userActualizedInfo.lastTgNick} (${userActualizedInfo.fullName})",
+                        "от ${userName(userActualizedInfo.lastTgNick, userActualizedInfo.fullName)}",
             ),
         )
 
@@ -171,4 +170,10 @@ class QuestStartFetcher(
                 ),
             ),
         )
+    private fun userName(lastTgNick: String?, fullName: String?) =
+        if (lastTgNick == null){
+            "$fullName"
+        } else {
+            "@${lastTgNick} (${fullName})"
+        }
 }
