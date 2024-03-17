@@ -86,21 +86,24 @@ class UserInfoCommandFetcher(
         }
 
         user.apply {
-            val userCategories = if (categories.isNotEmpty()) {
-                "\n" + categories.map { categoryRepository.findById(it).get().suffix }.joinToString(separator = ", ")
-            } else {
-                "\nпусто"
-            }
-            val userRoles = if (roles.isNotEmpty()) {
-                "\n" + roles.joinToString(separator = ", ")
-            } else {
-                "\nпусто"
-            }
-            val userNick = if (lastTgNick == null) {
-                "-"
-            } else {
-                "@{lastTgNick}"
-            }
+            val userCategories =
+                if (categories.isNotEmpty()) {
+                    "\n" + categories.map { categoryRepository.findById(it).get().suffix }.joinToString(separator = ", ")
+                } else {
+                    "\nпусто"
+                }
+            val userRoles =
+                if (roles.isNotEmpty()) {
+                    "\n" + roles.joinToString(separator = ", ")
+                } else {
+                    "\nпусто"
+                }
+            val userNick =
+                if (lastTgNick == null) {
+                    "-"
+                } else {
+                    "@{lastTgNick}"
+                }
             val msgText =
                 "\uD83D\uDC64ФИО: ${fullName ?: "-"}\n\uD83D\uDCDAгруппа: ${studyGroup ?: "Не из МИФИ"}" +
                     "\n\n\uD83D\uDD11роли:${userRoles ?: "-"}\n\n\uD83D\uDCF1последний ник в tg: " +

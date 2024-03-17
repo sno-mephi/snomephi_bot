@@ -31,7 +31,6 @@ open class BroadcastSenderService(
         private val log = LoggerFactory.getLogger(BroadcastSenderService::class.java)
     }
 
-
     // TODO: остается проблема - а если бродкастов несколько?
     @Scheduled(fixedDelay = 150)
     fun broadcastSender() {
@@ -142,12 +141,12 @@ open class BroadcastSenderService(
             )
 
         broadcastRepository.save(finalBroadcast)
-        val author = finalBroadcast.authorId?.let { userRepository.findActiveUsersById(it)} ?: return
+        val author = finalBroadcast.authorId?.let { userRepository.findActiveUsersById(it) } ?: return
 
         val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
 
         val msgText =
-                "Рассылка №${finalBroadcast.id} успешно завершена\n" +
+            "Рассылка №${finalBroadcast.id} успешно завершена\n" +
                 "Число пользователей, получивших сообщение: ${finalBroadcast.receivedUsersId.size}\n" +
                 "Число пользователей, не получивших сообщение: ${finalBroadcast.failedUsersId.size}\n" +
                 "Старт рассылки: ${finalBroadcast.startTime?.format(formatter)}\n" +

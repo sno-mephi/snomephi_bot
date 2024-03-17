@@ -5,7 +5,6 @@ import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
-import ru.idfedorov09.telegram.bot.data.model.Category
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository

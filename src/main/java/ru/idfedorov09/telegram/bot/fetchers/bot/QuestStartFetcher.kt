@@ -16,6 +16,7 @@ import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.repo.QuestDialogMessageRepository
 import ru.idfedorov09.telegram.bot.repo.QuestRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
+import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
@@ -127,7 +128,7 @@ class QuestStartFetcher(
                 chatId = QUEST_RESPONDENT_CHAT_ID,
                 text =
                     "\uD83D\uDCE5 Получен вопрос #${quest.id} " +
-                        "от ${userName(userActualizedInfo.lastTgNick, userActualizedInfo.fullName)}",
+                        "от ${MessageSenderUtil.userName(userActualizedInfo.lastTgNick, userActualizedInfo.fullName)}",
             ),
         )
 
@@ -170,10 +171,4 @@ class QuestStartFetcher(
                 ),
             ),
         )
-    private fun userName(lastTgNick: String?, fullName: String?) =
-        if (lastTgNick == null){
-            "$fullName"
-        } else {
-            "@${lastTgNick} (${fullName})"
-        }
 }
