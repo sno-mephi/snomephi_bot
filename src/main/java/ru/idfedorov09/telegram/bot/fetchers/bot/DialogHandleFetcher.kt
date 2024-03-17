@@ -19,6 +19,7 @@ import ru.idfedorov09.telegram.bot.repo.QuestRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.service.SwitchKeyboardService
+import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 
@@ -75,10 +76,9 @@ class DialogHandleFetcher(
             }
 
         val videoHash =
-            if (update.message.hasVideo())
-                {
-                    update.message.video.fileId
-                } else {
+            if (update.message.hasVideo()) {
+                update.message.video.fileId
+            } else {
                 null
             }
 
@@ -148,7 +148,6 @@ class DialogHandleFetcher(
     }
 
     private fun handleMessage(params: Params) {
-
     }
 
     private fun handleMessageAudio(params: Params): UserActualizedInfo {
@@ -386,7 +385,9 @@ class DialogHandleFetcher(
             MessageParams(
                 chatId = GlobalConstants.QUEST_RESPONDENT_CHAT_ID,
                 messageId = params.quest.consoleMessageId!!.toInt(),
-                text = "✅ @${params.responder.lastTgNick} пообщался(-ась)",
+                text =
+                    "✅ ${MessageSenderUtil.userName(params.responder.lastTgNick, params.responder.fullName)} " +
+                        "пообщался(-ась)",
             ),
         )
 

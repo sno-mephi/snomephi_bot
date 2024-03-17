@@ -3,8 +3,8 @@ package ru.idfedorov09.telegram.bot.repo
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
-import org.springframework.transaction.annotation.Isolation
 import org.springframework.data.repository.query.Param
+import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
 import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
 import ru.idfedorov09.telegram.bot.data.model.User
@@ -72,7 +72,7 @@ interface UserRepository : JpaRepository<User, Long> {
             UPDATE users_table
             SET categories = array_append(categories, :category_id)
         """,
-        nativeQuery = true
+        nativeQuery = true,
     )
     fun addCategoryForAllUser(
         @Param("category_id") categoryId: Long,
@@ -86,11 +86,11 @@ interface UserRepository : JpaRepository<User, Long> {
             SET categories = array_append(categories, :category_id)
             WHERE id = :user_id 
         """,
-        nativeQuery = true
+        nativeQuery = true,
     )
     fun addCategory(
         @Param("category_id") categoryId: Long,
-        @Param("user_id") userId: Long
+        @Param("user_id") userId: Long,
     )
 
     @Transactional
@@ -101,11 +101,11 @@ interface UserRepository : JpaRepository<User, Long> {
             SET categories = array_remove(categories, :category_id)
             WHERE id = :user_id 
         """,
-        nativeQuery = true
+        nativeQuery = true,
     )
     fun removeCategory(
         @Param("category_id") categoryId: Long,
-        @Param("user_id") userId: Long
+        @Param("user_id") userId: Long,
     )
 
     @Query(
@@ -137,7 +137,6 @@ interface UserRepository : JpaRepository<User, Long> {
         nativeQuery = true,
     )
     fun findActiveUsersById(userId: Long?): User?
-
 
     @Query(
         """

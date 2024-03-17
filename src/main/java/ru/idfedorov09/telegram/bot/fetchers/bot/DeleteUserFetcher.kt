@@ -64,12 +64,11 @@ class DeleteUserFetcher(
                 }
             }.map { listOf(it) }
 
-
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = params.userActualizedInfo.tui,
-                text =  "Вы действительно хотите удалить аккаунт?",
-                replyMarkup = createKeyboard(keyboard)
+                text = "Вы действительно хотите удалить аккаунт?",
+                replyMarkup = createKeyboard(keyboard),
             ),
         )
         return params.userActualizedInfo
@@ -91,19 +90,17 @@ class DeleteUserFetcher(
     }
 
     private fun deleteAccount(params: Params): UserActualizedInfo {
-
-
         messageSenderService.deleteMessage(
             MessageParams(
                 chatId = params.userActualizedInfo.tui,
-                messageId = params.update.callbackQuery.message.messageId
+                messageId = params.update.callbackQuery.message.messageId,
             ),
         )
 
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = params.userActualizedInfo.tui,
-                text =  "Аккаунт удалён",
+                text = "Аккаунт удалён",
             ),
         )
 
@@ -112,19 +109,18 @@ class DeleteUserFetcher(
         return params.userActualizedInfo
     }
 
-    private fun noDeleteAccount(params: Params): UserActualizedInfo  {
-
+    private fun noDeleteAccount(params: Params): UserActualizedInfo {
         messageSenderService.deleteMessage(
             MessageParams(
                 chatId = params.userActualizedInfo.tui,
-                messageId = params.update.callbackQuery.message.messageId
+                messageId = params.update.callbackQuery.message.messageId,
             ),
         )
 
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = params.userActualizedInfo.tui,
-                text =  "Хорошо, продолжаем работу",
+                text = "Хорошо, продолжаем работу",
             ),
         )
 

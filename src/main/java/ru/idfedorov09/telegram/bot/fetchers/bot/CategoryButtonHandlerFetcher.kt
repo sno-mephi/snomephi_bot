@@ -3,6 +3,7 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
+import ru.idfedorov09.telegram.bot.data.GlobalConstants.MAX_CATEGORY_COUNTS
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.keyboards.CategoryKeyboards
@@ -15,7 +16,7 @@ import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
-import ru.idfedorov09.telegram.bot.data.GlobalConstants.MAX_CATEGORY_COUNTS
+
 /**
  * Фетчер, обрабатывающий нажатия на кнопки категорий
  */
@@ -201,11 +202,11 @@ class CategoryButtonHandlerFetcher(
                 editMessage(
                     data,
                     "❓ Вы действительно хотите удалить категорию с\n" +
-                            "названием:\t" +
-                            "${category.get().title}\n" +
-                            "тэгом:\t${category.get().suffix}\n" +
-                            "описанием:\t${category.get().description}\n" +
-                            "неснимаемая:\t${category.get().isUnremovable}\n",
+                        "названием:\t" +
+                        "${category.get().title}\n" +
+                        "тэгом:\t${category.get().suffix}\n" +
+                        "описанием:\t${category.get().description}\n" +
+                        "неснимаемая:\t${category.get().isUnremovable}\n",
                     CategoryKeyboards.confirmationAction(catId, prevPage),
                 )
 
@@ -213,11 +214,11 @@ class CategoryButtonHandlerFetcher(
                 editMessage(
                     data,
                     "❓ Вы действительно хотите изменить категорию с\n" +
-                            "названием:\t" +
-                            "${category.get().title}\n" +
-                            "тэгом:\t${category.get().suffix}\n" +
-                            "описанием:\t${category.get().description}\n" +
-                            "неснимаемая:\t${category.get().isUnremovable}\n",
+                        "названием:\t" +
+                        "${category.get().title}\n" +
+                        "тэгом:\t${category.get().suffix}\n" +
+                        "описанием:\t${category.get().description}\n" +
+                        "неснимаемая:\t${category.get().isUnremovable}\n",
                     CategoryKeyboards.confirmationAction(catId, prevPage),
                 )
 
@@ -276,9 +277,10 @@ class CategoryButtonHandlerFetcher(
             ),
         )
         // TODO: Пока что нет логики, которая делает isSetupByDefault = false
-        if (category.isSetupByDefault){
-            category.id?.let { userRepository.addCategoryForAllUser(it) }
-        }
+        if (category.isSetupByDefault)
+            {
+                category.id?.let { userRepository.addCategoryForAllUser(it) }
+            }
     }
 
     private fun actionDeleteCategory(
@@ -305,7 +307,7 @@ class CategoryButtonHandlerFetcher(
             sendMessage(
                 data,
                 "❌ Категорию #${category.get().suffix} удалить не получилось, " +
-                        "тк сейчас ее именяет другой пользователь",
+                    "тк сейчас ее именяет другой пользователь",
                 CategoryKeyboards.confirmationDone(),
             )
         }

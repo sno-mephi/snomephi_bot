@@ -10,7 +10,6 @@ import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 
-
 /**
 фетчер для рассылки команд /help
  */
@@ -28,11 +27,12 @@ class HelpCommandFetcher(
         val messageText = update.message.text
 
         if (messageText.startsWith(TextCommands.HELP_COMMAND.commandText)) {
-
-
-            val finalText = TextCommands.values().filter { it.isFullCommand && it.allowedRoles.intersect(userActualizedInfo.roles).isNotEmpty() }.joinToString(separator = "\n") {
-                "▪" + it.commandText+ " - " + it.description
-            }
+            val finalText =
+                TextCommands.values().filter {
+                    it.isFullCommand && it.allowedRoles.intersect(userActualizedInfo.roles).isNotEmpty()
+                }.joinToString(separator = "\n") {
+                    "▪" + it.commandText + " - " + it.description
+                }
 
             messageSenderService.sendMessage(
                 MessageParams(
