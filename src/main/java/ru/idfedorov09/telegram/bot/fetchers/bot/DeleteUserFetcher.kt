@@ -7,6 +7,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.model.*
 import ru.idfedorov09.telegram.bot.executor.Executor
+import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
@@ -22,7 +23,7 @@ class DeleteUserFetcher(
     private val userRepository: UserRepository,
     private val callbackDataRepository: CallbackDataRepository,
     private val messageSenderService: MessageSenderService,
-) : GeneralFetcher() {
+) : DefaultFetcher() {
     @InjectData
     fun doFetch(
         userActualizedInfo: UserActualizedInfo,

@@ -1,4 +1,4 @@
-package ru.idfedorov09.telegram.bot.fetchers
+package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.Update

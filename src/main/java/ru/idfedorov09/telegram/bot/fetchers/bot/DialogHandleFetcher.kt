@@ -14,6 +14,7 @@ import ru.idfedorov09.telegram.bot.data.model.Quest
 import ru.idfedorov09.telegram.bot.data.model.QuestDialogMessage
 import ru.idfedorov09.telegram.bot.data.model.User
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
+import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.QuestDialogMessageRepository
 import ru.idfedorov09.telegram.bot.repo.QuestRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
@@ -32,7 +33,7 @@ class DialogHandleFetcher(
     private val questDialogMessageRepository: QuestDialogMessageRepository,
     private val userRepository: UserRepository,
     private val switchKeyboardService: SwitchKeyboardService,
-) : GeneralFetcher() {
+) : DefaultFetcher() {
     // TODO: добавить поддержку картинок, файлов, HTML/MARKDOWN-разметки
     @InjectData
     fun doFetch(

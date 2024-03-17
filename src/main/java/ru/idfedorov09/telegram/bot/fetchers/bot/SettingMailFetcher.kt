@@ -8,6 +8,7 @@ import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.model.Category
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
+import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository
 import ru.idfedorov09.telegram.bot.service.CategoryUpdateService
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
@@ -23,7 +24,7 @@ class SettingMailFetcher(
     private val categoryRepository: CategoryRepository,
     private val categoryUpdateService: CategoryUpdateService,
     private val messageSenderService: MessageSenderService,
-) : GeneralFetcher() {
+) : DefaultFetcher() {
     @InjectData
     fun doFetch(
         update: Update,

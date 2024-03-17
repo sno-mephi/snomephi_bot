@@ -16,6 +16,8 @@ import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.MAX_CATEGORY_COUNTS
+import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
+
 /**
  * Фетчер, обрабатывающий нажатия на кнопки категорий
  */
@@ -25,7 +27,7 @@ class CategoryButtonHandlerFetcher(
     private val messageSenderService: MessageSenderService,
     private val categoryRepository: CategoryRepository,
     private val userRepository: UserRepository,
-) : GeneralFetcher() {
+) : DefaultFetcher() {
     private data class RequestData(
         val chatId: String,
         val update: Update,

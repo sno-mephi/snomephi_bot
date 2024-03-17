@@ -6,6 +6,7 @@ import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
+import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
@@ -17,7 +18,7 @@ import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 @Component
 class HelpCommandFetcher(
     private val messageSenderService: MessageSenderService,
-) : GeneralFetcher() {
+) : DefaultFetcher() {
     @InjectData
     fun doFetch(
         userActualizedInfo: UserActualizedInfo,

@@ -7,6 +7,7 @@ import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
+import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
@@ -25,7 +26,7 @@ class UserInfoCommandFetcher(
     private val bot: Executor,
     private val messageSenderService: MessageSenderService,
     private val categoryRepository: CategoryRepository,
-) : GeneralFetcher() {
+) : DefaultFetcher() {
     @InjectData
     fun doFetch(
         update: Update,

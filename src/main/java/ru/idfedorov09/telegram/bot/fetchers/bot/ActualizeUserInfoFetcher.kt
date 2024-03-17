@@ -9,6 +9,7 @@ import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.data.model.User
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
+import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.flow.ExpContainer
 import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository
@@ -27,7 +28,7 @@ class ActualizeUserInfoFetcher(
     private val categoryRepository: CategoryRepository,
     private val questRepository: QuestRepository,
     private val broadcastRepository: BroadcastRepository,
-) : GeneralFetcher() {
+) : DefaultFetcher() {
     companion object {
         private val log = org.slf4j.LoggerFactory.getLogger(ActualizeUserInfoFetcher::class.java)
     }

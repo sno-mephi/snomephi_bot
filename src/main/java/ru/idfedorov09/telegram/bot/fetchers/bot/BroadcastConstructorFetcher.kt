@@ -15,6 +15,7 @@ import ru.idfedorov09.telegram.bot.data.model.Button
 import ru.idfedorov09.telegram.bot.data.model.CallbackData
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
+import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
 import ru.idfedorov09.telegram.bot.repo.ButtonRepository
 import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
@@ -40,7 +41,7 @@ class BroadcastConstructorFetcher(
     private val buttonRepository: ButtonRepository,
     private val broadcastSenderService: BroadcastSenderService,
     private val messageSenderService: MessageSenderService,
-) : GeneralFetcher() {
+) : DefaultFetcher() {
     @InjectData
     fun doFetch(
         userActualizedInfo: UserActualizedInfo,

@@ -19,6 +19,7 @@ import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.Quest
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
+import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.QuestDialogMessageRepository
 import ru.idfedorov09.telegram.bot.repo.QuestRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
@@ -40,7 +41,7 @@ class QuestButtonHandlerFetcher(
     private val userRepository: UserRepository,
     private val dialogMessageRepository: QuestDialogMessageRepository,
     private val switchKeyboardService: SwitchKeyboardService,
-) : GeneralFetcher() {
+) : DefaultFetcher() {
     // TODO: обработать случай когда бот не может написать пользователю!
     // TODO: нельзя отвечать самому себе
     @InjectData
