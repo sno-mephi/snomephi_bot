@@ -111,7 +111,7 @@ class QuestButtonHandlerFetcher(
             MessageParams(
                 chatId = data.userActualizedInfo.tui,
                 text =
-                    "<i>Ты перешел в диалог с пользователем @${MessageSenderUtil.userName(
+                    "<i>Ты перешел в диалог с пользователем ${MessageSenderUtil.userName(
                         questionAuthor.lastTgNick,
                         questionAuthor.fullName,
                     )}. " +
@@ -144,7 +144,7 @@ class QuestButtonHandlerFetcher(
             ),
         )
 
-        val newText = "\uD83D\uDFE1 Проигнорировано пользователем @${MessageSenderUtil.userName(
+        val newText = "\uD83D\uDFE1 Проигнорировано пользователем ${MessageSenderUtil.userName(
             data.userActualizedInfo.lastTgNick,
             data.userActualizedInfo.fullName,
         )}."
@@ -210,7 +210,7 @@ class QuestButtonHandlerFetcher(
             )
         userRepository.save(authorInBan)
 
-        val newText = "\uD83D\uDD34 Автор забанен пользователем @${MessageSenderUtil.userName(
+        val newText = "\uD83D\uDD34 Автор забанен пользователем ${MessageSenderUtil.userName(
             data.userActualizedInfo.lastTgNick,
             data.userActualizedInfo.fullName,
         )}."

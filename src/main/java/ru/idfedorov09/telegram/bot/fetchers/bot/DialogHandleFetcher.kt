@@ -386,7 +386,7 @@ class DialogHandleFetcher(
                 chatId = GlobalConstants.QUEST_RESPONDENT_CHAT_ID,
                 messageId = params.quest.consoleMessageId!!.toInt(),
                 text =
-                    "✅ @${MessageSenderUtil.userName(params.responder.lastTgNick, params.responder.fullName)} " +
+                    "✅ ${MessageSenderUtil.userName(params.responder.lastTgNick, params.responder.fullName)} " +
                         "пообщался(-ась)",
             ),
         )
