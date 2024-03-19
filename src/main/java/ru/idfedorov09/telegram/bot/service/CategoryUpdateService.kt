@@ -1,15 +1,14 @@
 package ru.idfedorov09.telegram.bot.service
 
 import org.springframework.stereotype.Service
-import ru.idfedorov09.telegram.bot.data.model.Category
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 
 /**
-    Сервис для изменения категорий юзеров
+ Сервис для изменения категорий юзеров
  */
 @Service
-class CategoryUpdateService (
+class CategoryUpdateService(
     private val userRepository: UserRepository,
     private val categoryRepository: CategoryRepository,
 ) {
@@ -24,11 +23,13 @@ class CategoryUpdateService (
                 categoryId = categoryId,
                 userId = userId,
             )
-        } else (
-           userRepository.addCategory(
-               categoryId = categoryId,
-               userId = userId,
-           )
-        )
+        } else {
+            (
+                userRepository.addCategory(
+                    categoryId = categoryId,
+                    userId = userId,
+                )
+            )
+        }
     }
 }

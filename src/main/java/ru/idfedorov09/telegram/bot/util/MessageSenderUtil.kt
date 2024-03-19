@@ -94,18 +94,20 @@ object MessageSenderUtil {
             if (text == null && photo == null && document == null && sticker == null && voice == null &&
                 videoNote == null && audio == null && video == null
             ) {
-                throw NullPointerException("Text or photo or document or sticker or voice or videoNote or " +
-                        "audio or video should be not null.")
+                throw NullPointerException(
+                    "Text or photo or document or sticker or voice or videoNote or " +
+                        "audio or video should be not null.",
+                )
             }
             when {
-                sticker != null -> sendSticker(bot,this)
-                voice != null -> sendVoice(bot,this)
-                videoNote != null -> sendVideoNote(bot,this)
-                video != null -> sendVideo(bot,this)
-                audio != null -> sendAudio(bot,this)
-                document != null -> sendDocument(bot,this)
-                photo != null -> sendPhoto(bot,this)
-                else -> sendText(bot,this)
+                sticker != null -> sendSticker(bot, this)
+                voice != null -> sendVoice(bot, this)
+                videoNote != null -> sendVideoNote(bot, this)
+                video != null -> sendVideo(bot, this)
+                audio != null -> sendAudio(bot, this)
+                document != null -> sendDocument(bot, this)
+                photo != null -> sendPhoto(bot, this)
+                else -> sendText(bot, this)
             }
         }
     }
@@ -190,7 +192,7 @@ object MessageSenderUtil {
         bot: Executor,
         params: MessageParams,
     ): Message {
-       return  params.run {
+        return params.run {
             bot.execute(
                 SendDocument().also {
                     it.document = document!!
@@ -252,5 +254,15 @@ object MessageSenderUtil {
                 },
             )
         }
+    }
+
+    fun userName(
+        lastTgNick: String?,
+        fullName: String?,
+    ) = if (lastTgNick == null)
+        {
+            "$fullName"
+        } else {
+        "@$lastTgNick ($fullName)"
     }
 }

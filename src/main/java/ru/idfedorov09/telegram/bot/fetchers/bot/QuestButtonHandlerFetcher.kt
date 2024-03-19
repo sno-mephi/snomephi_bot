@@ -25,6 +25,7 @@ import ru.idfedorov09.telegram.bot.repo.QuestRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.service.SwitchKeyboardService
+import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 import java.lang.NumberFormatException
@@ -111,7 +112,10 @@ class QuestButtonHandlerFetcher(
             MessageParams(
                 chatId = data.userActualizedInfo.tui,
                 text =
-                    "<i>Ты перешел в диалог с пользователем @${questionAuthor.lastTgNick}. " +
+                    "<i>Ты перешел в диалог с пользователем ${MessageSenderUtil.userName(
+                        questionAuthor.lastTgNick,
+                        questionAuthor.fullName,
+                    )}. " +
                         "Несмотря на твою анонимность, оставайся вежливым :)</i>",
                 parseMode = ParseMode.HTML,
             ),
@@ -121,7 +125,9 @@ class QuestButtonHandlerFetcher(
             MessageParams(
                 chatId = QUEST_RESPONDENT_CHAT_ID,
                 messageId = quest.consoleMessageId!!.toInt(),
-                text = "✏\uFE0F ${data.userActualizedInfo.lastTgNick} ведет диалог",
+                text =
+                    "✏\uFE0F ${MessageSenderUtil.userName(data.userActualizedInfo.lastTgNick, data.userActualizedInfo.fullName)} " +
+                        "ведет диалог",
             ),
         )
 
@@ -139,8 +145,10 @@ class QuestButtonHandlerFetcher(
             ),
         )
 
-        // TODO: а если у пользователя нет ника?
-        val newText = "\uD83D\uDFE1 Проигнорировано пользователем @${data.userActualizedInfo.lastTgNick}."
+        val newText = "\uD83D\uDFE1 Проигнорировано пользователем ${MessageSenderUtil.userName(
+            data.userActualizedInfo.lastTgNick,
+            data.userActualizedInfo.fullName,
+        )}."
         messageSenderService.editMessage(
             MessageParams(
                 chatId = QUEST_RESPONDENT_CHAT_ID,
@@ -203,8 +211,10 @@ class QuestButtonHandlerFetcher(
             )
         userRepository.save(authorInBan)
 
-        // TODO: а если у пользователя нет ника?
-        val newText = "\uD83D\uDD34 Автор забанен пользователем @${data.userActualizedInfo.lastTgNick}."
+        val newText = "\uD83D\uDD34 Автор забанен пользователем ${MessageSenderUtil.userName(
+            data.userActualizedInfo.lastTgNick,
+            data.userActualizedInfo.fullName,
+        )}."
         messageSenderService.editMessage(
             MessageParams(
                 chatId = QUEST_RESPONDENT_CHAT_ID,

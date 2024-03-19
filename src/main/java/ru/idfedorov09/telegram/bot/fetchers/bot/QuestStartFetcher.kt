@@ -17,6 +17,7 @@ import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.QuestDialogMessageRepository
 import ru.idfedorov09.telegram.bot.repo.QuestRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
+import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
@@ -122,14 +123,13 @@ class QuestStartFetcher(
             ),
         )
 
-        // TODO: обработать случай когда у юзера нет никнейма
         // TODO: добавить время обращения
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = QUEST_RESPONDENT_CHAT_ID,
                 text =
                     "\uD83D\uDCE5 Получен вопрос #${quest.id} " +
-                        "от @${userActualizedInfo.lastTgNick} (${userActualizedInfo.fullName})",
+                        "от ${MessageSenderUtil.userName(userActualizedInfo.lastTgNick, userActualizedInfo.fullName)}",
             ),
         )
 
