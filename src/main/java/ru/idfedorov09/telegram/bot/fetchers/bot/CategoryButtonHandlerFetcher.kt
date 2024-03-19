@@ -3,6 +3,7 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
+import ru.idfedorov09.telegram.bot.annotation.FetcherPerms
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.MAX_CATEGORY_COUNTS
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
@@ -15,7 +16,9 @@ import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
-import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
+import ru.idfedorov09.telegram.bot.data.enums.UserRole
+import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
+
 
 /**
  * Фетчер, обрабатывающий нажатия на кнопки категорий
@@ -26,7 +29,7 @@ class CategoryButtonHandlerFetcher(
     private val messageSenderService: MessageSenderService,
     private val categoryRepository: CategoryRepository,
     private val userRepository: UserRepository,
-) : GeneralFetcher() {
+) : DefaultFetcher() {
     private data class RequestData(
         val chatId: String,
         val update: Update,
@@ -36,6 +39,7 @@ class CategoryButtonHandlerFetcher(
     val pageSize: Long = 6
 
     @InjectData
+    @FetcherPerms(UserRole.CATEGORY_BUILDER)
     fun doFetch(
         update: Update,
         userActualizedInfo: UserActualizedInfo,
@@ -277,10 +281,9 @@ class CategoryButtonHandlerFetcher(
             ),
         )
         // TODO: Пока что нет логики, которая делает isSetupByDefault = false
-        if (category.isSetupByDefault)
-            {
-                category.id?.let { userRepository.addCategoryForAllUser(it) }
-            }
+        if (category.isSetupByDefault){
+            category.id?.let { userRepository.addCategoryForAllUser(it) }
+        }
     }
 
     private fun actionDeleteCategory(
@@ -307,7 +310,7 @@ class CategoryButtonHandlerFetcher(
             sendMessage(
                 data,
                 "❌ Категорию #${category.get().suffix} удалить не получилось, " +
-                    "тк сейчас ее именяет другой пользователь",
+                    "так сейчас ее именяет другой пользователь",
                 CategoryKeyboards.confirmationDone(),
             )
         }

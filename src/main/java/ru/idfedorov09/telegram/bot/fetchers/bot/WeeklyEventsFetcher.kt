@@ -5,6 +5,7 @@ import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
+import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
 import ru.idfedorov09.telegram.bot.service.BroadcastSenderService
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
@@ -19,7 +20,7 @@ class WeeklyEventsFetcher(
     private val broadcastRepository: BroadcastRepository,
     private val broadcastSenderService: BroadcastSenderService,
     private val messageSenderService: MessageSenderService,
-) : GeneralFetcher() {
+) : DefaultFetcher() {
     @InjectData
     fun doFetch(
         userActualizedInfo: UserActualizedInfo,
