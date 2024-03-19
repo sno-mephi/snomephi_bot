@@ -259,10 +259,9 @@ object MessageSenderUtil {
     fun userName(
         lastTgNick: String?,
         fullName: String?,
-    ) = if (lastTgNick == null)
-        {
-            "$fullName"
-        } else {
+    ) = if (lastTgNick == null) {
+        "$fullName"
+    } else {
         "@$lastTgNick ($fullName)"
     }
 }

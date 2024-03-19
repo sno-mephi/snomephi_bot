@@ -25,7 +25,6 @@ import ru.idfedorov09.telegram.bot.repo.CategoryRepository
 import ru.idfedorov09.telegram.bot.service.BroadcastSenderService
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
-import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -675,28 +674,30 @@ class BroadcastConstructorFetcher(
         val msgText = "Отправьте фотографию, которую вы хотите прикрепить к рассылке"
         val cancelButton = CallbackData(callbackData = "#bc_action_cancel", metaText = "Отмена").save()
         val deletePhoto = CallbackData(callbackData = "#bc_delete_photo", metaText = "Удалить фото").save()
-
+        val buttonsList =
+            mutableListOf(
+                listOf(
+                    InlineKeyboardButton().also {
+                        it.text = cancelButton.metaText!!
+                        it.callbackData = cancelButton.id?.toString()
+                    },
+                ),
+            )
+        if (params.userActualizedInfo.bcData?.imageHash != null) {
+            buttonsList.add(
+                listOf(
+                    InlineKeyboardButton().also {
+                        it.text = deletePhoto.metaText!!
+                        it.callbackData = deletePhoto.id?.toString()
+                    },
+                ),
+            )
+        }
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = params.userActualizedInfo.tui,
                 text = msgText,
-                replyMarkup =
-                    createKeyboard(
-                        listOf(
-                            listOf(
-                                InlineKeyboardButton().also {
-                                    it.text = cancelButton.metaText!!
-                                    it.callbackData = cancelButton.id?.toString()
-                                },
-                            ),
-                            listOf(
-                                InlineKeyboardButton().also {
-                                    it.text = deletePhoto.metaText!!
-                                    it.callbackData = deletePhoto.id?.toString()
-                                },
-                            ),
-                        ),
-                    ),
+                replyMarkup = createKeyboard(buttonsList),
             ),
         )
         params.userActualizedInfo.lastUserActionType = LastUserActionType.BC_PHOTO_TYPE

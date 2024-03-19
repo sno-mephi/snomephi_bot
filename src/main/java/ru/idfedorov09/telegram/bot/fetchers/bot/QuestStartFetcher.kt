@@ -20,7 +20,6 @@ import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
-import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 
 @Component
 class QuestStartFetcher(

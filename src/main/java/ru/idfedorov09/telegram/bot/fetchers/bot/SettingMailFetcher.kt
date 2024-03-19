@@ -12,7 +12,6 @@ import ru.idfedorov09.telegram.bot.repo.CategoryRepository
 import ru.idfedorov09.telegram.bot.service.CategoryUpdateService
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
-import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 
 /**
  * Фетчер настраивает рассылку пользователя

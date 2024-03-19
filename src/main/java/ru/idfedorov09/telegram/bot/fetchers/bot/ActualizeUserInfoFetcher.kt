@@ -17,7 +17,6 @@ import ru.idfedorov09.telegram.bot.repo.QuestRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
-import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 import kotlin.jvm.optionals.getOrNull
 
 @Component

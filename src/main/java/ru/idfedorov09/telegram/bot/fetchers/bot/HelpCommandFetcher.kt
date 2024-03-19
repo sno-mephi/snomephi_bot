@@ -9,7 +9,6 @@ import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
-import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 
 /**
 фетчер для рассылки команд /help
