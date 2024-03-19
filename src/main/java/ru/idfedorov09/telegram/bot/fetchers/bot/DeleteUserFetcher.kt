@@ -12,7 +12,6 @@ import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
-import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 import kotlin.jvm.optionals.getOrNull
 
 /**
@@ -39,9 +38,9 @@ class DeleteUserFetcher(
 
         return when {
             update.hasCallbackQuery() -> callbackCommandResetHandler(params)
-            update.hasMessage()
-                    && update.message.hasText()
-                    && update.message.text.startsWith(TextCommands.RESET()) -> textCommandResetHandler(params)
+            update.hasMessage() &&
+                update.message.hasText() &&
+                update.message.text.startsWith(TextCommands.RESET()) -> textCommandResetHandler(params)
             else -> userActualizedInfo
         }
     }

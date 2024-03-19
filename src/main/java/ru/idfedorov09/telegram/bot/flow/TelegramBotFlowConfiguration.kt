@@ -4,8 +4,8 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUALIFIER_FLOW_TG_BOT
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
-import ru.idfedorov09.telegram.bot.fetchers.bot.PermissionsFetcher
 import ru.idfedorov09.telegram.bot.fetchers.bot.*
+import ru.idfedorov09.telegram.bot.fetchers.bot.PermissionsFetcher
 import ru.idfedorov09.telegram.bot.fetchers.bot.userfetchers.RegistrationActionHandlerFetcher
 import ru.idfedorov09.telegram.bot.fetchers.bot.userfetchers.RegistrationFetcher
 import ru.mephi.sno.libs.flow.belly.FlowBuilder

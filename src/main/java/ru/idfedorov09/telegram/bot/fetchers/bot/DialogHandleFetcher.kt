@@ -22,7 +22,6 @@ import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.service.SwitchKeyboardService
 import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
-import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 
 /**
  * Фетчер отвечающий за общение челиков в режиме активного диалога
@@ -35,7 +34,6 @@ class DialogHandleFetcher(
     private val userRepository: UserRepository,
     private val switchKeyboardService: SwitchKeyboardService,
 ) : DefaultFetcher() {
-
     @InjectData
     fun doFetch(
         update: Update,

@@ -7,18 +7,17 @@ import ru.idfedorov09.telegram.bot.annotation.FetcherPerms
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.MAX_CATEGORY_COUNTS
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
+import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.data.keyboards.CategoryKeyboards
 import ru.idfedorov09.telegram.bot.data.model.Category
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
+import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
-import ru.idfedorov09.telegram.bot.data.enums.UserRole
-import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
-
 
 /**
  * Фетчер, обрабатывающий нажатия на кнопки категорий
@@ -281,9 +280,10 @@ class CategoryButtonHandlerFetcher(
             ),
         )
         // TODO: Пока что нет логики, которая делает isSetupByDefault = false
-        if (category.isSetupByDefault){
-            category.id?.let { userRepository.addCategoryForAllUser(it) }
-        }
+        if (category.isSetupByDefault)
+            {
+                category.id?.let { userRepository.addCategoryForAllUser(it) }
+            }
     }
 
     private fun actionDeleteCategory(
