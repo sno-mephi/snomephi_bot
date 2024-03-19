@@ -43,7 +43,6 @@ object KeyboardUtil {
         val defaultKeyboard =
             ReplyKeyboardMarkup().also {
                 it.keyboard = keyboards
-                it.oneTimeKeyboard = true
                 it.resizeKeyboard = true
             }
         return defaultKeyboard
@@ -59,7 +58,6 @@ object KeyboardUtil {
         val closeDialogKeyboard =
             ReplyKeyboardMarkup().also {
                 it.keyboard = keyboards
-                it.oneTimeKeyboard = true
                 it.resizeKeyboard = true
             }
         return closeDialogKeyboard
