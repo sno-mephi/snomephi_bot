@@ -29,7 +29,7 @@ import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import java.lang.NumberFormatException
 import kotlin.jvm.optionals.getOrNull
-
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery
 /**
  * Фетчер, обрабатывающий случаи нажатия на кнопки для вопросов
  */
@@ -65,18 +65,17 @@ class QuestButtonHandlerFetcher(
                 userActualizedInfo,
                 update,
             )
-        bot.execute(AnswerCallbackQuery(update.callbackQuery.id))
         return when {
-            QUEST_ANSWER.isMatch(callbackData) -> clickAnswer(requestData)
-            QUEST_IGNORE.isMatch(callbackData) -> clickIgnore(requestData)
-            QUEST_BAN.isMatch(callbackData) -> clickBan(requestData)
-            QUEST_START_DIALOG.isMatch(callbackData) -> clickStartDialog(requestData)
-            else -> userActualizedInfo
+                QUEST_ANSWER.isMatch(callbackData) -> clickAnswer(requestData)
+                QUEST_IGNORE.isMatch(callbackData) -> clickIgnore(requestData)
+                QUEST_BAN.isMatch(callbackData) -> clickBan(requestData)
+                QUEST_START_DIALOG.isMatch(callbackData) -> clickStartDialog(requestData)
+                else -> userActualizedInfo
+            }
         }
-    }
 
     private fun clickStartDialog(data: RequestData): UserActualizedInfo {
-        if (data.quest.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
+        if (data.quest.questionStatus != QuestionStatus.WAIT) return data.userActualizedInfo
         if (data.userActualizedInfo.activeQuest != null) return data.userActualizedInfo
 
         val quest =
@@ -136,7 +135,7 @@ class QuestButtonHandlerFetcher(
     }
 
     private fun clickIgnore(data: RequestData): UserActualizedInfo {
-        if (data.quest.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
+        if (data.quest.questionStatus != QuestionStatus.WAIT) return data.userActualizedInfo
 
         questRepository.save(
             data.quest.copy(
@@ -159,7 +158,22 @@ class QuestButtonHandlerFetcher(
     }
 
     private fun clickAnswer(data: RequestData): UserActualizedInfo {
-        if (data.quest.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
+        if (data.quest.questionStatus != QuestionStatus.WAIT) return data.userActualizedInfo
+
+        val questionAuthorSelf = userRepository.findActiveUsersById(data.quest.authorId!!)!!
+
+        if (data.userActualizedInfo.tui == questionAuthorSelf.tui){
+
+            val answerCallbackQuery = AnswerCallbackQuery().also {
+                it.callbackQueryId = data.update.callbackQuery.id
+                it.text = "Вы не можете отвечать самому себе!"
+                it.showAlert = true
+            }
+            bot.execute(answerCallbackQuery)
+
+            return data.userActualizedInfo
+        }
+
         if (data.userActualizedInfo.activeQuest != null) return data.userActualizedInfo
 
         val questionAuthor = userRepository.findActiveUsersById(data.quest.authorId!!)!!
@@ -196,7 +210,22 @@ class QuestButtonHandlerFetcher(
     }
 
     private fun clickBan(data: RequestData): UserActualizedInfo {
-        if (data.quest.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
+        if (data.quest.questionStatus != QuestionStatus.WAIT) return data.userActualizedInfo
+
+        val questionAuthorSelf = userRepository.findActiveUsersById(data.quest.authorId!!)!!
+
+        if (data.userActualizedInfo.tui == questionAuthorSelf.tui){
+
+            val answerCallbackQuery = AnswerCallbackQuery().also {
+                it.callbackQueryId = data.update.callbackQuery.id
+                it.text = "Вы не можете себя забанить!"
+                it.showAlert = true
+            }
+            bot.execute(answerCallbackQuery)
+
+            return data.userActualizedInfo
+        }
+
         questRepository.save(
             data.quest.copy(
                 questionStatus = QuestionStatus.CLOSED,
