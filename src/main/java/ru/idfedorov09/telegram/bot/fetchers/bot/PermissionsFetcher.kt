@@ -11,6 +11,7 @@ import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.data.model.CallbackData
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
+import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
@@ -28,7 +29,7 @@ class PermissionsFetcher(
     private val messageSenderService: MessageSenderService,
     private val userRepository: UserRepository,
     private val switchKeyboardService: SwitchKeyboardService,
-) : GeneralFetcher() {
+) : DefaultFetcher() {
     @InjectData
     @FetcherPerms(UserRole.ROOT)
     fun doFetch(

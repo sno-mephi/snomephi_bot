@@ -10,6 +10,7 @@ import ru.idfedorov09.telegram.bot.data.enums.RegistrationMessageText
 import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
+import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.service.SwitchKeyboardService
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
@@ -21,7 +22,7 @@ class RegistrationActionHandlerFetcher(
     private val updatesUtil: UpdatesUtil,
     private val messageSenderService: MessageSenderService,
     private val switchKeyboardService: SwitchKeyboardService,
-) : GeneralFetcher() {
+) : DefaultFetcher() {
     companion object {
         private val log = LoggerFactory.getLogger(RegistrationFetcher::class.java)
     }
