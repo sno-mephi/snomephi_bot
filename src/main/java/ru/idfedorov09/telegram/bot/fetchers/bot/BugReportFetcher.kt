@@ -13,7 +13,7 @@ import ru.mephi.sno.libs.flow.belly.InjectData
 import java.util.regex.Pattern
 
 /**
-фетчер для рассылки команд /help
+фетчер для сообщения о баге /bug <текст обращения>
  */
 @Component
 class BugReportFetcher(
