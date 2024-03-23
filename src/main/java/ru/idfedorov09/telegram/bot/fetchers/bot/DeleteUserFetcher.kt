@@ -9,7 +9,6 @@ import ru.idfedorov09.telegram.bot.data.model.*
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
-import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
 import kotlin.jvm.optionals.getOrNull
@@ -21,6 +20,7 @@ import kotlin.jvm.optionals.getOrNull
 class DeleteUserFetcher(
     private val callbackDataRepository: CallbackDataRepository,
     private val messageSenderService: MessageSenderService,
+    private val updateDataFetcher: UpdateDataFetcher,
 ) : DefaultFetcher() {
     @InjectData
     fun doFetch(
@@ -72,6 +72,8 @@ class DeleteUserFetcher(
                 replyMarkup = createKeyboard(keyboard),
             ),
         )
+
+        stopFlowNextExecution()
         return params.userActualizedInfo
     }
 
@@ -87,6 +89,8 @@ class DeleteUserFetcher(
                 else -> params.userActualizedInfo
             }
         }
+
+        stopFlowNextExecution()
         return params.userActualizedInfo
     }
 
@@ -106,6 +110,8 @@ class DeleteUserFetcher(
         )
 
         params.userActualizedInfo.isDeleted = true
+        updateDataFetcher.doFetch(userActualizedInfo = params.userActualizedInfo)
+        stopFlowNextExecution()
 
         return params.userActualizedInfo
     }

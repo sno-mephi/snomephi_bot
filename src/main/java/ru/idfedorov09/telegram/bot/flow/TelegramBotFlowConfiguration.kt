@@ -34,6 +34,7 @@ open class TelegramBotFlowConfiguration(
     private val permissionsFetcher: PermissionsFetcher,
     private val helpCommandFetcher: HelpCommandFetcher,
     private val deleteUserFetcher: DeleteUserFetcher,
+    private val bugReportFetcher: BugReportFetcher,
 ) {
     /**
      * Возвращает построенный граф; выполняется только при запуске приложения
@@ -48,7 +49,8 @@ open class TelegramBotFlowConfiguration(
     private fun FlowBuilder.buildFlow() {
         sequence {
             fetch(actualizeUserInfoFetcher)
-
+            fetch(deleteUserFetcher)
+            fetch(bugReportFetcher)
             // registration block
             sequence(condition = { it.isByUser() && !it.isUserRegistered() && it.isPersonalUpdate() }) {
                 fetch(userActionHandlerFetcher)
@@ -57,7 +59,6 @@ open class TelegramBotFlowConfiguration(
 
             group(condition = { it.isByUser() && it.isUserRegistered() }) {
                 sequence {
-                    fetch(deleteUserFetcher)
                     fetch(categoryCommandHandlerFetcher)
                     fetch(categoryButtonHandlerFetcher)
                     fetch(categoryActionTypeHandlerFetcher)
