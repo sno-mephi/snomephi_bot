@@ -12,4 +12,6 @@ data class ExpContainer(
     /** флаг, который говорит, что апдейт пришел от пользователя **/
     var byUser: Boolean = true,
     var isPersonal: Boolean = false,
+    /** флаг принудительной остановки флоу. Если false то флоу принудительно останавливается **/
+    var shouldContinueExecutionFlow: Boolean = true,
 )

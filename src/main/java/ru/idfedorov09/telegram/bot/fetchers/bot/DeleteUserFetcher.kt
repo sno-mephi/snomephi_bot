@@ -19,7 +19,6 @@ import kotlin.jvm.optionals.getOrNull
  */
 @Component
 class DeleteUserFetcher(
-    private val userRepository: UserRepository,
     private val callbackDataRepository: CallbackDataRepository,
     private val messageSenderService: MessageSenderService,
 ) : DefaultFetcher() {
