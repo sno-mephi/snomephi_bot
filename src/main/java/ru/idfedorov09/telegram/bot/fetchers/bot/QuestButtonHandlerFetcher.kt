@@ -28,6 +28,8 @@ import ru.idfedorov09.telegram.bot.service.SwitchKeyboardService
 import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import java.lang.NumberFormatException
+import java.time.LocalDateTime
+import java.time.ZoneId
 import kotlin.jvm.optionals.getOrNull
 
 /**
@@ -141,6 +143,9 @@ class QuestButtonHandlerFetcher(
         questRepository.save(
             data.quest.copy(
                 questionStatus = QuestionStatus.CLOSED,
+                finishTime = LocalDateTime.now(
+                    ZoneId.of("Europe/Moscow"),
+                ),
             ),
         )
 
@@ -200,6 +205,9 @@ class QuestButtonHandlerFetcher(
         questRepository.save(
             data.quest.copy(
                 questionStatus = QuestionStatus.CLOSED,
+                finishTime = LocalDateTime.now(
+                    ZoneId.of("Europe/Moscow"),
+                ),
             ),
         )
 

@@ -105,7 +105,7 @@ class UserInfoCommandFetcher(
                 if (lastTgNick == null) {
                     "-"
                 } else {
-                    "@{lastTgNick}"
+                    "@${lastTgNick}"
                 }
             val msgText =
                 "\uD83D\uDC64ФИО: ${fullName ?: "-"}\n\uD83D\uDCDAгруппа: ${studyGroup ?: "Не из МИФИ"}" +
