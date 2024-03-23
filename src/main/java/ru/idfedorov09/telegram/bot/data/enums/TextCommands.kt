@@ -38,7 +38,7 @@ enum class TextCommands(
     ),
 
     USER_INFO(
-        commandText = "/userInfo",
+        commandText = "/userinfo",
         allowedRoles = listOf(UserRole.ROOT),
         description = "присылает полную информацию о пользователе",
     ),
