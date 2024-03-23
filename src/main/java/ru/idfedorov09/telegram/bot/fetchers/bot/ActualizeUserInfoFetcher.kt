@@ -13,7 +13,7 @@ import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.flow.ExpContainer
 import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
 import ru.idfedorov09.telegram.bot.repo.CategoryRepository
-import ru.idfedorov09.telegram.bot.repo.QuestRepository
+import ru.idfedorov09.telegram.bot.repo.QuestDialogRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
@@ -25,7 +25,7 @@ class ActualizeUserInfoFetcher(
     private val updatesUtil: UpdatesUtil,
     private val userRepository: UserRepository,
     private val categoryRepository: CategoryRepository,
-    private val questRepository: QuestRepository,
+    private val questDialogRepository: QuestDialogRepository,
     private val broadcastRepository: BroadcastRepository,
 ) : DefaultFetcher() {
     companion object {
@@ -68,7 +68,7 @@ class ActualizeUserInfoFetcher(
         val categories = categoryRepository.findAllById(userDataFromDatabase.categories).toMutableSet()
         val activeQuest =
             userDataFromDatabase.questDialogId
-                ?.let { questRepository.findById(it).getOrNull() }
+                ?.let { questDialogRepository.findById(it).getOrNull() }
                 ?.let { if (it.questionStatus == QuestionStatus.DIALOG) it else null }
 
         // обновляем ник в бдшке
@@ -92,7 +92,7 @@ class ActualizeUserInfoFetcher(
                 categories = categories,
                 roles = roles,
                 lastUserActionType = lastUserActionType,
-                activeQuest = activeQuest,
+                activeQuestDialog = activeQuest,
                 data = data,
                 isRegistered = isRegistered,
                 bcData = bcData,

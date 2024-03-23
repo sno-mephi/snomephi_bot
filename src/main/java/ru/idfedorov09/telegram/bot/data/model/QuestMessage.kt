@@ -2,16 +2,17 @@ package ru.idfedorov09.telegram.bot.data.model
 
 import jakarta.persistence.*
 import java.time.LocalDateTime
-import java.time.LocalTime
 
 @Entity
-@Table(name = "question_dialog_messages_table")
-data class QuestDialogMessage(
+@Table(name = "question_messages_table")
+data class QuestMessage(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "quest_message_id")
     val id: Long? = null,
-    @Column(name = "quest_id")
+    @Column(name = "quest_segment_id")
+    val segmentId: Long? = null,
+    @Column(name = "quest_dialog_id")
     val questId: Long? = null,
     @Column(name = "is_by_quest_author")
     val isByQuestionAuthor: Boolean? = null,

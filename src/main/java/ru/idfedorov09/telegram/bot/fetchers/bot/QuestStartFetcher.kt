@@ -9,13 +9,11 @@ import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.*
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
-import ru.idfedorov09.telegram.bot.data.model.MessageParams
-import ru.idfedorov09.telegram.bot.data.model.Quest
-import ru.idfedorov09.telegram.bot.data.model.QuestDialogMessage
-import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
+import ru.idfedorov09.telegram.bot.data.model.*
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
-import ru.idfedorov09.telegram.bot.repo.QuestDialogMessageRepository
-import ru.idfedorov09.telegram.bot.repo.QuestRepository
+import ru.idfedorov09.telegram.bot.repo.QuestMessageRepository
+import ru.idfedorov09.telegram.bot.repo.QuestDialogRepository
+import ru.idfedorov09.telegram.bot.repo.QuestSegmentRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
@@ -26,8 +24,9 @@ import java.time.ZoneId
 @Component
 class QuestStartFetcher(
     private val updatesUtil: UpdatesUtil,
-    private val questRepository: QuestRepository,
-    private val questDialogMessageRepository: QuestDialogMessageRepository,
+    private val questDialogRepository: QuestDialogRepository,
+    private val questSegmentRepository: QuestSegmentRepository,
+    private val questMessageRepository: QuestMessageRepository,
     private val messageSenderService: MessageSenderService,
 ) : DefaultFetcher() {
     @InjectData
@@ -41,7 +40,7 @@ class QuestStartFetcher(
 
         userActualizedInfo.apply {
             // создаем новый вопрос если пользователь сейчас не в активном диалоге
-            if (activeQuest != null ||
+            if (activeQuestDialog != null ||
                 !(
                     lastUserActionType == LastUserActionType.DEFAULT ||
                         lastUserActionType == LastUserActionType.ACT_QUEST_ANS_CLICK
@@ -98,17 +97,30 @@ class QuestStartFetcher(
         // если пришла команда - ничего не делаем
         if (TextCommands.isTextCommand(messageText)) return
 
-        val quest =
-            Quest(
+        val questSegment = QuestSegment(
+            startTime = updatesUtil.getDate(update)
+                ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
+        ).let { questSegmentRepository.save(it) }
+
+        val questDialog =
+            QuestDialog(
                 authorId = userActualizedInfo.id,
                 questionStatus = QuestionStatus.WAIT,
                 startTime = updatesUtil.getDate(update)
-                    ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
-            ).let { questRepository.save(it) }
+                    ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() },
+                lastQuestSegmentId = questSegment.id
+            ).let { questDialogRepository.save(it) }
 
-        val questDialogMessage =
-            QuestDialogMessage(
-                questId = quest.id,
+        questSegmentRepository.save(
+            questSegment.copy(
+                questId = questDialog.id
+            )
+        )
+
+        val questMessage =
+            QuestMessage(
+                questId = questDialog.id,
+                segmentId = questSegment.id,
                 isByQuestionAuthor = true,
                 authorId = userActualizedInfo.id,
                 messageText = messageText,
@@ -117,14 +129,14 @@ class QuestStartFetcher(
                 messagePhotoHash = photoHash,
                 messageTime = updatesUtil.getDate(update)
                     ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
-            ).let { questDialogMessageRepository.save(it) }
+            ).let { questMessageRepository.save(it) }
 
-        quest.dialogHistory.add(questDialogMessage.id!!)
+        questDialog.dialogHistory.add(questMessage.id!!)
 
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = userActualizedInfo.tui,
-                text = "✉\uFE0F Сформировано обращение #${quest.id}. Ожидайте ответа.",
+                text = "✉\uFE0F Сформировано обращение #${questDialog.id}. Ожидайте ответа.",
             ),
         )
 
@@ -133,7 +145,7 @@ class QuestStartFetcher(
             MessageParams(
                 chatId = QUEST_RESPONDENT_CHAT_ID,
                 text =
-                    "\uD83D\uDCE5 Получен вопрос #${quest.id} " +
+                    "\uD83D\uDCE5 Получен вопрос #${questDialog.id} " +
                         "от ${MessageSenderUtil.userName(userActualizedInfo.lastTgNick, userActualizedInfo.fullName)}",
             ),
         )
@@ -151,29 +163,29 @@ class QuestStartFetcher(
                 MessageParams(
                     chatId = QUEST_RESPONDENT_CHAT_ID,
                     text = "Выберите действие:",
-                    replyMarkup = createChooseKeyboard(quest),
+                    replyMarkup = createChooseKeyboard(questDialog),
                 ),
             )
 
-        quest.copy(
+        questDialog.copy(
             consoleMessageId = sentMessage.messageId.toString(),
-        ).also { questRepository.save(it) }
+        ).also { questDialogRepository.save(it) }
     }
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
 
-    private fun createChooseKeyboard(quest: Quest) =
+    private fun createChooseKeyboard(questDialog: QuestDialog) =
         createKeyboard(
             listOf(
                 listOf(
                     InlineKeyboardButton("\uD83D\uDCAC Ответ")
-                        .also { it.callbackData = QUEST_ANSWER.format(quest.id) },
+                        .also { it.callbackData = QUEST_ANSWER.format(questDialog.id) },
                 ),
                 listOf(
                     InlineKeyboardButton("\uD83D\uDD07 Игнор")
-                        .also { it.callbackData = QUEST_IGNORE.format(quest.id) },
+                        .also { it.callbackData = QUEST_IGNORE.format(questDialog.id) },
                     InlineKeyboardButton("\uD83D\uDEAF Бан")
-                        .also { it.callbackData = QUEST_BAN.format(quest.id) },
+                        .also { it.callbackData = QUEST_BAN.format(questDialog.id) },
                 ),
             ),
         )

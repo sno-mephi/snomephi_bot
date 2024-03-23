@@ -16,12 +16,14 @@ import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
-import ru.idfedorov09.telegram.bot.data.model.Quest
+import ru.idfedorov09.telegram.bot.data.model.QuestDialog
+import ru.idfedorov09.telegram.bot.data.model.QuestSegment
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
-import ru.idfedorov09.telegram.bot.repo.QuestDialogMessageRepository
-import ru.idfedorov09.telegram.bot.repo.QuestRepository
+import ru.idfedorov09.telegram.bot.repo.QuestMessageRepository
+import ru.idfedorov09.telegram.bot.repo.QuestDialogRepository
+import ru.idfedorov09.telegram.bot.repo.QuestSegmentRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.service.SwitchKeyboardService
@@ -41,9 +43,10 @@ class QuestButtonHandlerFetcher(
     private val updatesUtil: UpdatesUtil,
     private val bot: Executor,
     private val messageSenderService: MessageSenderService,
-    private val questRepository: QuestRepository,
+    private val questDialogRepository: QuestDialogRepository,
+    private val questSegmentRepository: QuestSegmentRepository,
     private val userRepository: UserRepository,
-    private val dialogMessageRepository: QuestDialogMessageRepository,
+    private val questMessageRepository: QuestMessageRepository,
     private val switchKeyboardService: SwitchKeyboardService,
 ) : DefaultFetcher() {
     // TODO: обработать случай когда бот не может написать пользователю!
@@ -62,10 +65,12 @@ class QuestButtonHandlerFetcher(
         }
 
         val questByCallbackData = getQuestByCallbackData(callbackData) ?: return userActualizedInfo
+        val segment = questByCallbackData.lastQuestSegmentId?.let { questSegmentRepository.findById(it).get() }
 
         val requestData =
             RequestData(
                 questByCallbackData,
+                segment!!,
                 userActualizedInfo,
                 update,
             )
@@ -80,20 +85,25 @@ class QuestButtonHandlerFetcher(
     }
 
     private fun clickStartDialog(data: RequestData): UserActualizedInfo {
-        if (data.quest.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
-        if (data.userActualizedInfo.activeQuest != null) return data.userActualizedInfo
+        if (data.questDialog.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
+        if (data.userActualizedInfo.activeQuestDialog != null) return data.userActualizedInfo
 
         val quest =
-            data.quest.copy(
-                responderId = data.userActualizedInfo.id,
+            data.questDialog.copy(
                 questionStatus = QuestionStatus.DIALOG,
             )
 
-        val questionAuthor = userRepository.findActiveUsersById(data.quest.authorId!!)!!
-        questRepository.save(quest)
+        questSegmentRepository.save(
+            data.questSegment.copy(
+                responderId = data.userActualizedInfo.id,
+            )
+        )
+
+        val questionAuthor = userRepository.findActiveUsersById(data.questDialog.authorId!!)!!
+        questDialogRepository.save(quest)
         userRepository.save(
             questionAuthor.copy(
-                questDialogId = data.quest.id,
+                questDialogId = data.questDialog.id,
             ),
         )
 
@@ -106,7 +116,7 @@ class QuestButtonHandlerFetcher(
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = questionAuthor.tui!!,
-                text = "<i>С вами общается оператор по поводу обращения #${data.quest.id}</i>",
+                text = "<i>С вами общается оператор по поводу обращения #${data.questDialog.id}</i>",
                 parseMode = ParseMode.HTML,
             ),
         )
@@ -135,19 +145,27 @@ class QuestButtonHandlerFetcher(
         )
 
         return data.userActualizedInfo.copy(
-            activeQuest = data.quest,
+            activeQuestDialog = data.questDialog,
         )
     }
 
     private fun clickIgnore(data: RequestData): UserActualizedInfo {
-        if (data.quest.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
+        if (data.questDialog.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
 
-        questRepository.save(
-            data.quest.copy(
+        questDialogRepository.save(
+            data.questDialog.copy(
                 questionStatus = QuestionStatus.CLOSED,
                 finishTime = updatesUtil.getDate(data.update)
                     ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
             ),
+        )
+
+        questSegmentRepository.save(
+            data.questSegment.copy(
+                responderId = data.userActualizedInfo.id,
+                finishTime = updatesUtil.getDate(data.update)
+                    ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
+            )
         )
 
         val newText = "\uD83D\uDFE1 Проигнорировано пользователем ${MessageSenderUtil.userName(
@@ -157,7 +175,7 @@ class QuestButtonHandlerFetcher(
         messageSenderService.editMessage(
             MessageParams(
                 chatId = QUEST_RESPONDENT_CHAT_ID,
-                messageId = data.quest.consoleMessageId?.toInt(),
+                messageId = data.questDialog.consoleMessageId?.toInt(),
                 text = newText,
             ),
         )
@@ -165,11 +183,11 @@ class QuestButtonHandlerFetcher(
     }
 
     private fun clickAnswer(data: RequestData): UserActualizedInfo {
-        if (data.quest.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
-        if (data.userActualizedInfo.activeQuest != null) return data.userActualizedInfo
+        if (data.questDialog.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
+        if (data.userActualizedInfo.activeQuestDialog != null) return data.userActualizedInfo
 
-        val questionAuthor = userRepository.findActiveUsersById(data.quest.authorId!!)!!
-        val firstMessage = dialogMessageRepository.findById(data.quest.dialogHistory.first()).get()
+        val questionAuthor = userRepository.findActiveUsersById(data.questDialog.authorId!!)!!
+        val firstMessage = questMessageRepository.findById(data.questDialog.dialogHistory.first()).get()
 
         messageSenderService.sendMessage(
             MessageParams(
@@ -192,7 +210,7 @@ class QuestButtonHandlerFetcher(
                 text =
                     "Ты можешь либо ответить анонимно одним сообщением, отправив его сейчас, " +
                         "либо начать анонимный диалог с пользователем.",
-                replyMarkup = createChooseKeyboard(data.quest),
+                replyMarkup = createChooseKeyboard(data.questDialog),
             ),
         )
 
@@ -202,18 +220,26 @@ class QuestButtonHandlerFetcher(
     }
 
     private fun clickBan(data: RequestData): UserActualizedInfo {
-        if (data.quest.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
-        questRepository.save(
-            data.quest.copy(
+        if (data.questDialog.questionStatus == QuestionStatus.CLOSED) return data.userActualizedInfo
+        questDialogRepository.save(
+            data.questDialog.copy(
                 questionStatus = QuestionStatus.CLOSED,
                 finishTime = updatesUtil.getDate(data.update)
                     ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
             ),
         )
 
+        questSegmentRepository.save(
+            data.questSegment.copy(
+                responderId = data.userActualizedInfo.id,
+                finishTime = updatesUtil.getDate(data.update)
+                    ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
+            )
+        )
+
         // TODO: логика банов скоро изменится, тут тоже надо будет менять код
         val authorInBan =
-            userRepository.findActiveUsersById(data.quest.authorId!!)!!.copy(
+            userRepository.findActiveUsersById(data.questDialog.authorId!!)!!.copy(
                 roles = mutableSetOf(UserRole.BANNED),
             )
         userRepository.save(authorInBan)
@@ -225,41 +251,41 @@ class QuestButtonHandlerFetcher(
         messageSenderService.editMessage(
             MessageParams(
                 chatId = QUEST_RESPONDENT_CHAT_ID,
-                messageId = data.quest.consoleMessageId?.toInt(),
+                messageId = data.questDialog.consoleMessageId?.toInt(),
                 text = newText,
-                replyMarkup = createUnbanKeyboard(data.quest),
+                replyMarkup = createUnbanKeyboard(data.questDialog),
             ),
         )
 
         return data.userActualizedInfo
     }
 
-    private fun createChooseKeyboard(quest: Quest) =
+    private fun createChooseKeyboard(questDialog: QuestDialog) =
         createKeyboard(
             listOf(
                 listOf(
                     InlineKeyboardButton("\uD83D\uDCAC Начать диалог")
-                        .also { it.callbackData = QUEST_START_DIALOG.format(quest.id) },
+                        .also { it.callbackData = QUEST_START_DIALOG.format(questDialog.id) },
                 ),
             ),
         )
 
-    private fun createUnbanKeyboard(quest: Quest) =
+    private fun createUnbanKeyboard(questDialog: QuestDialog) =
         createKeyboard(
             listOf(
                 listOf(
                     InlineKeyboardButton("Разбанить (doesn't work)")
                         // TODO("разбан еще не реализован")
-                        .also { it.callbackData = QUEST_BAN.format(quest.id) },
+                        .also { it.callbackData = QUEST_BAN.format(questDialog.id) },
                 ),
             ),
         )
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
 
-    private fun getQuestByCallbackData(callbackData: String): Quest? {
+    private fun getQuestByCallbackData(callbackData: String): QuestDialog? {
         val questId = parseQuestId(callbackData)
-        return questRepository.findById(questId).getOrNull()
+        return questDialogRepository.findById(questId).getOrNull()
     }
 
     private fun parseQuestId(callbackData: String): Long {
@@ -276,7 +302,8 @@ class QuestButtonHandlerFetcher(
     }
 
     private data class RequestData(
-        val quest: Quest,
+        val questDialog: QuestDialog,
+        val questSegment: QuestSegment,
         val userActualizedInfo: UserActualizedInfo,
         val update: Update,
     )

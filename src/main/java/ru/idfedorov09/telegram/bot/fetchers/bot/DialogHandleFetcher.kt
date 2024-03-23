@@ -9,14 +9,11 @@ import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
-import ru.idfedorov09.telegram.bot.data.model.MessageParams
-import ru.idfedorov09.telegram.bot.data.model.Quest
-import ru.idfedorov09.telegram.bot.data.model.QuestDialogMessage
-import ru.idfedorov09.telegram.bot.data.model.User
-import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
+import ru.idfedorov09.telegram.bot.data.model.*
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
-import ru.idfedorov09.telegram.bot.repo.QuestDialogMessageRepository
-import ru.idfedorov09.telegram.bot.repo.QuestRepository
+import ru.idfedorov09.telegram.bot.repo.QuestMessageRepository
+import ru.idfedorov09.telegram.bot.repo.QuestDialogRepository
+import ru.idfedorov09.telegram.bot.repo.QuestSegmentRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.service.SwitchKeyboardService
@@ -34,8 +31,9 @@ import java.time.ZoneId
 class DialogHandleFetcher(
     private val updatesUtil: UpdatesUtil,
     private val messageSenderService: MessageSenderService,
-    private val questRepository: QuestRepository,
-    private val questDialogMessageRepository: QuestDialogMessageRepository,
+    private val questDialogRepository: QuestDialogRepository,
+    private val questSegmentRepository: QuestSegmentRepository,
+    private val questMessageRepository: QuestMessageRepository,
     private val userRepository: UserRepository,
     private val switchKeyboardService: SwitchKeyboardService,
 ) : DefaultFetcher() {
@@ -45,7 +43,7 @@ class DialogHandleFetcher(
         userActualizedInfo: UserActualizedInfo,
     ): UserActualizedInfo {
         // если пользователь не в активном диалоге то скипаем фетчер
-        if (userActualizedInfo.activeQuest == null) return userActualizedInfo
+        if (userActualizedInfo.activeQuestDialog == null) return userActualizedInfo
 
         if (!update.hasMessage()) return userActualizedInfo
 
@@ -53,9 +51,10 @@ class DialogHandleFetcher(
         if (update.message.chatId.toString() != userActualizedInfo.tui) return userActualizedInfo
 
         val messageText = update.message.text ?: update.message.caption
-        val quest = userActualizedInfo.activeQuest
+        val quest = userActualizedInfo.activeQuestDialog
+        val segment = quest.lastQuestSegmentId?.let { questSegmentRepository.findById(it).get() }
         val author = userRepository.findActiveUsersById(quest.authorId!!)!!
-        val responder = userRepository.findActiveUsersById(quest.responderId!!)!!
+        val responder = userRepository.findActiveUsersById(segment?.responderId!!)!!
         val isByQuestionAuthor = author.tui == userActualizedInfo.tui
         val messageTime = updatesUtil.getDate(update)
             ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
@@ -112,7 +111,8 @@ class DialogHandleFetcher(
         val params =
             Params(
                 messageText = messageText,
-                quest = quest,
+                questDialog = quest,
+                questSegment = segment,
                 author = author,
                 responder = responder,
                 isByQuestionAuthor = isByQuestionAuthor,
@@ -156,18 +156,19 @@ class DialogHandleFetcher(
 
     private fun handleMessageAudio(params: Params): UserActualizedInfo {
         params.apply {
-            val questDialogMessage =
-                QuestDialogMessage(
-                    questId = quest.id,
+            val questMessage =
+                QuestMessage(
+                    questId = questDialog.id,
+                    segmentId = questSegment.id,
                     isByQuestionAuthor = isByQuestionAuthor,
                     authorId = userActualizedInfo.id,
                     messageText = messageText,
                     audioHash = audioHash,
                     messageId = update.message.messageId,
                     messageTime = messageTime,
-                ).let { questDialogMessageRepository.save(it) }
-            quest.dialogHistory.add(questDialogMessage.id!!)
-            questRepository.save(quest)
+                ).let { questMessageRepository.save(it) }
+            questDialog.dialogHistory.add(questMessage.id!!)
+            questDialogRepository.save(questDialog)
 
             messageSenderService.sendMessage(
                 MessageParams(
@@ -182,18 +183,19 @@ class DialogHandleFetcher(
 
     private fun handleMessageVideo(params: Params): UserActualizedInfo {
         params.apply {
-            val questDialogMessage =
-                QuestDialogMessage(
-                    questId = quest.id,
+            val questMessage =
+                QuestMessage(
+                    questId = questDialog.id,
+                    segmentId = questSegment.id,
                     isByQuestionAuthor = isByQuestionAuthor,
                     authorId = userActualizedInfo.id,
                     messageText = messageText,
                     videoHash = videoHash,
                     messageId = update.message.messageId,
                     messageTime = messageTime,
-                ).let { questDialogMessageRepository.save(it) }
-            quest.dialogHistory.add(questDialogMessage.id!!)
-            questRepository.save(quest)
+                ).let { questMessageRepository.save(it) }
+            questDialog.dialogHistory.add(questMessage.id!!)
+            questDialogRepository.save(questDialog)
 
             messageSenderService.sendMessage(
                 MessageParams(
@@ -208,17 +210,18 @@ class DialogHandleFetcher(
 
     private fun handleMessageVideoNote(params: Params): UserActualizedInfo {
         params.apply {
-            val questDialogMessage =
-                QuestDialogMessage(
-                    questId = quest.id,
+            val questMessage =
+                QuestMessage(
+                    questId = questDialog.id,
+                    segmentId = questSegment.id,
                     isByQuestionAuthor = isByQuestionAuthor,
                     authorId = userActualizedInfo.id,
                     videoNoteHash = videoNoteHash,
                     messageId = update.message.messageId,
                     messageTime = messageTime,
-                ).let { questDialogMessageRepository.save(it) }
-            quest.dialogHistory.add(questDialogMessage.id!!)
-            questRepository.save(quest)
+                ).let { questMessageRepository.save(it) }
+            questDialog.dialogHistory.add(questMessage.id!!)
+            questDialogRepository.save(questDialog)
 
             messageSenderService.sendMessage(
                 MessageParams(
@@ -232,17 +235,18 @@ class DialogHandleFetcher(
 
     private fun handleMessageVoice(params: Params): UserActualizedInfo {
         params.apply {
-            val questDialogMessage =
-                QuestDialogMessage(
-                    questId = quest.id,
+            val questMessage =
+                QuestMessage(
+                    questId = questDialog.id,
+                    segmentId = questSegment.id,
                     isByQuestionAuthor = isByQuestionAuthor,
                     authorId = userActualizedInfo.id,
                     voiceHash = voiceHash,
                     messageId = update.message.messageId,
                     messageTime = messageTime,
-                ).let { questDialogMessageRepository.save(it) }
-            quest.dialogHistory.add(questDialogMessage.id!!)
-            questRepository.save(quest)
+                ).let { questMessageRepository.save(it) }
+            questDialog.dialogHistory.add(questMessage.id!!)
+            questDialogRepository.save(questDialog)
 
             messageSenderService.sendMessage(
                 MessageParams(
@@ -256,17 +260,18 @@ class DialogHandleFetcher(
 
     private fun handleMessageStiker(params: Params): UserActualizedInfo {
         params.apply {
-            val questDialogMessage =
-                QuestDialogMessage(
-                    questId = quest.id,
+            val questMessage =
+                QuestMessage(
+                    questId = questDialog.id,
+                    segmentId = questSegment.id,
                     isByQuestionAuthor = isByQuestionAuthor,
                     authorId = userActualizedInfo.id,
                     stickerHash = stickerHash,
                     messageId = update.message.messageId,
                     messageTime = messageTime,
-                ).let { questDialogMessageRepository.save(it) }
-            quest.dialogHistory.add(questDialogMessage.id!!)
-            questRepository.save(quest)
+                ).let { questMessageRepository.save(it) }
+            questDialog.dialogHistory.add(questMessage.id!!)
+            questDialogRepository.save(questDialog)
 
             messageSenderService.sendMessage(
                 MessageParams(
@@ -280,18 +285,19 @@ class DialogHandleFetcher(
 
     private fun handleMessageDocument(params: Params): UserActualizedInfo {
         params.apply {
-            val questDialogMessage =
-                QuestDialogMessage(
-                    questId = quest.id,
+            val questMessage =
+                QuestMessage(
+                    questId = questDialog.id,
+                    segmentId = questSegment.id,
                     isByQuestionAuthor = isByQuestionAuthor,
                     authorId = userActualizedInfo.id,
                     messageText = messageText,
                     messageDocumentHash = documentHash,
                     messageId = update.message.messageId,
                     messageTime = messageTime,
-                    ).let { questDialogMessageRepository.save(it) }
-            quest.dialogHistory.add(questDialogMessage.id!!)
-            questRepository.save(quest)
+                    ).let { questMessageRepository.save(it) }
+            questDialog.dialogHistory.add(questMessage.id!!)
+            questDialogRepository.save(questDialog)
 
             messageSenderService.sendMessage(
                 MessageParams(
@@ -306,18 +312,19 @@ class DialogHandleFetcher(
 
     private fun handleMessagePhoto(params: Params): UserActualizedInfo {
         params.apply {
-            val questDialogMessage =
-                QuestDialogMessage(
-                    questId = quest.id,
+            val questMessage =
+                QuestMessage(
+                    questId = questDialog.id,
+                    segmentId = questSegment.id,
                     isByQuestionAuthor = isByQuestionAuthor,
                     authorId = userActualizedInfo.id,
                     messageText = messageText,
                     messagePhotoHash = photoHash,
                     messageId = update.message.messageId,
                     messageTime = messageTime,
-                ).let { questDialogMessageRepository.save(it) }
-            quest.dialogHistory.add(questDialogMessage.id!!)
-            questRepository.save(quest)
+                ).let { questMessageRepository.save(it) }
+            questDialog.dialogHistory.add(questMessage.id!!)
+            questDialogRepository.save(questDialog)
 
             messageSenderService.sendMessage(
                 MessageParams(
@@ -332,17 +339,18 @@ class DialogHandleFetcher(
 
     private fun handleMessageText(params: Params): UserActualizedInfo {
         params.apply {
-            val questDialogMessage =
-                QuestDialogMessage(
-                    questId = quest.id,
+            val questMessage =
+                QuestMessage(
+                    questId = questDialog.id,
+                    segmentId = questSegment.id,
                     isByQuestionAuthor = isByQuestionAuthor,
                     authorId = userActualizedInfo.id,
                     messageText = messageText,
                     messageId = update.message.messageId,
                     messageTime = messageTime,
-                ).let { questDialogMessageRepository.save(it) }
-            quest.dialogHistory.add(questDialogMessage.id!!)
-            questRepository.save(quest)
+                ).let { questMessageRepository.save(it) }
+            questDialog.dialogHistory.add(questMessage.id!!)
+            questDialogRepository.save(questDialog)
 
             messageSenderService.sendMessage(
                 MessageParams(
@@ -362,11 +370,17 @@ class DialogHandleFetcher(
     }
 
     private fun closeDialog(params: Params): UserActualizedInfo {
-        questRepository.save(
-            params.quest.copy(
+        questDialogRepository.save(
+            params.questDialog.copy(
                 questionStatus = QuestionStatus.CLOSED,
                 finishTime = params.messageTime
             ),
+        )
+
+        questSegmentRepository.save(
+            params.questSegment.copy(
+                finishTime = params.messageTime
+            )
         )
 
         userRepository.save(
@@ -397,7 +411,7 @@ class DialogHandleFetcher(
         messageSenderService.editMessage(
             MessageParams(
                 chatId = GlobalConstants.QUEST_RESPONDENT_CHAT_ID,
-                messageId = params.quest.consoleMessageId!!.toInt(),
+                messageId = params.questDialog.consoleMessageId!!.toInt(),
                 text =
                     "✅ ${MessageSenderUtil.userName(params.responder.lastTgNick, params.responder.fullName)} " +
                         "пообщался(-ась)",
@@ -421,7 +435,8 @@ class DialogHandleFetcher(
         val videoNoteHash: String?,
         val audioHash: String?,
         val videoHash: String?,
-        val quest: Quest,
+        val questDialog: QuestDialog,
+        val questSegment: QuestSegment,
         val author: User,
         val responder: User,
         val isByQuestionAuthor: Boolean,

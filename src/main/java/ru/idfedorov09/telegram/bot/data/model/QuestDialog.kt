@@ -6,17 +6,17 @@ import ru.idfedorov09.telegram.bot.data.model.converter.QuestionStatusConverter
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "questions_table")
-data class Quest(
+@Table(name = "question_dialogs_table")
+data class QuestDialog(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "quest_dialog_id")
     val id: Long? = null,
     @Column(name = "author_id")
     val authorId: Long? = null,
-    @Column(name = "responder_id")
-    val responderId: Long? = null,
     /** id сообщения-пульта чата респондентов **/
+    @Column(name = "last_quest_segment_id")
+    val lastQuestSegmentId: Long? = null,
     @Column(name = "console_message_id")
     val consoleMessageId: String? = null,
     /** айдишники элементов диалога/вопросов/ответов **/

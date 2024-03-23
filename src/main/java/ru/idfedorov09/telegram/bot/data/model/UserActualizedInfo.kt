@@ -20,7 +20,7 @@ data class UserActualizedInfo(
     var lastUserActionType: LastUserActionType? = null,
     /** Последний активный вопрос, заданный пользователем **/
     // TODO: readme -> активный вопрос - вопрос с диалогом
-    val activeQuest: Quest?,
+    val activeQuestDialog: QuestDialog?,
     /** Временные данные **/
     var data: String? = null,
     val isRegistered: Boolean,
