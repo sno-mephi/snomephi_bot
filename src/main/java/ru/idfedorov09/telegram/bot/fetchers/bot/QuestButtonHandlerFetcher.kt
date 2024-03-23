@@ -93,7 +93,10 @@ class QuestButtonHandlerFetcher(
             ),
         )
 
-        switchKeyboardService.disableKeyboard(questionAuthor.id!!)
+        switchKeyboardService.switchKeyboard(
+            questionAuthor.id!!,
+            UserKeyboardType.DIALOG_QUEST,
+        )
         switchKeyboardService.switchKeyboard(
             data.userActualizedInfo.id!!,
             UserKeyboardType.DIALOG_QUEST,
