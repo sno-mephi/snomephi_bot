@@ -148,4 +148,17 @@ interface UserRepository : JpaRepository<User, Long> {
         nativeQuery = true,
     )
     fun findAllActiveUsers(): List<User?>
+
+    @Transactional
+    @Modifying
+    @Query("""
+        UPDATE users_table
+        SET categories = (
+            SELECT ARRAY(
+                SELECT id FROM category_table
+                WHERE is_setup_by_default = true
+            )
+        ) WHERE id = :userId
+    """, nativeQuery = true)
+    fun updateUserCategoriesById(userId: Long)
 }
