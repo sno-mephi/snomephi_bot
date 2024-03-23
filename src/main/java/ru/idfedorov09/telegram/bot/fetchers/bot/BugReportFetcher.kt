@@ -52,9 +52,10 @@ class BugReportFetcher(
                 messageSenderService.sendMessage(
                     MessageParams(
                         chatId = userActualizedInfo.tui,
-                        text = "Если вы хотите отправить сообщение о баге, то вы должны ввсети сообщение вида: /bug <текст обращения>",
+                        text = "Если вы хотите отправить сообщение о баге, то вы должны ввести сообщение вида: /bug <текст обращения>",
                     ),
                 )
+                stopFlowNextExecution()
 
             }
         }
