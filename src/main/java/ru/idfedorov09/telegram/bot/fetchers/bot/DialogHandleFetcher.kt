@@ -21,13 +21,18 @@ import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.service.SwitchKeyboardService
 import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
+import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 /**
  * Фетчер отвечающий за общение челиков в режиме активного диалога
  */
 @Component
 class DialogHandleFetcher(
+    private val updatesUtil: UpdatesUtil,
     private val messageSenderService: MessageSenderService,
     private val questRepository: QuestRepository,
     private val questDialogMessageRepository: QuestDialogMessageRepository,
@@ -52,6 +57,8 @@ class DialogHandleFetcher(
         val author = userRepository.findActiveUsersById(quest.authorId!!)!!
         val responder = userRepository.findActiveUsersById(quest.responderId!!)!!
         val isByQuestionAuthor = author.tui == userActualizedInfo.tui
+        val messageTime = updatesUtil.getDate(update)
+            ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
 
         val photoHash =
             if (update.message.hasPhoto()) {
@@ -118,6 +125,7 @@ class DialogHandleFetcher(
                 videoNoteHash = videoNoteHash,
                 videoHash = videoHash,
                 audioHash = audioHash,
+                messageTime = messageTime,
             )
 
         val updatedUserActualizedInfo =
@@ -146,9 +154,6 @@ class DialogHandleFetcher(
         return params.userActualizedInfo
     }
 
-    private fun handleMessage(params: Params) {
-    }
-
     private fun handleMessageAudio(params: Params): UserActualizedInfo {
         params.apply {
             val questDialogMessage =
@@ -159,6 +164,7 @@ class DialogHandleFetcher(
                     messageText = messageText,
                     audioHash = audioHash,
                     messageId = update.message.messageId,
+                    messageTime = messageTime,
                 ).let { questDialogMessageRepository.save(it) }
             quest.dialogHistory.add(questDialogMessage.id!!)
             questRepository.save(quest)
@@ -184,6 +190,7 @@ class DialogHandleFetcher(
                     messageText = messageText,
                     videoHash = videoHash,
                     messageId = update.message.messageId,
+                    messageTime = messageTime,
                 ).let { questDialogMessageRepository.save(it) }
             quest.dialogHistory.add(questDialogMessage.id!!)
             questRepository.save(quest)
@@ -208,6 +215,7 @@ class DialogHandleFetcher(
                     authorId = userActualizedInfo.id,
                     videoNoteHash = videoNoteHash,
                     messageId = update.message.messageId,
+                    messageTime = messageTime,
                 ).let { questDialogMessageRepository.save(it) }
             quest.dialogHistory.add(questDialogMessage.id!!)
             questRepository.save(quest)
@@ -231,6 +239,7 @@ class DialogHandleFetcher(
                     authorId = userActualizedInfo.id,
                     voiceHash = voiceHash,
                     messageId = update.message.messageId,
+                    messageTime = messageTime,
                 ).let { questDialogMessageRepository.save(it) }
             quest.dialogHistory.add(questDialogMessage.id!!)
             questRepository.save(quest)
@@ -254,6 +263,7 @@ class DialogHandleFetcher(
                     authorId = userActualizedInfo.id,
                     stickerHash = stickerHash,
                     messageId = update.message.messageId,
+                    messageTime = messageTime,
                 ).let { questDialogMessageRepository.save(it) }
             quest.dialogHistory.add(questDialogMessage.id!!)
             questRepository.save(quest)
@@ -278,7 +288,8 @@ class DialogHandleFetcher(
                     messageText = messageText,
                     messageDocumentHash = documentHash,
                     messageId = update.message.messageId,
-                ).let { questDialogMessageRepository.save(it) }
+                    messageTime = messageTime,
+                    ).let { questDialogMessageRepository.save(it) }
             quest.dialogHistory.add(questDialogMessage.id!!)
             questRepository.save(quest)
 
@@ -303,6 +314,7 @@ class DialogHandleFetcher(
                     messageText = messageText,
                     messagePhotoHash = photoHash,
                     messageId = update.message.messageId,
+                    messageTime = messageTime,
                 ).let { questDialogMessageRepository.save(it) }
             quest.dialogHistory.add(questDialogMessage.id!!)
             questRepository.save(quest)
@@ -327,6 +339,7 @@ class DialogHandleFetcher(
                     authorId = userActualizedInfo.id,
                     messageText = messageText,
                     messageId = update.message.messageId,
+                    messageTime = messageTime,
                 ).let { questDialogMessageRepository.save(it) }
             quest.dialogHistory.add(questDialogMessage.id!!)
             questRepository.save(quest)
@@ -352,6 +365,7 @@ class DialogHandleFetcher(
         questRepository.save(
             params.quest.copy(
                 questionStatus = QuestionStatus.CLOSED,
+                finishTime = params.messageTime
             ),
         )
 
@@ -439,5 +453,6 @@ class DialogHandleFetcher(
         val isByQuestionAuthor: Boolean,
         val update: Update,
         val userActualizedInfo: UserActualizedInfo,
+        val messageTime: LocalDateTime?,
     )
 }

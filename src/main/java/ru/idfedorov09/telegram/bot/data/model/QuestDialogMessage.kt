@@ -1,6 +1,8 @@
 package ru.idfedorov09.telegram.bot.data.model
 
 import jakarta.persistence.*
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 @Entity
 @Table(name = "question_dialog_messages_table")
@@ -33,4 +35,6 @@ data class QuestDialogMessage(
     val audioHash: String? = null,
     @Column(name = "message_id")
     val messageId: Int? = null,
+    @Column(name = "message_dttm")
+    val messageTime: LocalDateTime? = null,
 )

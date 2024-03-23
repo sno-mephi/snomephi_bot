@@ -20,6 +20,8 @@ import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
+import java.time.Instant
+import java.time.ZoneId
 
 @Component
 class QuestStartFetcher(
@@ -100,6 +102,8 @@ class QuestStartFetcher(
             Quest(
                 authorId = userActualizedInfo.id,
                 questionStatus = QuestionStatus.WAIT,
+                startTime = updatesUtil.getDate(update)
+                    ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
             ).let { questRepository.save(it) }
 
         val questDialogMessage =
@@ -111,6 +115,8 @@ class QuestStartFetcher(
                 messageId = update.message.messageId,
                 messageDocumentHash = documentHash,
                 messagePhotoHash = photoHash,
+                messageTime = updatesUtil.getDate(update)
+                    ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
             ).let { questDialogMessageRepository.save(it) }
 
         quest.dialogHistory.add(questDialogMessage.id!!)

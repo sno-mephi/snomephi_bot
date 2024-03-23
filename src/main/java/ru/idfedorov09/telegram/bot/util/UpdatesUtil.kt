@@ -25,6 +25,11 @@ class UpdatesUtil(
         return getByPattern(update, "\"chat\"\\s*:\\s*\\{\"id\"\\s*:\\s*(-?\\d+)")
     }
 
+    /** Получает дату из объекта Update **/
+    fun getDate(update: Update?): Long? {
+        return getByPattern(update, "\"date\":\\s*(\\d+)")?.toLongOrNull()
+    }
+
     /** Получает id пользователя с которым связано обновление **/
     fun getUserId(update: Update?): String? {
         return getByPattern(update, "\"from\"\\s*:\\s*\\{\"id\"\\s*:\\s*(\\d+)")
