@@ -3,6 +3,7 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
+import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
@@ -27,9 +28,12 @@ class HelpCommandFetcher(
         val messageText = update.message.text
 
         if (messageText.startsWith(TextCommands.HELP_COMMAND.commandText)) {
+
+
+
             val finalText =
-                TextCommands.values().filter {
-                    it.isFullCommand && it.allowedRoles.intersect(userActualizedInfo.roles).isNotEmpty()
+                TextCommands.values().sortedBy { it.commandText }.filter {
+                    it.isFullCommand && (UserRole.ROOT in userActualizedInfo.roles || it.allowedRoles.intersect(userActualizedInfo.roles).isNotEmpty())
                 }.joinToString(separator = "\n") {
                     "▪" + it.commandText + " - " + it.description
                 }
