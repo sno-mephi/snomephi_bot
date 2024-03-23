@@ -26,8 +26,8 @@ class UpdatesUtil(
     }
 
     /** Получает дату из объекта Update **/
-    fun getDate(update: Update?): String? {
-        return getByPattern(update, "\"date\":\\s*(\\d+)")
+    fun getDate(update: Update?): Long? {
+        return getByPattern(update, "\"date\":\\s*(\\d+)")?.toLongOrNull()
     }
 
     /** Получает id пользователя с которым связано обновление **/

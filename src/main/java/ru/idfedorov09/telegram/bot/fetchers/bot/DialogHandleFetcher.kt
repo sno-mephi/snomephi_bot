@@ -21,7 +21,9 @@ import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.service.SwitchKeyboardService
 import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
+import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -30,6 +32,7 @@ import java.time.ZoneId
  */
 @Component
 class DialogHandleFetcher(
+    private val updatesUtil: UpdatesUtil,
     private val messageSenderService: MessageSenderService,
     private val questRepository: QuestRepository,
     private val questDialogMessageRepository: QuestDialogMessageRepository,
@@ -54,9 +57,8 @@ class DialogHandleFetcher(
         val author = userRepository.findActiveUsersById(quest.authorId!!)!!
         val responder = userRepository.findActiveUsersById(quest.responderId!!)!!
         val isByQuestionAuthor = author.tui == userActualizedInfo.tui
-        val messageTime =  LocalDateTime.now(
-            ZoneId.of("Europe/Moscow"),
-        )
+        val messageTime = updatesUtil.getDate(update)
+            ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
 
         val photoHash =
             if (update.message.hasPhoto()) {
@@ -123,7 +125,7 @@ class DialogHandleFetcher(
                 videoNoteHash = videoNoteHash,
                 videoHash = videoHash,
                 audioHash = audioHash,
-                messageTime = messageTime
+                messageTime = messageTime,
             )
 
         val updatedUserActualizedInfo =
@@ -425,6 +427,6 @@ class DialogHandleFetcher(
         val isByQuestionAuthor: Boolean,
         val update: Update,
         val userActualizedInfo: UserActualizedInfo,
-        val messageTime: LocalDateTime,
+        val messageTime: LocalDateTime?,
     )
 }
