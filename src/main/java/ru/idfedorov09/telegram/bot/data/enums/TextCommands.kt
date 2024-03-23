@@ -79,6 +79,10 @@ enum class TextCommands(
         commandText = "/reset",
         description = "удаление своего аккаунта",
     ),
+    BUG_COMMAND(
+        commandText = "/bug",
+        description = "отправить сообщение о баге: /bug <текст отбращения>",
+    ),
 
     ;
 
