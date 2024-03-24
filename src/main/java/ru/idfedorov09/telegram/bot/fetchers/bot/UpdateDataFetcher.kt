@@ -4,13 +4,13 @@ import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
-import ru.idfedorov09.telegram.bot.data.model.Quest
+import ru.idfedorov09.telegram.bot.data.model.QuestDialog
 import ru.idfedorov09.telegram.bot.data.model.User
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
-import ru.idfedorov09.telegram.bot.repo.QuestRepository
+import ru.idfedorov09.telegram.bot.repo.QuestDialogRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.mephi.sno.libs.flow.belly.InjectData
 import kotlin.jvm.optionals.getOrNull
@@ -21,7 +21,7 @@ import kotlin.jvm.optionals.getOrNull
 @Component
 class UpdateDataFetcher(
     private val userRepository: UserRepository,
-    private val questRepository: QuestRepository,
+    private val questDialogRepository: QuestDialogRepository,
     private val broadcastRepository: BroadcastRepository,
     private val bot: Executor
 ) : DefaultFetcher() {
@@ -50,7 +50,7 @@ class UpdateDataFetcher(
                     categories = categories.mapNotNull { it.id }.toMutableSet(),
                     roles = roles,
                     lastUserActionType = lastUserActionType,
-                    questDialogId = getQuestDialogId(activeQuest),
+                    questDialogId = getQuestDialogId(activeQuestDialog),
                     data = data,
                     isRegistered = isRegistered,
                     constructorId = bcData?.id,
@@ -64,8 +64,8 @@ class UpdateDataFetcher(
         }
     }
 
-    private fun getQuestDialogId(activeQuest: Quest?): Long? {
-        val quest = activeQuest?.id?.let { questRepository.findById(it).getOrNull() } ?: return null
+    private fun getQuestDialogId(activeQuestDialog: QuestDialog?): Long? {
+        val quest = activeQuestDialog?.id?.let { questDialogRepository.findById(it).getOrNull() } ?: return null
         if (quest.questionStatus == QuestionStatus.DIALOG) return quest.id
         return null
     }
