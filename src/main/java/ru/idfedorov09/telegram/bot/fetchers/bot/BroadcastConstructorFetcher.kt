@@ -883,7 +883,7 @@ class BroadcastConstructorFetcher(
                 val cancelButton = CallbackData(callbackData = "#bc_cancel", metaText = "Отмена").save()
 
                 val keyboard =
-                    listOf(newPhoto, addText, addButton, webPreviewButton, cancelButton).map { button ->
+                    listOfNotNull(newPhoto, addText, addButton, webPreviewButton, cancelButton).map { button ->
                         InlineKeyboardButton().also {
                             it.text = button.metaText!!
                             it.callbackData = button.id?.toString()
@@ -926,13 +926,13 @@ class BroadcastConstructorFetcher(
                 val cancelButton = CallbackData(callbackData = "#bc_cancel", metaText = "Отмена").save()
 
                 val keyboardList =
-                    mutableListOf(
+                    listOfNotNull(
                         photoProp,
                         textProp,
                         addButton,
                         webPreviewButton,
                         previewButton,
-                    ).apply {
+                    ).toMutableList().apply {
                         addAll(
                             buttonRepository.findAllValidButtonsForBroadcast(bcData!!.id!!).map {
                                 CallbackData(
@@ -1020,7 +1020,8 @@ class BroadcastConstructorFetcher(
         }
     }
 
-    private fun createWebPreviewToggleButton(broadcast: Broadcast): CallbackData {
+    private fun createWebPreviewToggleButton(broadcast: Broadcast): CallbackData? {
+        if (broadcast.isWeekly) return null
         val smile = if (broadcast.shouldShowWebPreview) "✅" else "❌"
         val state = if (broadcast.shouldShowWebPreview) "(вкл)" else "(выкл)"
         val text = "$smile Превью веб-страницы $state"
