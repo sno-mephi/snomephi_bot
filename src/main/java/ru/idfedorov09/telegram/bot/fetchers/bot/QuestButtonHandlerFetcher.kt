@@ -306,7 +306,7 @@ class QuestButtonHandlerFetcher(
 
                 val answerCallbackQuery = AnswerCallbackQuery().also {
                     it.callbackQueryId = update.callbackQuery.id
-                    it.text = "Вы не можете отвечать самому себе!"
+                    it.text = "Вы не можете переоткрывать свое обращение!"
                     it.showAlert = true
                 }
                 bot.execute(answerCallbackQuery)
@@ -380,7 +380,7 @@ class QuestButtonHandlerFetcher(
             messageSenderService.sendMessage(
                 MessageParams(
                     chatId = questionAuthor.tui!!,
-                    text = "<i>С вами общается оператор по поводу обращения #${questDialog.id}</i>",
+                    text = "<i>Оператор возобновил диалог по поводу обращения #${questDialog.id}</i>",
                     parseMode = ParseMode.HTML,
                 ),
             )
