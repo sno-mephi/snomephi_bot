@@ -185,6 +185,7 @@ class QuestStartFetcher(
                     InlineKeyboardButton("\uD83D\uDD07 Игнор")
                         .also { it.callbackData = QUEST_IGNORE.format(questDialog.id) },
                     // TODO: убираем кнопку бана до тех пор пока не проработаем систему банов до конца
+                    // TODO: тикет SNOM-9471 (https://www.notion.so/3351e320861f495c85744c4729870706)
 //                    InlineKeyboardButton("\uD83D\uDEAF Бан")
 //                        .also { it.callbackData = QUEST_BAN.format(questDialog.id) },
                 ),
