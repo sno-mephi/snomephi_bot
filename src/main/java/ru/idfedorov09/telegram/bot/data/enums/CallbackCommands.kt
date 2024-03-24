@@ -41,8 +41,6 @@ enum class CallbackCommands(
 
     CATEGORY_EXIT("category_exit"),
 
-    USER_EDIT("user_edit"),
-    USER_DELETE("user_delete"),
     USER_CONFIRM("user_confirm|%s"),
     USER_DECLINE("user_decline|%s"),
     USER_WITHOUT_GROUP("user_without_group"),
