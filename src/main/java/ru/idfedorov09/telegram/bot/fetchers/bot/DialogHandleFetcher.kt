@@ -4,11 +4,10 @@ import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.Update
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.data.GlobalConstants
-import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
-import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
-import ru.idfedorov09.telegram.bot.data.enums.TextCommands
-import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
+import ru.idfedorov09.telegram.bot.data.enums.*
 import ru.idfedorov09.telegram.bot.data.model.*
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.QuestMessageRepository
@@ -432,7 +431,6 @@ class DialogHandleFetcher(
                 ),
             )
         }
-
         messageSenderService.editMessage(
             MessageParams(
                 chatId = GlobalConstants.QUEST_RESPONDENT_CHAT_ID,
@@ -440,6 +438,7 @@ class DialogHandleFetcher(
                 text =
                     "✅ ${MessageSenderUtil.userName(params.responder.lastTgNick, params.responder.fullName)} " +
                         "пообщался(-ась)",
+                replyMarkup = createRecreateKeyboard(params.questDialog)
             ),
         )
 
@@ -448,6 +447,20 @@ class DialogHandleFetcher(
             activeQuestDialog = null
         )
     }
+
+    private fun createRecreateKeyboard(questDialog: QuestDialog) =
+        createKeyboard(
+            listOf(
+                listOf(
+                    InlineKeyboardButton("Переоткрыть диалог")
+                        // TODO("разбан еще не реализован")
+                        .also { it.callbackData = CallbackCommands.QUEST_RECREATE.format(questDialog.id) },
+                ),
+            ),
+        )
+
+    private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
+
 
     /**
      * Вспомогательный класс для передачи параметров
