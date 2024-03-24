@@ -37,10 +37,6 @@ class ActualizeUserInfoFetcher(
         update: Update,
         expContainer: ExpContainer,
     ): UserActualizedInfo? {
-        if (update.callbackQuery != null) {
-            bot.execute(AnswerCallbackQuery(update.callbackQuery.id))
-        }
-
         val tgUser = updatesUtil.getUser(update)
         tgUser ?: run {
             expContainer.byUser = false
