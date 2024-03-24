@@ -160,9 +160,9 @@ class QuestButtonHandlerFetcher(
     private fun clickAnswer(data: RequestData): UserActualizedInfo {
         if (data.quest.questionStatus != QuestionStatus.WAIT) return data.userActualizedInfo
 
-        val questionAuthorSelf = userRepository.findActiveUsersById(data.quest.authorId!!)!!
+        val questionAuthor = userRepository.findActiveUsersById(data.quest.authorId!!)!!
 
-        if (data.userActualizedInfo.tui == questionAuthorSelf.tui){
+        if (data.userActualizedInfo.tui == questionAuthor.tui){
 
             val answerCallbackQuery = AnswerCallbackQuery().also {
                 it.callbackQueryId = data.update.callbackQuery.id
@@ -175,8 +175,6 @@ class QuestButtonHandlerFetcher(
         }
 
         if (data.userActualizedInfo.activeQuest != null) return data.userActualizedInfo
-
-        val questionAuthor = userRepository.findActiveUsersById(data.quest.authorId!!)!!
         val firstMessage = dialogMessageRepository.findById(data.quest.dialogHistory.first()).get()
 
         messageSenderService.sendMessage(
@@ -212,14 +210,13 @@ class QuestButtonHandlerFetcher(
     private fun clickBan(data: RequestData): UserActualizedInfo {
         if (data.quest.questionStatus != QuestionStatus.WAIT) return data.userActualizedInfo
 
-        val questionAuthorSelf = userRepository.findActiveUsersById(data.quest.authorId!!)!!
+        val questionAuthor = userRepository.findActiveUsersById(data.quest.authorId!!)!!
 
-        if (data.userActualizedInfo.tui == questionAuthorSelf.tui){
+        if (data.userActualizedInfo.tui == questionAuthor.tui){
 
             val answerCallbackQuery = AnswerCallbackQuery().also {
                 it.callbackQueryId = data.update.callbackQuery.id
-                it.text = "Вы не можете себя забанить!"
-                it.showAlert = true
+                it.text = "\uD83D\uDEAB Вы не можете забанить себя"
             }
             bot.execute(answerCallbackQuery)
 
@@ -234,7 +231,7 @@ class QuestButtonHandlerFetcher(
 
         // TODO: логика банов скоро изменится, тут тоже надо будет менять код
         val authorInBan =
-            userRepository.findActiveUsersById(data.quest.authorId!!)!!.copy(
+            userRepository.findActiveUsersById(data.quest.authorId)!!.copy(
                 roles = mutableSetOf(UserRole.BANNED),
             )
         userRepository.save(authorInBan)
