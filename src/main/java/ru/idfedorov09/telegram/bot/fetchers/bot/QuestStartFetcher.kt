@@ -184,8 +184,9 @@ class QuestStartFetcher(
                 listOf(
                     InlineKeyboardButton("\uD83D\uDD07 Игнор")
                         .also { it.callbackData = QUEST_IGNORE.format(questDialog.id) },
-                    InlineKeyboardButton("\uD83D\uDEAF Бан")
-                        .also { it.callbackData = QUEST_BAN.format(questDialog.id) },
+                    // TODO: убираем кнопку бана до тех пор пока не проработаем систему банов до конца
+//                    InlineKeyboardButton("\uD83D\uDEAF Бан")
+//                        .also { it.callbackData = QUEST_BAN.format(questDialog.id) },
                 ),
             ),
         )
