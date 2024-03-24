@@ -45,7 +45,9 @@ class CategoryCommandHandlerFetcher(
                 userActualizedInfo,
             )
         when (messageText) {
-            TextCommands.CATEGORY_CHOOSE_ACTION.commandText ->
+            TextCommands.CATEGORY_CHOOSE_ACTION() ->
+                commandChooseAction(requestData)
+            TextCommands.CATEGORY_CHOOSE_TEXT_ACTION() ->
                 commandChooseAction(requestData)
         }
         return requestData.userInfo
