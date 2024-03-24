@@ -116,6 +116,7 @@ class BroadcastConstructorFetcher(
                 startsWith("#bc_complete") -> bcComplete(params)
                 startsWith("#bc_start_common") -> bcEntryPoint(params, false)
                 startsWith("#bc_start_weekly") -> bcEntryPoint(params, true)
+                startsWith("#bc_web_preview_state") -> bcToggleWebPreview(params)
             }
         }
     }
@@ -140,6 +141,18 @@ class BroadcastConstructorFetcher(
             buttonRepository.save(button)
             showChangeButtonConsole(params)
         }
+    }
+
+    private fun bcToggleWebPreview(params: Params) {
+        params.userActualizedInfo.apply {
+            bcData ?: return
+            params.userActualizedInfo.bcData = broadcastRepository.save(
+                bcData!!.copy(
+                    shouldShowWebPreview = !bcData!!.shouldShowWebPreview
+                )
+            )
+        }
+        showBcConsole(params)
     }
 
     private fun changeButtonCallbackDataMessage(params: Params) {
@@ -436,6 +449,7 @@ class BroadcastConstructorFetcher(
                         authorId = params.userActualizedInfo.id,
                         isWeekly = isWeekly,
                         lastConsoleMessageId = params.update.callbackQuery.message.messageId,
+                        shouldShowWebPreview = false
                     ),
                 )
             showBcConsole(params)
@@ -865,10 +879,11 @@ class BroadcastConstructorFetcher(
                 val newPhoto = CallbackData(callbackData = "#bc_change_photo", metaText = "Добавить фото").save()
                 val addText = CallbackData(callbackData = "#bc_change_text", metaText = "Добавить текст").save()
                 val addButton = CallbackData(callbackData = "#bc_add_button", metaText = "Добавить кнопку").save()
+                val webPreviewButton = createWebPreviewToggleButton(bcData!!)
                 val cancelButton = CallbackData(callbackData = "#bc_cancel", metaText = "Отмена").save()
 
                 val keyboard =
-                    listOf(newPhoto, addText, addButton, cancelButton).map { button ->
+                    listOf(newPhoto, addText, addButton, webPreviewButton, cancelButton).map { button ->
                         InlineKeyboardButton().also {
                             it.text = button.metaText!!
                             it.callbackData = button.id?.toString()
@@ -882,6 +897,7 @@ class BroadcastConstructorFetcher(
                             parseMode = ParseMode.HTML,
                             replyMarkup = createKeyboard(keyboard),
                             chatId = params.userActualizedInfo.tui,
+                            disableWebPagePreview = !params.userActualizedInfo.bcData!!.shouldShowWebPreview
                         ),
                     )
 
@@ -904,6 +920,7 @@ class BroadcastConstructorFetcher(
                         metaText = bcData!!.text?.let { "Изменить текст" } ?: "Добавить текст",
                     ).save()
                 val addButton = CallbackData(callbackData = "#bc_add_button", metaText = "Добавить кнопку").save()
+                val webPreviewButton = createWebPreviewToggleButton(bcData!!)
 
                 val previewButton = CallbackData(callbackData = "#bc_preview", metaText = "Предпросмотр").save()
                 val cancelButton = CallbackData(callbackData = "#bc_cancel", metaText = "Отмена").save()
@@ -913,6 +930,7 @@ class BroadcastConstructorFetcher(
                         photoProp,
                         textProp,
                         addButton,
+                        webPreviewButton,
                         previewButton,
                     ).apply {
                         addAll(
@@ -959,6 +977,7 @@ class BroadcastConstructorFetcher(
                                     text = text,
                                     replyMarkup = createKeyboard(keyboard),
                                     parseMode = ParseMode.HTML,
+                                    disableWebPagePreview = !params.userActualizedInfo.bcData!!.shouldShowWebPreview
                                 ),
                             )
 
@@ -970,6 +989,7 @@ class BroadcastConstructorFetcher(
                                     parseMode = ParseMode.HTML,
                                     replyMarkup = createKeyboard(keyboard),
                                     photo = InputFile(bcData?.imageHash),
+                                    disableWebPagePreview = !params.userActualizedInfo.bcData!!.shouldShowWebPreview
                                 ),
                             )
                     }
@@ -998,6 +1018,13 @@ class BroadcastConstructorFetcher(
             }
             params.userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
         }
+    }
+
+    private fun createWebPreviewToggleButton(broadcast: Broadcast): CallbackData {
+        val smile = if (broadcast.shouldShowWebPreview) "✅" else "❌"
+        val state = if (broadcast.shouldShowWebPreview) "(вкл)" else "(выкл)"
+        val text = "$smile Превью веб-страницы $state"
+        return CallbackData(callbackData = "#bc_web_preview_state", metaText = text).save()
     }
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }

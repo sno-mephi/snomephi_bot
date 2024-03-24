@@ -56,5 +56,8 @@ data class Broadcast(
     /** удалена ли эта рассылка **/
     /** true только в случае если юзер отменяет создание рассылки **/
     @Column(name = "is_deleted")
-    val isDeleted: Boolean? = false,
+    val isDeleted: Boolean = false,
+    /** Нужно ли web preview **/
+    @Column(name = "should_show_web_preview")
+    val shouldShowWebPreview: Boolean = false,
 )

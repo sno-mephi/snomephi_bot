@@ -17,4 +17,5 @@ data class MessageParams(
     val parseMode: String? = null,
     val fromChatId: String? = null,
     val messageId: Int? = null,
+    val disableWebPagePreview: Boolean = false,
 )
