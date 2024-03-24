@@ -134,7 +134,7 @@ class DialogHandleFetcher(
                 update.hasMessage() && update.message.hasText() -> handleMessageText(params)
                 update.hasMessage() && update.message.hasPhoto() -> handleMessagePhoto(params)
                 update.hasMessage() && update.message.hasDocument() -> handleMessageDocument(params)
-                update.hasMessage() && update.message.hasSticker() -> handleMessageStiker(params)
+                update.hasMessage() && update.message.hasSticker() -> handleMessageStiсker(params)
                 update.hasMessage() && update.message.hasVoice() -> handleMessageVoice(params)
                 update.hasMessage() && update.message.hasAudio() -> handleMessageAudio(params)
                 update.hasMessage() && update.message.hasVideo() -> handleMessageVideo(params)
@@ -258,7 +258,7 @@ class DialogHandleFetcher(
         }
     }
 
-    private fun handleMessageStiker(params: Params): UserActualizedInfo {
+    private fun handleMessageStiсker(params: Params): UserActualizedInfo {
         params.apply {
             val questMessage =
                 QuestMessage(
