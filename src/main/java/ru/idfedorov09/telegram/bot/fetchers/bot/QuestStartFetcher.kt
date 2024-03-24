@@ -41,10 +41,7 @@ class QuestStartFetcher(
         userActualizedInfo.apply {
             // создаем новый вопрос если пользователь сейчас не в активном диалоге
             if (activeQuestDialog != null ||
-                !(
-                    lastUserActionType == LastUserActionType.DEFAULT ||
-                        lastUserActionType == LastUserActionType.ACT_QUEST_ANS_CLICK
-                )
+                lastUserActionType != LastUserActionType.DEFAULT
             ) {
                 return
             }
@@ -52,23 +49,7 @@ class QuestStartFetcher(
             if (update.message.chatId.toString() != tui) return
         }
 
-        when {
-            // если была нажата кнопка на ожидание ответа, то значит следующим сообщением будет отправлен ответ
-            userActualizedInfo.lastUserActionType == LastUserActionType.ACT_QUEST_ANS_CLICK ->
-                giveAnswer(update, userActualizedInfo)
-
-            else -> ask(update, userActualizedInfo)
-        }
-    }
-
-    /**
-     * Метод обрабатывающий апдейт на выдачу ответа одним сообщением
-     */
-    private fun giveAnswer(
-        update: Update,
-        userActualizedInfo: UserActualizedInfo,
-    ) {
-        // TODO: собрать таблицу Actions и по ней определять, на какой вопрос собирается ответить челик
+        ask(update, userActualizedInfo)
     }
 
     /**
