@@ -1,9 +1,11 @@
 package ru.idfedorov09.telegram.bot.fetchers
 
+import org.slf4j.LoggerFactory
 import ru.idfedorov09.telegram.bot.annotation.FetcherPerms
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.flow.ExpContainer
+import ru.idfedorov09.telegram.bot.util.OnReceiver
 import ru.mephi.sno.libs.flow.belly.FlowContext
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 import kotlin.reflect.KFunction
@@ -16,6 +18,10 @@ open class DefaultFetcher : GeneralFetcher() {
 
     private lateinit var flowContext: FlowContext
 
+    companion object {
+        private val log = LoggerFactory.getLogger(OnReceiver::class.java)
+    }
+
     override fun fetchCall(
         flowContext: FlowContext,
         doFetchMethod: KFunction<*>,
@@ -27,7 +33,14 @@ open class DefaultFetcher : GeneralFetcher() {
             return null
         }
         if (!isValidPerms(flowContext, doFetchMethod)) return null
-        return super.fetchCall(flowContext, doFetchMethod, params)
+
+        return runCatching {
+            super.fetchCall(flowContext, doFetchMethod, params)
+        }.onFailure {  e ->
+            log.error("ERROR: $e")
+            log.debug(e.stackTraceToString())
+            stopFlowNextExecution()
+        }.getOrNull()
     }
 
     private fun isValidPerms(
