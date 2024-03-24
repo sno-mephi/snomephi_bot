@@ -84,7 +84,14 @@ class QuestButtonHandlerFetcher(
         }
 
     private fun clickStartDialog(data: RequestData): UserActualizedInfo {
-        if (data.questDialog.questionStatus != QuestionStatus.WAIT) return data.userActualizedInfo
+        if (data.questDialog.questionStatus != QuestionStatus.WAIT){
+            val callbackAnswer = AnswerCallbackQuery().also{
+                it.text = "\uD83D\uDC40 Возможно, на этот вопрос уже ответили или отвечают"
+                it.callbackQueryId = data.update.callbackQuery.id
+            }
+            bot.execute(callbackAnswer)
+            return data.userActualizedInfo
+        }
         if (data.userActualizedInfo.activeQuestDialog != null) return data.userActualizedInfo
 
         val quest =
@@ -222,16 +229,12 @@ class QuestButtonHandlerFetcher(
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = data.userActualizedInfo.tui,
-                text =
-                    "Ты можешь либо ответить анонимно одним сообщением, отправив его сейчас, " +
-                        "либо начать анонимный диалог с пользователем.",
+                text = "Ты можешь начать анонимный диалог с пользователем:",
                 replyMarkup = createChooseKeyboard(data.questDialog),
             ),
         )
 
-        return data.userActualizedInfo.copy(
-            lastUserActionType = LastUserActionType.ACT_QUEST_ANS_CLICK,
-        )
+        return data.userActualizedInfo
     }
 
     private fun clickBan(data: RequestData): UserActualizedInfo {
