@@ -392,21 +392,46 @@ class DialogHandleFetcher(
         switchKeyboardService.switchKeyboard(params.author.id!!, UserKeyboardType.DEFAULT_MAIN_BOT)
         switchKeyboardService.switchKeyboard(params.responder.id!!, UserKeyboardType.DEFAULT_MAIN_BOT)
 
-        messageSenderService.sendMessage(
-            MessageParams(
-                chatId = params.author.tui!!,
-                text = "_⚠\uFE0F Оператор завершил диалог\\._",
-                parseMode = ParseMode.MARKDOWNV2,
-            ),
-        )
+        if (params.isByQuestionAuthor) {
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = params.responder.tui!!,
+                    text = "_\uD83D\uDD18 Пользователь завершил диалог\\._",
+                    parseMode = ParseMode.MARKDOWNV2,
+                ),
+            )
 
-        messageSenderService.sendMessage(
-            MessageParams(
-                chatId = params.responder.tui!!,
-                text = "\uD83D\uDDA4 Спасибо за обратную связь\\! *Диалог завершен\\.*",
-                parseMode = ParseMode.MARKDOWNV2,
-            ),
-        )
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = params.author.tui!!,
+                    text = "*Диалог завершен\\.*",
+                    parseMode = ParseMode.MARKDOWNV2,
+                ),
+            )
+
+            userRepository.save(
+                params.responder.copy(
+                    lastUserActionType = null,
+                    questDialogId = null,
+                )
+            )
+        } else {
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = params.author.tui!!,
+                    text = "_\uD83D\uDD18 Оператор завершил диалог\\._",
+                    parseMode = ParseMode.MARKDOWNV2,
+                ),
+            )
+
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = params.responder.tui!!,
+                    text = "\uD83D\uDDA4 Спасибо за обратную связь\\! *Диалог завершен\\.*",
+                    parseMode = ParseMode.MARKDOWNV2,
+                ),
+            )
+        }
 
         messageSenderService.editMessage(
             MessageParams(
@@ -420,6 +445,7 @@ class DialogHandleFetcher(
 
         return params.userActualizedInfo.copy(
             lastUserActionType = null,
+            activeQuest = null
         )
     }
 

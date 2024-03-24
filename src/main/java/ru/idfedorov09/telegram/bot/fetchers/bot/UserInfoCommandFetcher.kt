@@ -17,7 +17,7 @@ import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 
 /**
- * Фетчер, обрабатывающий команду /userInfo
+ * Фетчер, обрабатывающий команду /userinfo
  * присылает полную информацию о пользователе
  */
 @Component
@@ -69,7 +69,7 @@ class UserInfoCommandFetcher(
             messageSenderService.sendMessage(
                 MessageParams(
                     chatId = params.chatId,
-                    text = "отправьте команду формата\n\"/userInfo tui\"",
+                    text = "отправьте команду формата\n\"/userinfo tui\"",
                 ),
             )
             return

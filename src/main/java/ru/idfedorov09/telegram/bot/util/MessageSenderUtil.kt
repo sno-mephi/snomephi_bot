@@ -42,6 +42,7 @@ object MessageSenderUtil {
                     it.text = text
                     it.replyMarkup = replyMarkup as? InlineKeyboardMarkup
                     it.parseMode = parseMode
+                    it.disableWebPagePreview = disableWebPagePreview
                 },
             ) as Message
         }
@@ -233,6 +234,7 @@ object MessageSenderUtil {
                     it.text = text!!
                     it.replyMarkup = replyMarkup
                     it.parseMode = parseMode
+                    it.disableWebPagePreview = disableWebPagePreview
                 },
             )
         }

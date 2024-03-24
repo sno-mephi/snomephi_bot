@@ -21,9 +21,17 @@ enum class TextCommands(
         commandText = "/category",
         allowedRoles =
             listOf(
-                UserRole.CATEGORY_BUILDER,
-                UserRole.ROOT,
+                UserRole.CATEGORY_BUILDER
             ),
+        description = "настройка категорий",
+    ),
+
+    CATEGORY_CHOOSE_TEXT_ACTION(
+        commandText = "Настройка категорий",
+        allowedRoles =
+        listOf(
+            UserRole.CATEGORY_BUILDER
+        ),
         description = "настройка категорий",
     ),
 
@@ -38,7 +46,7 @@ enum class TextCommands(
     ),
 
     USER_INFO(
-        commandText = "/userInfo",
+        commandText = "/userinfo",
         allowedRoles = listOf(UserRole.ROOT),
         description = "присылает полную информацию о пользователе",
     ),
@@ -78,6 +86,10 @@ enum class TextCommands(
     RESET(
         commandText = "/reset",
         description = "удаление своего аккаунта",
+    ),
+    BUG_COMMAND(
+        commandText = "/bug",
+        description = "отправить сообщение о баге: /bug <текст отбращения>",
     ),
 
     ;
