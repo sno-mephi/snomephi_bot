@@ -445,7 +445,7 @@ class DialogHandleFetcher(
 
         return params.userActualizedInfo.copy(
             lastUserActionType = null,
-            activeQuest = null
+            activeQuestDialog = null
         )
     }
 
