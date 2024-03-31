@@ -15,6 +15,7 @@ import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
 import ru.idfedorov09.telegram.bot.repo.ButtonRepository
 import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
+import ru.idfedorov09.telegram.bot.util.MessageSenderUtil.isTimeoutError
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -59,7 +60,7 @@ open class BroadcastSenderService(
             log.debug("Send to user={}, broadcast={}", firstUser, firstActiveBroadcast)
             log.debug(e.stackTraceToString())
 
-            if (e.message?.contains("429") != true) {
+            if (e.isTimeoutError()) {
                 addUserToFailedList(
                     userId = firstUser.id!!,
                     broadcast = firstActiveBroadcast,

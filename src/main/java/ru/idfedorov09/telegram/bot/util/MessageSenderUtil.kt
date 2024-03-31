@@ -11,6 +11,9 @@ import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.executor.Executor
 
 object MessageSenderUtil {
+
+    private const val TIMEOUT_STATUS_CODE = "429"
+
     fun sendMessage(
         bot: Executor,
         messageParams: MessageParams,
@@ -266,4 +269,6 @@ object MessageSenderUtil {
     } else {
         "@$lastTgNick ($fullName)"
     }
+
+    fun Throwable.isTimeoutError() = this.message?.contains(TIMEOUT_STATUS_CODE) == true
 }
