@@ -45,27 +45,29 @@ open class MessageSenderService(
         messageByself: MessageByself
     ) {
         messageByself.messageParams ?: return
-        runCatching {
-            sendMessage(messageByself.messageParams, messageByself)
-        }
+        sendMessage(messageByself.messageParams, messageByself)
     }
 
     /**
      * Отправляет пользователю сообщение
      * Выставляет клавиатуру, если это требуется
      * Если messageByself == null, то сохраняет в БД запись о сообщении со статусом отправки
+     *
+     * throwInError отвечате за выбрасывание исключения в случае возникновения ошибки.
+     * Если при отправке возникла ошибка и throwInError == true, то выбрасываем исключение, если нет возвращаем null
      */
     fun sendMessage(
         messageParams: MessageParams,
-        messageByself: MessageByself? = null
-    ): Message {
+        messageByself: MessageByself? = null,
+        throwInError: Boolean = false
+    ): Message? {
         val sentMessageRow = messageByself ?:  messageByselfRepository.save(
             MessageByself(
                 status = SentMessageStatus.DEFAULT_STATUS,
                 messageParams = messageParams
             )
         )
-        return messageParams.run {
+        val optionalResult = messageParams.run {
             runCatching {
                 sendMessageWithResolveType(messageParams)
             }.onFailure { e ->
@@ -80,8 +82,9 @@ open class MessageSenderService(
                         status = SentMessageStatus.OK
                     )
                 )
-            }.getOrThrow()
+            }
         }
+        return if (throwInError) optionalResult.getOrThrow() else optionalResult.getOrNull()
     }
 
     /**
@@ -131,6 +134,7 @@ open class MessageSenderService(
     }
 
     fun deleteMessage(messageParams: MessageParams) {
+        messageParams.messageId ?: return
         MessageSenderUtil.deleteMessage(bot, messageParams)
     }
 }

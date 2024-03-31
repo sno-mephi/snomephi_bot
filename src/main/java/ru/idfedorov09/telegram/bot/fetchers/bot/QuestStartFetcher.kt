@@ -149,7 +149,7 @@ class QuestStartFetcher(
             )
 
         questDialog.copy(
-            consoleMessageId = sentMessage.messageId.toString(),
+            consoleMessageId = sentMessage?.messageId.toString(),
         ).also { questDialogRepository.save(it) }
     }
 

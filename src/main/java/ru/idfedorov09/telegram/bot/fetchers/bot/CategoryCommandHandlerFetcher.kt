@@ -82,7 +82,7 @@ class CategoryCommandHandlerFetcher(
                     chatId = data.chatId,
                     text = text,
                 ),
-            ).chatId
+            )?.chatId
         data.userInfo =
             data.userInfo.copy(
                 data = lastSent.toString(),
@@ -101,7 +101,7 @@ class CategoryCommandHandlerFetcher(
                     text = text,
                     replyMarkup = keyboard,
                 ),
-            ).messageId
+            )?.messageId
         data.userInfo =
             data.userInfo.copy(
                 data = lastSent.toString(),

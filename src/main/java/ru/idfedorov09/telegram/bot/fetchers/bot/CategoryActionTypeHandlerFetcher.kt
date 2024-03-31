@@ -237,7 +237,7 @@ class CategoryActionTypeHandlerFetcher(
                     text = text,
                     replyMarkup = keyboard,
                 ),
-            ).messageId
+            )?.messageId
         data.userInfo =
             data.userInfo.copy(
                 data = lastSent.toString(),

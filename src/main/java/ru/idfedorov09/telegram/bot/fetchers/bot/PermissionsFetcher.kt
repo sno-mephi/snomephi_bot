@@ -304,7 +304,7 @@ class PermissionsFetcher(
 
         return params.userActualizedInfo.copy(
             lastUserActionType = LastUserActionType.PERMS_ENTER_TUI,
-            data = sentMessage.messageId.toString()
+            data = sentMessage?.messageId.toString()
         )
     }
 

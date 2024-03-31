@@ -189,7 +189,7 @@ class BroadcastConstructorFetcher(
                 )
             bcData =
                 bcData?.copy(
-                    lastConsoleMessageId = sentMessage.messageId,
+                    lastConsoleMessageId = sentMessage?.messageId,
                 )
             lastUserActionType = LastUserActionType.BC_BUTTON_CALLBACK_TYPING
         }
@@ -422,7 +422,7 @@ class BroadcastConstructorFetcher(
                 )
             bcData =
                 bcData?.copy(
-                    lastConsoleMessageId = sentMessage.messageId,
+                    lastConsoleMessageId = sentMessage?.messageId,
                 )
             lastUserActionType = LastUserActionType.BC_BUTTON_CAPTION_TYPE
         }
@@ -456,7 +456,7 @@ class BroadcastConstructorFetcher(
                 )
             bcData =
                 bcData?.copy(
-                    lastConsoleMessageId = sentMessage.messageId,
+                    lastConsoleMessageId = sentMessage?.messageId,
                 )
             lastUserActionType = LastUserActionType.BC_BUTTON_LINK_TYPE
         }
@@ -612,7 +612,7 @@ class BroadcastConstructorFetcher(
 
             bcData =
                 bcData?.copy(
-                    lastConsoleMessageId = sentMessage.messageId,
+                    lastConsoleMessageId = sentMessage?.messageId,
                 )
             lastUserActionType = LastUserActionType.DEFAULT
         }
@@ -663,7 +663,7 @@ class BroadcastConstructorFetcher(
 
         params.userActualizedInfo.bcData =
             params.userActualizedInfo.bcData?.copy(
-                lastConsoleMessageId = sent.messageId,
+                lastConsoleMessageId = sent?.messageId,
             )
     }
 
@@ -702,7 +702,7 @@ class BroadcastConstructorFetcher(
             )
         params.userActualizedInfo.bcData =
             params.userActualizedInfo.bcData?.copy(
-                lastConsoleMessageId = sent.messageId,
+                lastConsoleMessageId = sent?.messageId,
             )
         params.userActualizedInfo.lastUserActionType = LastUserActionType.BC_TEXT_TYPE
     }
@@ -774,7 +774,7 @@ class BroadcastConstructorFetcher(
             )
         params.userActualizedInfo.bcData =
             params.userActualizedInfo.bcData?.copy(
-                lastConsoleMessageId = sent.messageId,
+                lastConsoleMessageId = sent?.messageId,
             )
         params.userActualizedInfo.lastUserActionType = LastUserActionType.BC_CHANGE_START_TIME
     }
@@ -932,7 +932,7 @@ class BroadcastConstructorFetcher(
 
                 bcData =
                     bcData?.copy(
-                        lastConsoleMessageId = sent.messageId,
+                        lastConsoleMessageId = sent?.messageId,
                     )
             } else {
                 removeBcConsole(params)
@@ -1008,6 +1008,7 @@ class BroadcastConstructorFetcher(
                                     parseMode = ParseMode.HTML,
                                     disableWebPagePreview = !params.userActualizedInfo.bcData!!.shouldShowWebPreview
                                 ),
+                                throwInError = true
                             )
 
                         else ->
@@ -1020,6 +1021,7 @@ class BroadcastConstructorFetcher(
                                     photo = InputFile(bcData?.imageHash),
                                     disableWebPagePreview = !params.userActualizedInfo.bcData!!.shouldShowWebPreview
                                 ),
+                                throwInError = true
                             )
                     }
                 }.onFailure {
@@ -1041,7 +1043,7 @@ class BroadcastConstructorFetcher(
                 }.onSuccess {
                     bcData =
                         bcData?.copy(
-                            lastConsoleMessageId = it.messageId,
+                            lastConsoleMessageId = it?.messageId,
                         )
                 }
             }

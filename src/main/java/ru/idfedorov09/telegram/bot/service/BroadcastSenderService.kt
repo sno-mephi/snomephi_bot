@@ -92,6 +92,7 @@ open class BroadcastSenderService(
                 photo = broadcast.imageHash?.let { InputFile(it) },
                 disableWebPagePreview = !broadcast.shouldShowWebPreview
             ),
+            throwInError = true
         )
 
         if (shouldAddToReceived) {
@@ -122,14 +123,12 @@ open class BroadcastSenderService(
         val author = broadcast.authorId?.let { userRepository.findActiveUsersById(it) } ?: return
         val msgText = "Рассылка №${broadcast.id} успешно запущена"
 
-        runCatching {
-            messageSenderService.sendMessage(
-                MessageParams(
-                    chatId = author.tui!!,
-                    text = msgText,
-                ),
-            )
-        }
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = author.tui!!,
+                text = msgText,
+            ),
+        )
     }
 
     fun finishBroadcast(broadcast: Broadcast) {
@@ -154,14 +153,12 @@ open class BroadcastSenderService(
                 "Старт рассылки: ${finalBroadcast.startTime?.format(formatter)}\n" +
                 "Конец рассылки: ${finalBroadcast.finishTime?.format(formatter)}"
 
-        runCatching {
-            messageSenderService.sendMessage(
-                MessageParams(
-                    chatId = author.tui!!,
-                    text = msgText,
-                ),
-            )
-        }
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = author.tui!!,
+                text = msgText,
+            ),
+        )
     }
 
     private fun checkValidUser(
