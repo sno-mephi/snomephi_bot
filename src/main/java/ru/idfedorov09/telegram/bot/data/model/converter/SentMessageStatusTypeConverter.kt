@@ -9,7 +9,7 @@ import ru.idfedorov09.telegram.bot.data.enums.SentMessageStatus
 class SentMessageStatusTypeConverter : AttributeConverter<SentMessageStatus, String> {
 
     override fun convertToDatabaseColumn(attribute: SentMessageStatus?): String {
-        return attribute?.name ?: LastUserActionType.DEFAULT.name
+        return attribute?.name ?: SentMessageStatus.DEFAULT_STATUS.name
     }
 
     override fun convertToEntityAttribute(dbData: String?): SentMessageStatus? {

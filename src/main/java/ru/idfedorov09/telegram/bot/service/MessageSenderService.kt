@@ -61,7 +61,8 @@ open class MessageSenderService(
     ): Message {
         val sentMessageRow = messageByself ?:  messageByselfRepository.save(
             MessageByself(
-                status = SentMessageStatus.DEFAULT_STATUS
+                status = SentMessageStatus.DEFAULT_STATUS,
+                messageParams = messageParams
             )
         )
         return messageParams.run {
