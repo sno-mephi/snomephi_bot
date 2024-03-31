@@ -92,7 +92,8 @@ open class BroadcastSenderService(
                 photo = broadcast.imageHash?.let { InputFile(it) },
                 disableWebPagePreview = !broadcast.shouldShowWebPreview
             ),
-            throwInError = true
+            throwInError = true,
+            quickSend = true,
         )
 
         if (shouldAddToReceived) {

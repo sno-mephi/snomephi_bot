@@ -27,12 +27,13 @@ open class MessageSenderService(
         private val log = LoggerFactory.getLogger(MessageSenderService::class.java)
     }
 
-    @Scheduled(fixedDelay = 150)
-    fun trySendMessagesWithTimeout() {
+    @Scheduled(fixedDelay = 50)
+    fun sendAllMessages() {
         runBlocking {
             val timeoutMessagesList = messageByselfRepository
-                .findAllMessagesByStatus(status = SentMessageStatus.TIMEOUT)
+                .findAllMessagesToSend()
                 .groupBy { it.chatId }
+
             timeoutMessagesList.map {
                 async {
                     processTryingResentMessage(it.value.firstOrNull())
@@ -47,7 +48,12 @@ open class MessageSenderService(
     ) {
         messageByself ?: return
         messageByself.messageParams ?: return
-        sendMessage(messageByself.messageParams, messageByself)
+        sendMessage(
+            messageParams = messageByself.messageParams,
+            messageByself = messageByself,
+            throwInError = false,
+            quickSend = true
+        )
     }
 
     /**
@@ -57,11 +63,14 @@ open class MessageSenderService(
      *
      * throwInError отвечате за выбрасывание исключения в случае возникновения ошибки.
      * Если при отправке возникла ошибка и throwInError == true, то выбрасываем исключение, если нет возвращаем null
+     *
+     * quickSend - моментальная отправка сообщения
      */
     fun sendMessage(
         messageParams: MessageParams,
         messageByself: MessageByself? = null,
-        throwInError: Boolean = false
+        throwInError: Boolean = false,
+        quickSend: Boolean = false,
     ): Message? {
         val sentMessageRow = messageByself ?:  messageByselfRepository.save(
             MessageByself(
@@ -70,6 +79,7 @@ open class MessageSenderService(
                 messageParams = messageParams
             )
         )
+        if (!quickSend) return null
         val optionalResult = messageParams.run {
             runCatching {
                 sendMessageWithResolveType(messageParams)

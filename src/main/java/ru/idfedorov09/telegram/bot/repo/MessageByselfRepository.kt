@@ -10,10 +10,12 @@ interface MessageByselfRepository : JpaRepository<MessageByself, Long> {
     @Query(
         value = """
             SELECT msg FROM MessageByself msg
-            WHERE msg.status = :status
+            WHERE 1 = 2
+                OR msg.status = 'TIMEOUT' 
+                OR msg.status = 'DEFAULT_STATUS'
             ORDER BY msg.id
         """,
     )
-    fun findAllMessagesByStatus(status: SentMessageStatus): List<MessageByself>
+    fun findAllMessagesToSend(): List<MessageByself>
 
 }
