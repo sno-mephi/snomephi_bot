@@ -23,6 +23,12 @@ data class MessageByself (
     val id: Long? = null,
 
     /**
+     * id чата в которй отправляется сообщение
+     */
+    @Column(name = "chat_id")
+    val chatId: String? = null,
+
+    /**
      * Столбец с MessageParams отправляемого сообщения. В бд хранится в виде json
      */
     @Column(name = "message_object", columnDefinition = "TEXT")

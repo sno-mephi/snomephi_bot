@@ -11,6 +11,7 @@ interface MessageByselfRepository : JpaRepository<MessageByself, Long> {
         value = """
             SELECT msg FROM MessageByself msg
             WHERE msg.status = :status
+            ORDER BY msg.id
         """,
     )
     fun findAllMessagesByStatus(status: SentMessageStatus): List<MessageByself>

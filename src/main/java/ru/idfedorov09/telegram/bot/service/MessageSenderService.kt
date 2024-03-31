@@ -30,11 +30,12 @@ open class MessageSenderService(
     @Scheduled(fixedDelay = 150)
     fun trySendMessagesWithTimeout() {
         runBlocking {
-            val timeoutMessagesList =
-                messageByselfRepository.findAllMessagesByStatus(status = SentMessageStatus.TIMEOUT)
+            val timeoutMessagesList = messageByselfRepository
+                .findAllMessagesByStatus(status = SentMessageStatus.TIMEOUT)
+                .groupBy { it.chatId }
             timeoutMessagesList.map {
                 async {
-                    processTryingResentMessage(it)
+                    processTryingResentMessage(it.value.firstOrNull())
                 }
             }.awaitAll()
         }
@@ -42,8 +43,9 @@ open class MessageSenderService(
 
     // TODO: поддержать не только отправку сообщений, но также и редактирование, удаление и прочее
     private fun processTryingResentMessage(
-        messageByself: MessageByself
+        messageByself: MessageByself?
     ) {
+        messageByself ?: return
         messageByself.messageParams ?: return
         sendMessage(messageByself.messageParams, messageByself)
     }
@@ -64,6 +66,7 @@ open class MessageSenderService(
         val sentMessageRow = messageByself ?:  messageByselfRepository.save(
             MessageByself(
                 status = SentMessageStatus.DEFAULT_STATUS,
+                chatId = messageParams.chatId,
                 messageParams = messageParams
             )
         )
