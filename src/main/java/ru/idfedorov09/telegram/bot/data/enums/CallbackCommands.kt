@@ -12,6 +12,9 @@ enum class CallbackCommands(
     /** Нажата кнопка Ответ **/
     QUEST_ANSWER("quest_ans|%d"),
     QUEST_IGNORE("quest_ignore|%d"),
+    QUEST_RECREATE("quest_recreate|%d"),
+    QUEST_RECREATE_START_DIALOG("quest_recreate_start_dialog|%d"),
+    QUEST_SHOW_HISTORY("quest_show_history|%d"),
     QUEST_START_DIALOG("quest_start_dialog|%d"),
 
     CATEGORY_ACTION_MENU("category_action_menu|%d"),
@@ -40,9 +43,6 @@ enum class CallbackCommands(
     USER_CONFIRM("user_confirm|%s"),
     USER_DECLINE("user_decline|%s"),
     USER_WITHOUT_GROUP("user_without_group"),
-
-    /** аналагично команде /ban **/
-    BANNED("banned|%s"),
 
     ;
 

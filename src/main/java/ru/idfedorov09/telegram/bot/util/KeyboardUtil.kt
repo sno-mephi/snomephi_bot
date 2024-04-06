@@ -47,6 +47,13 @@ object KeyboardUtil {
                 }
             )
         }
+        if (UserRole.ROOT in roles) {
+            keyboards.add(
+                KeyboardRow().also {
+                    it.add(TextCommands.PERMISSIONS_SETUP())
+                }
+            )
+        }
         val defaultKeyboard =
             ReplyKeyboardMarkup().also {
                 it.keyboard = keyboards
