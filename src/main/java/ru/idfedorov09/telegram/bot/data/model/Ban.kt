@@ -14,7 +14,7 @@ data class Ban(
     @Column(name = "reason_text", columnDefinition = "TEXT")
     val text: String? = null,
     /** тот кто забанил **/
-    @Column(name = "moderator_id", columnDefinition = "TEXT")
+    @Column(name = "moderator_id")
     val moderatorId: Long? = null,
     /** tui того кого забанили **/
     @Column(name = "user_tui", columnDefinition = "TEXT")

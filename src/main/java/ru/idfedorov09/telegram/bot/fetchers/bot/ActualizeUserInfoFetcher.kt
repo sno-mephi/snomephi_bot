@@ -96,7 +96,7 @@ class ActualizeUserInfoFetcher(
                 data = data,
                 isRegistered = isRegistered,
                 bcData = bcData,
-                isBaned = isBaned,
+                isBaned = isBaned ?: false,
                 banData = banData,
             )
         }

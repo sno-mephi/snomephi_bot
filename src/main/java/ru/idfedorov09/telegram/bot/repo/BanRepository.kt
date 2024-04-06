@@ -1,9 +1,11 @@
 package ru.idfedorov09.telegram.bot.repo
 
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
+import org.springframework.transaction.annotation.Isolation
+import org.springframework.transaction.annotation.Transactional
 import ru.idfedorov09.telegram.bot.data.model.Ban
-import java.sql.Struct
 
 interface BanRepository : JpaRepository<Ban, Long> {
     @Query(
@@ -18,8 +20,10 @@ interface BanRepository : JpaRepository<Ban, Long> {
                 AND user_tui = :tui
         """, nativeQuery = true
     )
-    fun isBanned(tui: String): Boolean
+    fun isBanned(tui: String): Boolean?
 
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    @Modifying
     @Query(
         """
             UPDATE ban_table
@@ -38,13 +42,15 @@ interface BanRepository : JpaRepository<Ban, Long> {
             WHERE 1=1
                 AND moderator_id = :moderatorId
                 AND is_built = false
-                AND is_deleted IS false
+                AND is_deleted = false
             ORDER BY ban_id DESC
             LIMIT 1
         """, nativeQuery = true
     )
-    fun findLatestUnbuiltBanByModerator(moderatorId: Long): Ban
+    fun findLatestUnbuiltBanByModerator(moderatorId: Long): Ban?
 
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    @Modifying
     @Query(
         """
             UPDATE ban_table

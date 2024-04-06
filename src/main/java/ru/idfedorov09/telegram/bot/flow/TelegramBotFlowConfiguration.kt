@@ -51,6 +51,7 @@ open class TelegramBotFlowConfiguration(
         sequence {
             fetch(actualizeUserInfoFetcher)
             /** Если в бане, то граф тормозится **/
+            sequence(condition = {it.isByUser() && !it.isUserBanned()}) {
                 fetch(deleteUserFetcher)
                 fetch(bugReportFetcher)
                 // registration block
@@ -69,6 +70,7 @@ open class TelegramBotFlowConfiguration(
                         fetch(dialogHandleFetcher)
                         fetch(broadcastConstructorFetcher)
                         fetch(permissionsFetcher)
+                        fetch(bannedFetcher)
                     }
 
                     fetch(roleDescriptionFetcher)
@@ -76,10 +78,9 @@ open class TelegramBotFlowConfiguration(
                     fetch(helpCommandFetcher)
                     fetch(weeklyEventsFetcher)
                     fetch(questStartFetcher)
-                    fetch(bannedFetcher)
                 }
                 fetch(updateDataFetcher)
-
+            }
         }
     }
 
