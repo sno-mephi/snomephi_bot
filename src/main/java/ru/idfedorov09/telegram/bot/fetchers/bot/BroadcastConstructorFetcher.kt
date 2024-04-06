@@ -43,6 +43,11 @@ class BroadcastConstructorFetcher(
     private val broadcastSenderService: BroadcastSenderService,
     private val messageSenderService: MessageSenderService,
 ) : DefaultFetcher() {
+
+    companion object {
+        private val FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
+    }
+
     @InjectData
     @FetcherPerms(UserRole.MAILER)
     fun doFetch(
@@ -238,13 +243,15 @@ class BroadcastConstructorFetcher(
     }
 
     private fun changeStartTime(params: Params) {
-        val msgText = params.update.message.text
-        val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
-        if (!msgText.matches(Regex("\\d{2}.\\d{2}.\\d{4} \\d{2}:\\d{2}"))) {
+        val msgText = params.update.message.text.trim()
+        val startTime = when {
+            msgText.matches(Regex("\\d{2}.\\d{2}.\\d{4} \\d{2}:\\d{2}")) -> resolveFullDate(msgText)
+            msgText.matches(Regex("\\d{2}:\\d{2}")) -> resolveShortDate(msgText)
+            else -> null
+        } ?: run {
             bcChangeStartTime(params, prefix = "Неверный формат даты и времени")
             return
         }
-        val startTime = LocalDateTime.parse(msgText, formatter)
         params.userActualizedInfo.apply {
             bcData =
                 bcData?.copy(
@@ -254,6 +261,23 @@ class BroadcastConstructorFetcher(
 
         params.userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
         bcChangeCategories(params)
+    }
+
+    /**
+     * Возвращает по сообщению формата dd.MM.yyyy HH:mm текущую дату и время в LocalDateTime
+     */
+    private fun resolveFullDate(fullDateText: String) = LocalDateTime.parse(fullDateText, FORMATTER)
+
+    /**
+     * Возвращает по сообщению формата HH:mm текущую дату с таким временем в LocalDateTime
+     */
+    private fun resolveShortDate(
+        timeText: String,
+    ): LocalDateTime {
+        val nowDttm = LocalDateTime.now().atZone(BOT_TIME_ZONE).toLocalDateTime()
+        val currentDate = nowDttm.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+        val formatString = "$currentDate $timeText"
+        return LocalDateTime.parse(formatString, FORMATTER)
     }
 
     private fun changeCategories(params: Params) {
@@ -723,7 +747,11 @@ class BroadcastConstructorFetcher(
     ) {
         removeBcConsole(params)
         val msgStart = prefix?.let { "$prefix\n" } ?: ""
-        val msgText = msgStart + "Отправьте время запуска рассылки в формате 'дд.мм.гггг чч:мм'"
+        val msgText = msgStart + "\uD83D\uDD57 Отправь время запуска рассылки в формате <b><i>ДД.ММ.ГГГГ ЧЧ:ММ</i></b>" +
+                " или напиши время рассыли в формате <b><i>ЧЧ:ММ</i></b>, " +
+                "если хочешь разослать <b><i><u>сегодня</u></i></b>\n\n" +
+                "Например, если ты отправишь\n<pre>24.06.2077 19:25</pre>\nто рассылка начнется " +
+                "24 июня 2077 года в 19:25, а если \n<pre>23:50</pre>\nто рассылка начнется <u>сегодня</u> в 23:50"
         val cancelButton = CallbackData(callbackData = "#bc_action_cancel", metaText = "Отмена").save()
         val sent =
             messageSenderService.sendMessage(
@@ -741,6 +769,7 @@ class BroadcastConstructorFetcher(
                                 ),
                             ),
                         ),
+                    parseMode = ParseMode.HTML,
                 ),
             )
         params.userActualizedInfo.bcData =

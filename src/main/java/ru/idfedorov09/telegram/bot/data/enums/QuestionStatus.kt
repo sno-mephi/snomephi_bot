@@ -11,7 +11,7 @@ enum class QuestionStatus {
     WAIT,
 
     /** админ проигнорил вопрос **/
-    IRNORE,
+    IGNORE,
 
     /** админ забанил пользователя **/
     BLOCK_USER,
