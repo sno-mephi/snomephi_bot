@@ -26,6 +26,6 @@ data class Ban(
     @Column(name = "finish_dttm")
     val finishTime: LocalDateTime? = null,
     /** флаг разбана **/
-    @Column(name = "")
+    @Column(name = "is_unban")
     val isUnban: Boolean = false
 )

@@ -72,4 +72,7 @@ enum class LastUserActionType {
 
     /** ввод tui человека для прав **/
     PERMS_ENTER_TUI,
+
+    /** ввод tui человека для бана/разбана **/
+    BANED_ENTER_TUI,
 }

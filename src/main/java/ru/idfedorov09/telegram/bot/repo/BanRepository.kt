@@ -12,16 +12,16 @@ interface BanRepository : JpaRepository<Ban, Long> {
                 CASE WHEN COUNT(*) = 0 THEN false ELSE true END
             FROM ban_table
             WHERE 1=1
-                AND isBan IS false
+                AND is_unban IS false
                 AND user_tui = :tui
         """, nativeQuery = true
     )
-    fun isBanned(tui: Struct): Boolean
+    fun isBanned(tui: String): Boolean
 
     @Query(
         """
             UPDATE ban_table
-            SET categories = array_remove(categories, :category_id)
+            SET is_unban = true
             WHERE TIMEZONE('Europe/Moscow', CURRENT_TIMESTAMP) > TIMEZONE('Europe/Moscow', finish_dttm) 
         """, nativeQuery = true
     )

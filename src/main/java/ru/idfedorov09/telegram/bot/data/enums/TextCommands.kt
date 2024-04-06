@@ -92,6 +92,26 @@ enum class TextCommands(
         description = "отправить сообщение о баге: /bug <текст отбращения>",
     ),
 
+    BANNED_COMMAND(
+        commandText = "/ban",
+        description = "Забанить пользователя по tui",
+        allowedRoles =
+            listOf(
+                UserRole.ROOT,
+                UserRole.MODERATOR
+            ),
+    ),
+
+    UNBANNED_COMMAND(
+        commandText = "/unban",
+        description = "Разбанить пользователя по tui",
+        allowedRoles =
+        listOf(
+            UserRole.ROOT,
+            UserRole.MODERATOR
+        ),
+    )
+
     ;
 
     /** Проверяет, является ли текст командой **/

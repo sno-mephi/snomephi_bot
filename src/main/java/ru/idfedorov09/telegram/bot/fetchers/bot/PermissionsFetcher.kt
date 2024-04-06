@@ -36,12 +36,10 @@ class PermissionsFetcher(
         userActualizedInfo: UserActualizedInfo,
         update: Update,
     ): UserActualizedInfo {
-        if (UserRole.ROOT !in userActualizedInfo.roles) return userActualizedInfo
-
         val params = Params(userActualizedInfo, update)
         return when {
             update.hasMessage() && update.message.hasText() -> textCommandsHandler(params)
-            update.hasCallbackQuery() -> callbackQueryHandler(update, params)
+            update.hasCallbackQuery() -> callbackQueryHandler(params)
             else -> userActualizedInfo
         }
     }
@@ -64,11 +62,8 @@ class PermissionsFetcher(
         }
     }
 
-    private fun callbackQueryHandler(
-        update: Update,
-        params: Params,
-    ): UserActualizedInfo {
-        val callbackId = update.callbackQuery.data?.toLongOrNull()
+    private fun callbackQueryHandler(params: Params, ): UserActualizedInfo {
+        val callbackId = params.update.callbackQuery.data?.toLongOrNull()
         callbackId ?: return params.userActualizedInfo
         val callbackData = callbackDataRepository.findById(callbackId).getOrNull() ?: return params.userActualizedInfo
 
