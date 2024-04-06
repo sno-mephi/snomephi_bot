@@ -25,7 +25,16 @@ data class Ban(
     /** время окончания бана **/
     @Column(name = "finish_dttm")
     val finishTime: LocalDateTime? = null,
+    /** флаг подтверждения бана **/
+    @Column(name = "is_built")
+    val isBuilt: Boolean = false,
+    /** true только в случае если юзер отменяет выдачу бана **/
+    @Column(name = "is_deleted")
+    val isDeleted: Boolean = false,
     /** флаг разбана **/
     @Column(name = "is_unban")
-    val isUnban: Boolean = false
+    val isUnban: Boolean = false,
+    /** нужно для редактирования консоли при создании бана **/
+    @Column(name = "last_console_message_id")
+    val lastConsoleMessageId: Int? = null,
 )

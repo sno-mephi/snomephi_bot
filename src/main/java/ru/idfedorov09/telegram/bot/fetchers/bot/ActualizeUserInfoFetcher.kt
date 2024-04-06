@@ -77,6 +77,11 @@ class ActualizeUserInfoFetcher(
 
         val isBaned = banRepository.isBanned(tui)
 
+        val banData =
+            userDataFromDatabase.id?.let {
+                banRepository.findLatestUnbuiltBanByModerator(it)
+            }
+
         userDataFromDatabase.apply {
             return UserActualizedInfo(
                 id = id,
@@ -92,6 +97,7 @@ class ActualizeUserInfoFetcher(
                 isRegistered = isRegistered,
                 bcData = bcData,
                 isBaned = isBaned,
+                banData = banData,
             )
         }
     }

@@ -29,4 +29,6 @@ data class UserActualizedInfo(
     var bcData: Broadcast? = null,
     /** Текущая информация о бане **/
     var isBaned: Boolean = false,
+    /** Текущий создаваемый бан **/
+    var banData: Ban? = null,
 )

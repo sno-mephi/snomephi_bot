@@ -35,6 +35,7 @@ open class TelegramBotFlowConfiguration(
     private val helpCommandFetcher: HelpCommandFetcher,
     private val deleteUserFetcher: DeleteUserFetcher,
     private val bugReportFetcher: BugReportFetcher,
+    private val bannedFetcher: BannedFetcher,
 ) {
     /**
      * Возвращает построенный граф; выполняется только при запуске приложения
@@ -50,7 +51,6 @@ open class TelegramBotFlowConfiguration(
         sequence {
             fetch(actualizeUserInfoFetcher)
             /** Если в бане, то граф тормозится **/
-            sequence(condition = {it.isByUser() && !it.isUserBanned()}) {
                 fetch(deleteUserFetcher)
                 fetch(bugReportFetcher)
                 // registration block
@@ -76,9 +76,10 @@ open class TelegramBotFlowConfiguration(
                     fetch(helpCommandFetcher)
                     fetch(weeklyEventsFetcher)
                     fetch(questStartFetcher)
+                    fetch(bannedFetcher)
                 }
                 fetch(updateDataFetcher)
-            }
+
         }
     }
 
