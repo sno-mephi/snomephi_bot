@@ -37,4 +37,7 @@ data class Ban(
     /** нужно для редактирования консоли при создании бана **/
     @Column(name = "last_console_message_id")
     val lastConsoleMessageId: Int? = null,
+    /** id диалога в котором нажата кнопка бан **/
+    @Column(name = "quest_dialog_id")
+    val questDialogId: Long? = null,
 )

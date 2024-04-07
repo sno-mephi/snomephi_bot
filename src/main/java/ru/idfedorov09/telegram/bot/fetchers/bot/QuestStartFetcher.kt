@@ -5,12 +5,14 @@ import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUEST_RESPONDENT_CHAT_ID
+import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.*
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.model.*
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
+import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
 import ru.idfedorov09.telegram.bot.repo.QuestMessageRepository
 import ru.idfedorov09.telegram.bot.repo.QuestDialogRepository
 import ru.idfedorov09.telegram.bot.repo.QuestSegmentRepository
@@ -28,6 +30,7 @@ class QuestStartFetcher(
     private val questSegmentRepository: QuestSegmentRepository,
     private val questMessageRepository: QuestMessageRepository,
     private val messageSenderService: MessageSenderService,
+    private val callbackDataRepository: CallbackDataRepository,
 ) : DefaultFetcher() {
     @InjectData
     fun doFetch(
@@ -139,12 +142,28 @@ class QuestStartFetcher(
             ),
         )
 
+        val answerButton =
+            CallbackData(
+                callbackData = QUEST_ANSWER.format(questDialog.id),
+                metaText = "\uD83D\uDCAC Ответ",
+            ).save()
+        val banButton =
+            CallbackData(
+                callbackData = QUEST_IGNORE.format(questDialog.id),
+                metaText = "\uD83D\uDD07 Игнор",
+            ).save()
+        val ignoreButton =
+            CallbackData(
+                callbackData = BANNED_USER.format(questDialog.id, userActualizedInfo.tui.toLong()),
+                metaText = "\uD83D\uDEAF Бан",
+            ).save()
+
         val sentMessage =
             messageSenderService.sendMessage(
                 MessageParams(
                     chatId = QUEST_RESPONDENT_CHAT_ID,
                     text = "Выберите действие:",
-                    replyMarkup = createChooseKeyboard(questDialog, userActualizedInfo.tui),
+                    replyMarkup = createChooseKeyboard(answerButton, banButton, ignoreButton),
                 ),
             )
 
@@ -155,20 +174,24 @@ class QuestStartFetcher(
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
 
-    private fun createChooseKeyboard(questDialog: QuestDialog, authorTui: String) =
-        createKeyboard(
-            listOf(
-                listOf(
-                    InlineKeyboardButton("\uD83D\uDCAC Ответ")
-                        .also { it.callbackData = QUEST_ANSWER.format(questDialog.id) },
-                ),
-                listOf(
-                    InlineKeyboardButton("\uD83D\uDD07 Игнор")
-                        .also { it.callbackData = QUEST_IGNORE.format(questDialog.id) },
-                    // TODO: тикет SNOM-9471 (https://www.notion.so/3351e320861f495c85744c4729870706)
-                    InlineKeyboardButton("\uD83D\uDEAF Бан")
-                        .also { it.callbackData = BANNED_USER.data + "|${authorTui}" },
-                ),
-            ),
-        )
+    private fun createChooseKeyboard(vararg callbackData: CallbackData): InlineKeyboardMarkup {
+        val (first, rest) = callbackData.withIndex().partition { it.index == 0 }
+        val firstList = first.map { it.value }.map { button ->
+            InlineKeyboardButton().also {
+                it.text = button.metaText!!
+                it.callbackData = button.id?.toString()
+            }
+        }
+        val secondList = rest.map { it.value }.map { button ->
+            InlineKeyboardButton().also {
+                it.text = button.metaText!!
+                it.callbackData = button.id?.toString()
+
+            }
+        }
+        return createKeyboard(listOf(firstList, secondList))
+    }
+
+    private fun CallbackData.save() = callbackDataRepository.save(this)
+
 }

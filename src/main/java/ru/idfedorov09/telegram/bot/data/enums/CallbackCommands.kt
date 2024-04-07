@@ -44,13 +44,13 @@ enum class CallbackCommands(
     USER_DECLINE("user_decline|%s"),
     USER_WITHOUT_GROUP("user_without_group"),
 
-    BANNED_USER("ban_user"),
+    BANNED_USER("ban_user|%d|%d"),
     BANNED_CANCEL("ban_cancel"),
     BANNED_PERMANENT("ban_permanent"),
     BANNED_CONFIRM("ban_confirm"),
 
-    UNBANNED_USER("unban_user"),
-    UNBANNED_CONFIRM("unban_confirm")
+    UNBANNED_USER("unban_user|%d"),
+    UNBANNED_CONFIRM("unban_confirm|%d")
 
     ;
 

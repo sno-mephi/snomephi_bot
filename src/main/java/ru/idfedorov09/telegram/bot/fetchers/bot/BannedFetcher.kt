@@ -1,21 +1,20 @@
 package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.annotation.FetcherPerms
+import ru.idfedorov09.telegram.bot.data.GlobalConstants
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.BOT_TIME_ZONE
-import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
-import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
-import ru.idfedorov09.telegram.bot.data.enums.TextCommands
-import ru.idfedorov09.telegram.bot.data.enums.UserRole
+import ru.idfedorov09.telegram.bot.data.enums.*
 import ru.idfedorov09.telegram.bot.data.model.*
+import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
-import ru.idfedorov09.telegram.bot.repo.BanRepository
-import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
-import ru.idfedorov09.telegram.bot.repo.UserRepository
+import ru.idfedorov09.telegram.bot.repo.*
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
+import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import java.security.cert.CertPathValidatorException.Reason
@@ -32,6 +31,9 @@ class BannedFetcher(
     private val callbackDataRepository: CallbackDataRepository,
     private val userRepository: UserRepository,
     private val banRepository: BanRepository,
+    private val bot: Executor,
+    private val questDialogRepository: QuestDialogRepository,
+    private val questSegmentRepository: QuestSegmentRepository,
 ) : DefaultFetcher() {
 
     companion object {
@@ -98,6 +100,7 @@ class BannedFetcher(
 
             } else {
                 lastUserActionType = LastUserActionType.UNBANED_ENTER_TUI
+                data = sentMessage.messageId.toString()
             }
         }
     }
@@ -169,15 +172,16 @@ class BannedFetcher(
             } else {
                 val confirm =
                     CallbackData(
-                        callbackData = CallbackCommands.UNBANNED_CONFIRM.data + "|${tui}",
+                        callbackData = CallbackCommands.UNBANNED_CONFIRM.format(tui),
                         metaText = "подтвердите разблокировку"
                     ).save()
                 val text = "Нашел пользователя ${user.fullName}.\nПожалуйста, подтвердите его разблокировку."
-                messageSenderService.sendMessage(
+                messageSenderService.editMessage(
                     MessageParams(
                         chatId = userActualizedInfo.tui,
                         text = text,
-                        replyMarkup = createKeyboard(cancel, confirm)
+                        replyMarkup = createKeyboard(cancel, confirm),
+                        messageId = userActualizedInfo.data?.toInt()
                     )
                 )
                 userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
@@ -233,7 +237,14 @@ class BannedFetcher(
             else {
                  when {
                     params.update.message.text.matches(Regex("\\d{2}.\\d{2}.\\d{4} \\d{2}:\\d{2}")) ->
-                        resolveFullDate(params.update.message.text)
+                        resolveFullDate(params.update.message.text) .also {
+                            messageSenderService.deleteMessage(
+                                MessageParams(
+                                    chatId = tui,
+                                    messageId = params.update.message.messageId
+                                )
+                            )
+                        }
                     else -> null
                 } ?: run {
                     reasonBan(params, prefix = "Неверный формат времени")
@@ -254,7 +265,6 @@ class BannedFetcher(
                     callbackData = CallbackCommands.BANNED_CONFIRM.data,
                     metaText = "подтвердите бан"
                 ).save()
-
             messageSenderService.editMessage(
                 MessageParams(
                     chatId = tui,
@@ -282,7 +292,7 @@ class BannedFetcher(
                 )
             val unBan =
                 CallbackData(
-                    callbackData = CallbackCommands.UNBANNED_USER.data + "|${banData?.userTui}",
+                    callbackData = banData?.userTui?.let { CallbackCommands.UNBANNED_USER.format(it.toLong()) },
                     metaText = "разблокировать",
                 ).save()
             messageSenderService.editMessage(
@@ -293,6 +303,60 @@ class BannedFetcher(
                     messageId = banData?.lastConsoleMessageId,
                     replyMarkup = createKeyboard(unBan)
                 )
+            )
+
+            if (banData?.questDialogId != null) {
+                questBan(params)
+            }
+        }
+    }
+
+    private fun questBan(params: Params) {
+        params.apply {
+            val questDialog = userActualizedInfo.banData?.questDialogId?.let { questDialogRepository.findById(it).get() } ?: return
+            val questSegment = questDialog.lastQuestSegmentId?.let { questSegmentRepository.findById(it).get() }  ?: return
+            if (questDialog.questionStatus == QuestionStatus.CLOSED) return
+
+            val questionAuthor = userRepository.findActiveUsersById(questDialog.authorId!!)!!
+
+            if (userActualizedInfo.tui == questionAuthor.tui) {
+
+                val answerCallbackQuery = AnswerCallbackQuery().also {
+                    it.callbackQueryId = update.callbackQuery.id
+                    it.text = "\uD83D\uDEAB Вы не можете забанить себя"
+                }
+                bot.execute(answerCallbackQuery)
+                return
+            }
+
+            questDialogRepository.save(
+                questDialog.copy(
+                    questionStatus = QuestionStatus.CLOSED,
+                    finishTime = updatesUtil.getDate(params.update)
+                        ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
+                ),
+            )
+
+            questSegmentRepository.save(
+                questSegment.copy(
+                    responderId = userActualizedInfo.id,
+                    finishTime = updatesUtil.getDate(update)
+                        ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
+                )
+            )
+
+            val newText = "\uD83D\uDD34 Автор забанен пользователем ${
+                MessageSenderUtil.userName(
+                    userActualizedInfo.lastTgNick,
+                    userActualizedInfo.fullName,
+                )
+            }."
+            messageSenderService.editMessage(
+                MessageParams(
+                    chatId = GlobalConstants.QUEST_RESPONDENT_CHAT_ID,
+                    messageId = questDialog.consoleMessageId?.toInt(),
+                    text = newText,
+                ),
             )
         }
     }
@@ -307,8 +371,8 @@ class BannedFetcher(
             messageSenderService.editMessage(
                 MessageParams(
                     chatId = userActualizedInfo.tui,
-                    text = "Вы успешно заблокировали пользователя ${tui}.",
-                    messageId = userActualizedInfo.banData?.lastConsoleMessageId
+                    text = "Вы успешно разблокировали пользователя ${tui}.",
+                    messageId = userActualizedInfo.data?.toInt()
                 )
             )
         }
@@ -321,19 +385,20 @@ class BannedFetcher(
 
         callbackData.callbackData?.apply {
             when {
-                startsWith(CallbackCommands.BANNED_USER.data) -> clickBackBan(params, this)
-                startsWith(CallbackCommands.UNBANNED_USER.data) -> clickUnban(params, this)
-                startsWith(CallbackCommands.BANNED_CANCEL.data) -> banCancel(params)
-                startsWith(CallbackCommands.BANNED_PERMANENT.data) -> dateFinishBan(params, permanent = true)
-                startsWith(CallbackCommands.BANNED_CONFIRM.data) -> confirmBan(params)
-                startsWith(CallbackCommands.UNBANNED_CONFIRM.data) -> confirmUnban(params, this)
+                CallbackCommands.BANNED_USER.isMatch(this) -> clickBan(params, this, isBan = true)
+                CallbackCommands.UNBANNED_USER.isMatch(this) -> clickBan(params, this, isBan = false)
+                CallbackCommands.BANNED_CANCEL.isMatch(this) -> banCancel(params)
+                CallbackCommands.BANNED_PERMANENT.isMatch(this) -> dateFinishBan(params, permanent = true)
+                CallbackCommands.BANNED_CONFIRM.isMatch(this) -> confirmBan(params)
+                CallbackCommands.UNBANNED_CONFIRM.isMatch(this) -> confirmUnban(params, this)
             }
         }
     }
 
-    private fun clickBackBan(
+    private fun clickBan(
         params: Params,
-        callbackData: String
+        callbackData: String,
+        isBan: Boolean,
     ) {
         params.apply {
             val tui = callbackData.split("|").last()
@@ -348,39 +413,58 @@ class BannedFetcher(
                 messageSenderService.sendMessage(
                     MessageParams(
                         chatId = tui,
-                        text = "Вы не можете заблокировать себя",
+                        text = "Вы не можете заблокировать/ разблокировать себя",
                     )
                 )
                 banCancel(params)
                 return
             }
 
-            val text = "Нашел пользователя ${user.fullName}.\nПожалуйста, укажите причину бана текстом."
-            userActualizedInfo.lastUserActionType = LastUserActionType.BANNED_ENTER_REASON
+            val questDialogId = callbackData.split("|")[1].toLong()
 
-            val sentMessage = messageSenderService.sendMessage(
-                MessageParams(
-                    chatId = tui,
-                    text = text,
-                    replyMarkup = createKeyboard(cancel)
-                )
-            )
+            if (isBan){
+                val text = "Нашел пользователя ${user.fullName}.\nПожалуйста, укажите причину бана текстом."
+                userActualizedInfo.lastUserActionType = LastUserActionType.BANNED_ENTER_REASON
 
-            userActualizedInfo.banData =
-                userActualizedInfo.banData?.copy(
-                    userTui = tui,
-                    lastConsoleMessageId = sentMessage.messageId
+                val sentMessage = messageSenderService.sendMessage(
+                    MessageParams(
+                        chatId = userActualizedInfo.tui,
+                        text = text,
+                        replyMarkup = createKeyboard(cancel)
+                    )
                 )
+
+                userActualizedInfo.banData =
+                    banRepository.save(
+                        Ban(
+                            moderatorId = userActualizedInfo.id,
+                            lastConsoleMessageId = sentMessage.messageId,
+                            userTui = tui,
+                            questDialogId = questDialogId
+
+                        ),
+                    )
+            } else {
+                val text = "Нашел пользователя ${user.fullName}.\nПодтвердите разблокировку."
+                val confirm =
+                    CallbackData(
+                        callbackData = CallbackCommands.UNBANNED_CONFIRM.format(tui.toLong()),
+                        metaText = "подтвердить разблокировку",
+                    ).save()
+
+                userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
+
+                val sentMessage = messageSenderService.sendMessage(
+                    MessageParams(
+                        chatId = userActualizedInfo.tui,
+                        text = text,
+                        replyMarkup = createKeyboard(cancel, confirm)
+                    )
+                )
+
+                userActualizedInfo.data = sentMessage.messageId.toString()
+            }
         }
-    }
-
-    private fun clickUnban(
-        params: Params,
-        callbackData: String,
-    ) {
-        val tui = callbackData.split("|").last()
-        val user = userRepository.findByTui(tui) ?: return
-
     }
 
     private fun banCancel(params: Params) {
