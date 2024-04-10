@@ -24,8 +24,6 @@ data class UserAction(
     val lastUserActionType: LastUserActionType? = null,
     @Column(name = "message_text", columnDefinition = "TEXT")
     val messageText: String? = null,
-    @Column(name = "callback_data_id")
-    val callbackDataId: Long? = null,
-    @Column(name = "callback_data_legacy", columnDefinition = "TEXT")
-    val callbackDataLegacy: String? = null,
+    @Column(name = "callback_data", columnDefinition = "TEXT")
+    val callbackData: String? = null,
 )

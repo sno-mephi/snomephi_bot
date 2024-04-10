@@ -85,10 +85,7 @@ class UpdateDataFetcher(
                     userId = id,
                     tui = tui,
                     messageText = update.message?.text,
-                    callbackDataId = callbackId,
-                    callbackDataLegacy = callbackId?.let { _ ->
-                        update.callbackQuery?.data
-                    }
+                    callbackData = update.callbackQuery?.data
                 )
             )
         }
