@@ -41,9 +41,11 @@ enum class CallbackCommands(
 
     CATEGORY_EXIT("category_exit"),
 
-    USER_CONFIRM("user_confirm|%s"),
-    USER_DECLINE("user_decline|%s"),
-    USER_WITHOUT_GROUP("user_without_group"),
+    REGISTRATION_CONFIRM_FULL_NAME("registration_confirm_full_name"),
+    REGISTRATION_DECLINE_FULL_NAME("registration_decline_full_name"),
+    REGISTRATION_CONFIRM_STUDY_GROUP("registration_confirm_study_group"),
+    REGISTRATION_DECLINE_STUDY_GROUP("registration_decline_study_group"),
+    REGISTRATION_WITHOUT_STUDY_GROUP("registration_without_study_group"),
 
     ;
 

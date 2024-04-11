@@ -3,6 +3,7 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
 import org.telegram.telegrambots.meta.api.objects.Update
+import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
@@ -77,6 +78,12 @@ class ActualizeUserInfoFetcher(
             userDataFromDatabase.id?.let {
                 broadcastRepository.findLatestUnbuiltBroadcastByAuthor(it)
             }
+
+        val lastUserActionType = userDataFromDatabase.lastUserActionType?: if (userDataFromDatabase.isRegistered) {
+            LastUserActionType.DEFAULT
+        } else {
+            LastUserActionType.REGISTRATION_START
+        }
 
         userDataFromDatabase.apply {
             return UserActualizedInfo(
