@@ -35,6 +35,7 @@ open class TelegramBotFlowConfiguration(
     private val helpCommandFetcher: HelpCommandFetcher,
     private val deleteUserFetcher: DeleteUserFetcher,
     private val bugReportFetcher: BugReportFetcher,
+    private val bannedFetcher: BannedFetcher,
 ) {
     /**
      * Возвращает построенный граф; выполняется только при запуске приложения
@@ -49,39 +50,45 @@ open class TelegramBotFlowConfiguration(
     private fun FlowBuilder.buildFlow() {
         sequence {
             fetch(actualizeUserInfoFetcher)
-            fetch(deleteUserFetcher)
-            fetch(bugReportFetcher)
-            // registration block
-            sequence(condition = { it.isByUser() && !it.isUserRegistered() && it.isPersonalUpdate() }) {
-                fetch(userActionHandlerFetcher)
-                fetch(registrationFetcher)
-            }
-
-            group(condition = { it.isByUser() && it.isUserRegistered() }) {
-                sequence {
-                    fetch(categoryCommandHandlerFetcher)
-                    fetch(categoryButtonHandlerFetcher)
-                    fetch(categoryActionTypeHandlerFetcher)
-                    fetch(settingMailFetcher)
-                    fetch(questButtonHandlerFetcher)
-                    fetch(dialogHandleFetcher)
-                    fetch(broadcastConstructorFetcher)
-                    fetch(permissionsFetcher)
+            /** Если в бане, то граф тормозится **/
+            sequence(condition = {it.isByUser() && !it.isUserBanned()}) {
+                fetch(deleteUserFetcher)
+                fetch(bugReportFetcher)
+                // registration block
+                sequence(condition = { it.isByUser() && !it.isUserRegistered() && it.isPersonalUpdate() }) {
+                    fetch(userActionHandlerFetcher)
+                    fetch(registrationFetcher)
                 }
 
-                fetch(roleDescriptionFetcher)
-                fetch(userInfoCommandFetcher)
-                fetch(helpCommandFetcher)
-                fetch(weeklyEventsFetcher)
-                fetch(questStartFetcher)
+                group(condition = { it.isByUser() && it.isUserRegistered() }) {
+                    sequence {
+                        fetch(categoryCommandHandlerFetcher)
+                        fetch(categoryButtonHandlerFetcher)
+                        fetch(categoryActionTypeHandlerFetcher)
+                        fetch(settingMailFetcher)
+                        fetch(questButtonHandlerFetcher)
+                        fetch(dialogHandleFetcher)
+                        fetch(broadcastConstructorFetcher)
+                        fetch(permissionsFetcher)
+                        fetch(bannedFetcher)
+                    }
+
+                    fetch(roleDescriptionFetcher)
+                    fetch(userInfoCommandFetcher)
+                    fetch(helpCommandFetcher)
+                    fetch(weeklyEventsFetcher)
+                    fetch(questStartFetcher)
+                }
+                fetch(updateDataFetcher)
             }
-            fetch(updateDataFetcher)
         }
     }
 
     private fun FlowContext.isByUser() = get<ExpContainer>()?.byUser ?: false
 
     private fun FlowContext.isUserRegistered() = get<UserActualizedInfo>()?.isRegistered ?: false
+
+    private fun FlowContext.isUserBanned() = get<UserActualizedInfo>()?.isBaned ?: false
 
     private fun FlowContext.isPersonalUpdate() = get<ExpContainer>()?.isPersonal ?: false
 }

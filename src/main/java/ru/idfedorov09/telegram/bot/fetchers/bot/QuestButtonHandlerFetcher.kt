@@ -10,7 +10,8 @@ import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUEST_RESPONDENT_CHAT_ID
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_ANSWER
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_RECREATE
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_RECREATE_START_DIALOG
-import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_BAN
+import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.BANNED_USER
+import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.UNBANNED_USER
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_IGNORE
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_START_DIALOG
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_SHOW_HISTORY
@@ -20,10 +21,6 @@ import ru.idfedorov09.telegram.bot.data.model.QuestSegment
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
-import ru.idfedorov09.telegram.bot.repo.QuestMessageRepository
-import ru.idfedorov09.telegram.bot.repo.QuestDialogRepository
-import ru.idfedorov09.telegram.bot.repo.QuestSegmentRepository
-import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.service.SwitchKeyboardService
 import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
@@ -34,6 +31,7 @@ import java.time.Instant
 import java.time.ZoneId
 import kotlin.jvm.optionals.getOrNull
 import ru.idfedorov09.telegram.bot.data.enums.*
+import ru.idfedorov09.telegram.bot.repo.*
 
 /**
  * Фетчер, обрабатывающий случаи нажатия на кнопки для вопросов
@@ -48,6 +46,7 @@ class QuestButtonHandlerFetcher(
     private val userRepository: UserRepository,
     private val questMessageRepository: QuestMessageRepository,
     private val switchKeyboardService: SwitchKeyboardService,
+    private val callbackDataRepository: CallbackDataRepository,
 ) : DefaultFetcher() {
     // TODO: обработать случай когда бот не может написать пользователю!
     // TODO: нельзя отвечать самому себе
@@ -57,14 +56,18 @@ class QuestButtonHandlerFetcher(
         userActualizedInfo: UserActualizedInfo,
     ): UserActualizedInfo {
         if (!update.hasCallbackQuery()) return userActualizedInfo
-        val callbackData = update.callbackQuery.data
-        if (!Regex("^.*\\|\\d+$").matches(callbackData) ||
+
+        val callbackId = update.callbackQuery.data?.toLongOrNull()
+        callbackId ?: userActualizedInfo
+        val callbackData = callbackId?.let { callbackDataRepository.findById(it).getOrNull() } ?: return userActualizedInfo
+
+        if (!callbackData.callbackData?.let { Regex("^.*\\|\\d+$").matches(it) }!! ||
             !userActualizedInfo.isRegistered
         ) {
             return userActualizedInfo
         }
 
-        val questByCallbackData = getQuestByCallbackData(callbackData) ?: return userActualizedInfo
+        val questByCallbackData = getQuestByCallbackData(callbackData.callbackData) ?: return userActualizedInfo
         val segment = questByCallbackData.lastQuestSegmentId?.let { questSegmentRepository.findById(it).get() }
 
         val params =
@@ -75,12 +78,11 @@ class QuestButtonHandlerFetcher(
                 update,
             )
         return when {
-                QUEST_ANSWER.isMatch(callbackData) -> clickAnswer(params)
-                QUEST_IGNORE.isMatch(callbackData) -> clickIgnore(params)
-                QUEST_BAN.isMatch(callbackData) -> clickBan(params)
-                QUEST_START_DIALOG.isMatch(callbackData) -> clickStartDialog(params)
-                QUEST_RECREATE.isMatch(callbackData) -> clickRecreate(params)
-                QUEST_RECREATE_START_DIALOG.isMatch(callbackData) -> clickRecreateStartDialog(params)
+                QUEST_ANSWER.isMatch(callbackData.callbackData) -> clickAnswer(params)
+                QUEST_IGNORE.isMatch(callbackData.callbackData) -> clickIgnore(params)
+                QUEST_START_DIALOG.isMatch(callbackData.callbackData) -> clickStartDialog(params)
+                QUEST_RECREATE.isMatch(callbackData.callbackData) -> clickRecreate(params)
+                QUEST_RECREATE_START_DIALOG.isMatch(callbackData.callbackData) -> clickRecreateStartDialog(params)
                 else -> userActualizedInfo
             }
         }
@@ -240,61 +242,6 @@ class QuestButtonHandlerFetcher(
         return params.userActualizedInfo
     }
 
-    private fun clickBan(params: Params): UserActualizedInfo {
-        if (params.questDialog.questionStatus == QuestionStatus.CLOSED) return params.userActualizedInfo
-
-        val questionAuthor = userRepository.findActiveUsersById(params.questDialog.authorId!!)!!
-
-        if (params.userActualizedInfo.tui == questionAuthor.tui){
-
-            val answerCallbackQuery = AnswerCallbackQuery().also {
-                it.callbackQueryId = params.update.callbackQuery.id
-                it.text = "\uD83D\uDEAB Вы не можете забанить себя"
-            }
-            bot.execute(answerCallbackQuery)
-
-            return params.userActualizedInfo
-        }
-
-        questDialogRepository.save(
-            params.questDialog.copy(
-                questionStatus = QuestionStatus.CLOSED,
-                finishTime = updatesUtil.getDate(params.update)
-                    ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
-            ),
-        )
-
-        questSegmentRepository.save(
-            params.questSegment.copy(
-                responderId = params.userActualizedInfo.id,
-                finishTime = updatesUtil.getDate(params.update)
-                    ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
-            )
-        )
-
-        // TODO: логика банов скоро изменится, тут тоже надо будет менять код
-        val authorInBan =
-            userRepository.findActiveUsersById(params.questDialog.authorId)!!.copy(
-                roles = mutableSetOf(UserRole.BANNED),
-            )
-        userRepository.save(authorInBan)
-
-        val newText = "\uD83D\uDD34 Автор забанен пользователем ${MessageSenderUtil.userName(
-            params.userActualizedInfo.lastTgNick,
-            params.userActualizedInfo.fullName,
-        )}."
-        messageSenderService.editMessage(
-            MessageParams(
-                chatId = QUEST_RESPONDENT_CHAT_ID,
-                messageId = params.questDialog.consoleMessageId?.toInt(),
-                text = newText,
-                replyMarkup = createUnbanKeyboard(params.questDialog),
-            ),
-        )
-
-        return params.userActualizedInfo
-    }
-
     private fun clickRecreate(params: Params): UserActualizedInfo {
         params.apply {
             if (questDialog.questionStatus != QuestionStatus.IGNORE &&
@@ -438,16 +385,6 @@ class QuestButtonHandlerFetcher(
             ),
         )
 
-    private fun createUnbanKeyboard(questDialog: QuestDialog) =
-        createKeyboard(
-            listOf(
-                listOf(
-                    InlineKeyboardButton("Разбанить (doesn't work)")
-                        // TODO("разбан еще не реализован")
-                        .also { it.callbackData = QUEST_BAN.format(questDialog.id) },
-                ),
-            ),
-        )
 
     private fun createRecreateKeyboard(questDialog: QuestDialog) =
         createKeyboard(
