@@ -10,6 +10,7 @@ import ru.idfedorov09.telegram.bot.data.model.UserAction
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
+import ru.idfedorov09.telegram.bot.repo.BanRepository
 import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
 import ru.idfedorov09.telegram.bot.repo.QuestDialogRepository
 import ru.idfedorov09.telegram.bot.repo.UserActionRepository
@@ -28,9 +29,11 @@ class UpdateDataFetcher(
     private val userRepository: UserRepository,
     private val questDialogRepository: QuestDialogRepository,
     private val broadcastRepository: BroadcastRepository,
-    private val userActionRepository: UserActionRepository,
+    private val banRepository: BanRepository,
     private val bot: Executor,
-    private val updatesUtil: UpdatesUtil,) : DefaultFetcher() {
+    private val updatesUtil: UpdatesUtil,
+    private val userActionRepository: UserActionRepository,
+) : DefaultFetcher() {
     @InjectData
     fun doFetch(
         userActualizedInfo: UserActualizedInfo?,
@@ -68,6 +71,10 @@ class UpdateDataFetcher(
 
             bcData?.let {
                 broadcastRepository.save(it)
+            }
+
+            banData?.let {
+                banRepository.save(it)
             }
         }
     }

@@ -61,7 +61,7 @@ class BroadcastConstructorFetcher(
             )
         when {
             update.hasMessage() && update.message.hasText() -> textCommandsHandler(params)
-            update.hasCallbackQuery() -> callbackQueryHandler(update, params)
+            update.hasCallbackQuery() -> callbackQueryHandler(params)
             update.hasMessage() && update.message.hasPhoto() -> photoHandler(params)
         }
     }
@@ -92,11 +92,8 @@ class BroadcastConstructorFetcher(
         }
     }
 
-    private fun callbackQueryHandler(
-        update: Update,
-        params: Params,
-    ) {
-        val callbackId = update.callbackQuery.data?.toLongOrNull()
+    private fun callbackQueryHandler(params: Params) {
+        val callbackId = params.update.callbackQuery.data?.toLongOrNull()
         callbackId ?: return
         val callbackData = callbackDataRepository.findById(callbackId).getOrNull() ?: return
 
@@ -257,9 +254,9 @@ class BroadcastConstructorFetcher(
                 bcData?.copy(
                     startTime = startTime,
                 )
-        }
 
-        params.userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
+            lastUserActionType = LastUserActionType.DEFAULT
+        }
         bcChangeCategories(params)
     }
 
@@ -267,6 +264,7 @@ class BroadcastConstructorFetcher(
      * Возвращает по сообщению формата dd.MM.yyyy HH:mm текущую дату и время в LocalDateTime
      */
     private fun resolveFullDate(fullDateText: String) = LocalDateTime.parse(fullDateText, FORMATTER)
+        .atZone(BOT_TIME_ZONE).toLocalDateTime()
 
     /**
      * Возвращает по сообщению формата HH:mm текущую дату с таким временем в LocalDateTime

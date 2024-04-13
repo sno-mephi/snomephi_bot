@@ -27,4 +27,8 @@ data class UserActualizedInfo(
     var isDeleted: Boolean = false,
     /** Текущая создаваемая рассылка пользователя **/
     var bcData: Broadcast? = null,
+    /** Текущая информация о бане **/
+    var isBaned: Boolean = false,
+    /** Текущий создаваемый бан **/
+    var banData: Ban? = null,
 )
