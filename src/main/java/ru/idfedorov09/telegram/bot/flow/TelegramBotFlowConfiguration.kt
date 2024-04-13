@@ -6,8 +6,6 @@ import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUALIFIER_FLOW_TG_BOT
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.fetchers.bot.*
 import ru.idfedorov09.telegram.bot.fetchers.bot.PermissionsFetcher
-import ru.idfedorov09.telegram.bot.fetchers.bot.userfetchers.RegistrationActionHandlerFetcher
-import ru.idfedorov09.telegram.bot.fetchers.bot.userfetchers.RegistrationFetcher
 import ru.mephi.sno.libs.flow.belly.FlowBuilder
 import ru.mephi.sno.libs.flow.belly.FlowContext
 
@@ -26,7 +24,6 @@ open class TelegramBotFlowConfiguration(
     private val categoryCommandHandlerFetcher: CategoryCommandHandlerFetcher,
     private val categoryActionTypeHandlerFetcher: CategoryActionTypeHandlerFetcher,
     private val registrationFetcher: RegistrationFetcher,
-    private val userActionHandlerFetcher: RegistrationActionHandlerFetcher,
     private val roleDescriptionFetcher: RoleDescriptionFetcher,
     private val userInfoCommandFetcher: UserInfoCommandFetcher,
     private val settingMailFetcher: SettingMailFetcher,
@@ -56,7 +53,6 @@ open class TelegramBotFlowConfiguration(
                 fetch(bugReportFetcher)
                 // registration block
                 sequence(condition = { it.isByUser() && !it.isUserRegistered() && it.isPersonalUpdate() }) {
-                    fetch(userActionHandlerFetcher)
                     fetch(registrationFetcher)
                 }
 

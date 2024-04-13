@@ -14,7 +14,7 @@ enum class RegistrationMessageText(private val text: String) {
 
     RegistrationComplete("Спасибо, Вы зарегистрированы"),
     Welcome("Здравствуйте, %s"),
-    RegistrationStart("Здравствуйте! Вы не зарегистрированы"),
+    RegistrationStart("Здравствуйте! Вы не зарегистрированы\nПожалуйста, введите свое ФИО"),
     ;
 
     operator fun invoke(extraText: String = "") = text + extraText
