@@ -32,7 +32,6 @@ class BugReportFetcher(
             val pattern = Pattern.compile("/bug\\s+(.+)")
             val matcher = pattern.matcher(messageText)
 
-
             if (matcher.matches()) {
                 messageSenderService.sendMessage(
                     MessageParams(
@@ -56,7 +55,6 @@ class BugReportFetcher(
                     ),
                 )
                 stopFlowNextExecution()
-
             }
         }
     }

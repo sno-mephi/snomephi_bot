@@ -28,9 +28,6 @@ class HelpCommandFetcher(
         val messageText = update.message.text
 
         if (messageText.startsWith(TextCommands.HELP_COMMAND.commandText)) {
-
-
-
             val finalText =
                 TextCommands.values().sortedBy { it.commandText }.filter {
                     it.isFullCommand && (UserRole.ROOT in userActualizedInfo.roles || it.allowedRoles.intersect(userActualizedInfo.roles).isNotEmpty())

@@ -17,7 +17,6 @@ import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.service.SwitchKeyboardService
 import ru.mephi.sno.libs.flow.belly.InjectData
-import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 import kotlin.jvm.optionals.getOrNull
 
 /**
@@ -30,7 +29,6 @@ class PermissionsFetcher(
     private val userRepository: UserRepository,
     private val switchKeyboardService: SwitchKeyboardService,
 ) : DefaultFetcher() {
-
     companion object {
         const val SEPARATOR = "%%"
     }
@@ -67,7 +65,7 @@ class PermissionsFetcher(
         }
     }
 
-    private fun callbackQueryHandler(params: Params, ): UserActualizedInfo {
+    private fun callbackQueryHandler(params: Params): UserActualizedInfo {
         val callbackId = params.update.callbackQuery.data?.toLongOrNull()
         callbackId ?: return params.userActualizedInfo
         val callbackData = callbackDataRepository.findById(callbackId).getOrNull() ?: return params.userActualizedInfo
@@ -84,7 +82,10 @@ class PermissionsFetcher(
         } ?: params.userActualizedInfo
     }
 
-    private fun removeRoleAction(params: Params, callbackData: String): UserActualizedInfo {
+    private fun removeRoleAction(
+        params: Params,
+        callbackData: String,
+    ): UserActualizedInfo {
         params.apply {
             val userId =
                 callbackData
@@ -166,6 +167,7 @@ class PermissionsFetcher(
             return userActualizedInfo
         }
     }
+
     private fun addRoleToUser(
         params: Params,
         callbackData: String,
@@ -248,8 +250,8 @@ class PermissionsFetcher(
             messageSenderService.deleteMessage(
                 MessageParams(
                     chatId = userActualizedInfo.tui,
-                    messageId = update.message.messageId
-                )
+                    messageId = update.message.messageId,
+                ),
             )
             val tui =
                 update.message.text.toLongOrNull() ?: run {
@@ -258,7 +260,7 @@ class PermissionsFetcher(
                             chatId = userActualizedInfo.tui,
                             text = "Некорректный tui. Повтори попытку",
                             messageId = userActualizedInfo.data?.toIntOrNull(),
-                            replyMarkup = createKeyboard(cancel)
+                            replyMarkup = createKeyboard(cancel),
                         ),
                     )
                     return userActualizedInfo
@@ -270,7 +272,7 @@ class PermissionsFetcher(
                             chatId = userActualizedInfo.tui,
                             text = "Такого юзера нет, повтори попытку",
                             messageId = userActualizedInfo.data?.toIntOrNull(),
-                            replyMarkup = createKeyboard(cancel)
+                            replyMarkup = createKeyboard(cancel),
                         ),
                     )
                     return userActualizedInfo
@@ -289,17 +291,18 @@ class PermissionsFetcher(
                 metaText = "отмена",
             ).save()
 
-        val sentMessage = messageSenderService.sendMessage(
-            MessageParams(
-                chatId = params.userActualizedInfo.tui,
-                text = text,
-                replyMarkup = createKeyboard(cancel),
-            ),
-        )
+        val sentMessage =
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = params.userActualizedInfo.tui,
+                    text = text,
+                    replyMarkup = createKeyboard(cancel),
+                ),
+            )
 
         return params.userActualizedInfo.copy(
             lastUserActionType = LastUserActionType.PERMS_ENTER_TUI,
-            data = sentMessage.messageId.toString()
+            data = sentMessage.messageId.toString(),
         )
     }
 

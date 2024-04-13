@@ -25,7 +25,7 @@ class RegistrationFetcher(
     private val messageSenderService: MessageSenderService,
     private val userRepository: UserRepository,
     private val switchKeyboardService: SwitchKeyboardService,
-    ) : DefaultFetcher() {
+) : DefaultFetcher() {
     @InjectData
     fun doFetch(
         update: Update,
@@ -34,7 +34,7 @@ class RegistrationFetcher(
         val params =
             Params(
                 userActualizedInfo,
-                update
+                update,
             )
         return when {
             update.hasMessage() && update.message.hasText() -> textCommandsHandler(params)
@@ -45,7 +45,7 @@ class RegistrationFetcher(
 
     private fun textCommandsHandler(params: Params): UserActualizedInfo {
         params.userActualizedInfo.apply {
-            return when(lastUserActionType){
+            return when (lastUserActionType) {
                 LastUserActionType.REGISTRATION_START -> registrationStart(params)
                 LastUserActionType.REGISTRATION_ENTER_FULL_NAME -> enterFullName(params)
                 LastUserActionType.REGISTRATION_ENTER_GROUP -> enterStudyGroup(params)
@@ -56,12 +56,13 @@ class RegistrationFetcher(
 
     private fun registrationStart(params: Params): UserActualizedInfo {
         params.userActualizedInfo.apply {
-            val sendMessage = messageSenderService.sendMessage(
-                MessageParams(
-                    chatId = tui,
-                    text = RegistrationMessageText.RegistrationStart(),
-                ),
-            )
+            val sendMessage =
+                messageSenderService.sendMessage(
+                    MessageParams(
+                        chatId = tui,
+                        text = RegistrationMessageText.RegistrationStart(),
+                    ),
+                )
 
             lastUserActionType = LastUserActionType.REGISTRATION_ENTER_FULL_NAME
             data = sendMessage.messageId.toString()
@@ -74,16 +75,16 @@ class RegistrationFetcher(
             messageSenderService.deleteMessage(
                 MessageParams(
                     chatId = tui,
-                    messageId = params.update.message.messageId
-                )
+                    messageId = params.update.message.messageId,
+                ),
             )
 
             if (data?.let { Regex("\\d+").matches(it) } == true) {
                 messageSenderService.deleteMessage(
                     MessageParams(
                         chatId = tui,
-                        messageId = data!!.toInt()
-                    )
+                        messageId = data!!.toInt(),
+                    ),
                 )
                 data = null
             }
@@ -92,12 +93,12 @@ class RegistrationFetcher(
                 val confirm =
                     CallbackData(
                         metaText = "✅ Подтвердить",
-                        callbackData = CallbackCommands.REGISTRATION_CONFIRM_FULL_NAME.data
+                        callbackData = CallbackCommands.REGISTRATION_CONFIRM_FULL_NAME.data,
                     ).save()
                 val cancel =
                     CallbackData(
                         metaText = "❌ Отменить",
-                        callbackData = CallbackCommands.REGISTRATION_DECLINE_FULL_NAME.data
+                        callbackData = CallbackCommands.REGISTRATION_DECLINE_FULL_NAME.data,
                     ).save()
                 messageSenderService.sendMessage(
                     MessageParams(
@@ -108,14 +109,14 @@ class RegistrationFetcher(
                 )
                 lastUserActionType = LastUserActionType.REGISTRATION_CONFIRM_FULL_NAME
                 data = params.update.message.text
-
             } else {
-                val sendMessage = messageSenderService.sendMessage(
-                    MessageParams(
-                        chatId = tui,
-                        text = RegistrationMessageText.InvalidFullName()
-                    ),
-                )
+                val sendMessage =
+                    messageSenderService.sendMessage(
+                        MessageParams(
+                            chatId = tui,
+                            text = RegistrationMessageText.InvalidFullName(),
+                        ),
+                    )
                 data = sendMessage.messageId.toString()
             }
             return this
@@ -127,16 +128,16 @@ class RegistrationFetcher(
             messageSenderService.deleteMessage(
                 MessageParams(
                     chatId = tui,
-                    messageId = params.update.message.messageId
-                )
+                    messageId = params.update.message.messageId,
+                ),
             )
 
             if (data?.let { Regex("\\d+").matches(it) } == true) {
                 messageSenderService.deleteMessage(
                     MessageParams(
                         chatId = tui,
-                        messageId = data!!.toInt()
-                    )
+                        messageId = data!!.toInt(),
+                    ),
                 )
                 data = null
             }
@@ -145,12 +146,12 @@ class RegistrationFetcher(
                 val confirm =
                     CallbackData(
                         metaText = "✅ Подтвердить",
-                        callbackData = CallbackCommands.REGISTRATION_CONFIRM_STUDY_GROUP.data
+                        callbackData = CallbackCommands.REGISTRATION_CONFIRM_STUDY_GROUP.data,
                     ).save()
                 val cancel =
                     CallbackData(
                         metaText = "❌ Отменить",
-                        callbackData = CallbackCommands.REGISTRATION_DECLINE_STUDY_GROUP.data
+                        callbackData = CallbackCommands.REGISTRATION_DECLINE_STUDY_GROUP.data,
                     ).save()
 
                 messageSenderService.sendMessage(
@@ -166,15 +167,16 @@ class RegistrationFetcher(
                 val withoutGroup =
                     CallbackData(
                         metaText = "👾Я не из МИФИ",
-                        callbackData = CallbackCommands.REGISTRATION_WITHOUT_STUDY_GROUP.data
+                        callbackData = CallbackCommands.REGISTRATION_WITHOUT_STUDY_GROUP.data,
                     ).save()
-                val sendMessage = messageSenderService.sendMessage(
-                    MessageParams(
-                        chatId = tui,
-                        text = RegistrationMessageText.InvalidGroup(),
-                        replyMarkup = createActionsKeyboard(withoutGroup)
-                    ),
-                )
+                val sendMessage =
+                    messageSenderService.sendMessage(
+                        MessageParams(
+                            chatId = tui,
+                            text = RegistrationMessageText.InvalidGroup(),
+                            replyMarkup = createActionsKeyboard(withoutGroup),
+                        ),
+                    )
                 data = sendMessage.messageId.toString()
             }
             return this
@@ -205,12 +207,12 @@ class RegistrationFetcher(
             val confirm =
                 CallbackData(
                     metaText = "✅ Подтвердить",
-                    callbackData = CallbackCommands.REGISTRATION_CONFIRM_STUDY_GROUP.data
+                    callbackData = CallbackCommands.REGISTRATION_CONFIRM_STUDY_GROUP.data,
                 ).save()
             val cancel =
                 CallbackData(
                     metaText = "❌ Отменить",
-                    callbackData = CallbackCommands.REGISTRATION_DECLINE_STUDY_GROUP.data
+                    callbackData = CallbackCommands.REGISTRATION_DECLINE_STUDY_GROUP.data,
                 ).save()
             messageSenderService.sendMessage(
                 MessageParams(
@@ -236,16 +238,17 @@ class RegistrationFetcher(
             val withoutGroup =
                 CallbackData(
                     metaText = "👾Я не из МИФИ",
-                    callbackData = CallbackCommands.REGISTRATION_WITHOUT_STUDY_GROUP.data
+                    callbackData = CallbackCommands.REGISTRATION_WITHOUT_STUDY_GROUP.data,
                 ).save()
 
-            val sendMessage = messageSenderService.sendMessage(
-                MessageParams(
-                    chatId = tui,
-                    text = RegistrationMessageText.GroupRequest(" заново"),
-                    replyMarkup = createActionsKeyboard(withoutGroup),
-                ),
-            )
+            val sendMessage =
+                messageSenderService.sendMessage(
+                    MessageParams(
+                        chatId = tui,
+                        text = RegistrationMessageText.GroupRequest(" заново"),
+                        replyMarkup = createActionsKeyboard(withoutGroup),
+                    ),
+                )
             lastUserActionType = LastUserActionType.REGISTRATION_ENTER_GROUP
             data = sendMessage.messageId.toString()
             messageSenderService.deleteMessage(
@@ -274,10 +277,10 @@ class RegistrationFetcher(
             userRepository.updateUserCategoriesById(userId = id!!)
             messageSenderService.sendMessage(
                 messageParams =
-                MessageParams(
-                    chatId = tui,
-                    text = RegistrationMessageText.RegistrationComplete(),
-                ),
+                    MessageParams(
+                        chatId = tui,
+                        text = RegistrationMessageText.RegistrationComplete(),
+                    ),
             )
             messageSenderService.deleteMessage(
                 MessageParams(
@@ -291,12 +294,13 @@ class RegistrationFetcher(
 
     private fun declineFullName(params: Params): UserActualizedInfo {
         params.userActualizedInfo.apply {
-            val sendMessage = messageSenderService.sendMessage(
-                MessageParams(
-                    chatId = tui,
-                    text = RegistrationMessageText.FullNameRequest(" заново"),
-                ),
-            )
+            val sendMessage =
+                messageSenderService.sendMessage(
+                    MessageParams(
+                        chatId = tui,
+                        text = RegistrationMessageText.FullNameRequest(" заново"),
+                    ),
+                )
             lastUserActionType = LastUserActionType.REGISTRATION_ENTER_FULL_NAME
             data = sendMessage.messageId.toString()
             messageSenderService.deleteMessage(
@@ -314,15 +318,16 @@ class RegistrationFetcher(
             val withoutGroup =
                 CallbackData(
                     metaText = "👾Я не из МИФИ",
-                    callbackData = CallbackCommands.REGISTRATION_WITHOUT_STUDY_GROUP.data
+                    callbackData = CallbackCommands.REGISTRATION_WITHOUT_STUDY_GROUP.data,
                 ).save()
-            val sendMessage = messageSenderService.sendMessage(
-                MessageParams(
-                    chatId = tui,
-                    text = RegistrationMessageText.GroupRequest(),
-                    replyMarkup = createActionsKeyboard(withoutGroup),
-                ),
-            )
+            val sendMessage =
+                messageSenderService.sendMessage(
+                    MessageParams(
+                        chatId = tui,
+                        text = RegistrationMessageText.GroupRequest(),
+                        replyMarkup = createActionsKeyboard(withoutGroup),
+                    ),
+                )
             messageSenderService.deleteMessage(
                 MessageParams(
                     chatId = tui,
@@ -348,19 +353,22 @@ class RegistrationFetcher(
         this?.let {
             it.isNotEmpty() && "([АМСБамсб]{1})([0-9]{2})-([0-9]{3})".toRegex().matches(it)
         } ?: false
-    private fun createActionsKeyboard(firstCallbackData: CallbackData, secondCallbackData: CallbackData) =
-        InlineKeyboardMarkup(
+
+    private fun createActionsKeyboard(
+        firstCallbackData: CallbackData,
+        secondCallbackData: CallbackData,
+    ) = InlineKeyboardMarkup(
+        listOf(
             listOf(
-                listOf(
-                    InlineKeyboardButton(firstCallbackData.metaText!!).also {
-                        it.callbackData = firstCallbackData.id.toString()
-                    },
-                    InlineKeyboardButton(secondCallbackData.metaText!!).also {
-                        it.callbackData = secondCallbackData.id.toString()
-                    },
-                ),
+                InlineKeyboardButton(firstCallbackData.metaText!!).also {
+                    it.callbackData = firstCallbackData.id.toString()
+                },
+                InlineKeyboardButton(secondCallbackData.metaText!!).also {
+                    it.callbackData = secondCallbackData.id.toString()
+                },
             ),
-        )
+        ),
+    )
 
     private fun createActionsKeyboard(callbackData: CallbackData) =
         InlineKeyboardMarkup(
@@ -372,7 +380,9 @@ class RegistrationFetcher(
                 ),
             ),
         )
+
     private fun CallbackData.save() = callbackDataRepository.save(this)
+
     private data class Params(
         var userActualizedInfo: UserActualizedInfo,
         val update: Update,

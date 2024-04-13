@@ -15,7 +15,6 @@ import kotlin.reflect.full.findAnnotation
  * Фетчер, который выполняет также проверку на права, если требуется
  */
 open class DefaultFetcher : GeneralFetcher() {
-
     private lateinit var flowContext: FlowContext
 
     companion object {
@@ -36,7 +35,7 @@ open class DefaultFetcher : GeneralFetcher() {
 
         return runCatching {
             super.fetchCall(flowContext, doFetchMethod, params)
-        }.onFailure {  e ->
+        }.onFailure { e ->
             log.error("ERROR: $e")
             log.debug(e.stackTraceToString())
             stopFlowNextExecution()

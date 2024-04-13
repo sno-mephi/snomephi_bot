@@ -112,7 +112,7 @@ class DeleteUserFetcher(
         params.userActualizedInfo.isDeleted = true
         updateDataFetcher.doFetch(
             userActualizedInfo = params.userActualizedInfo,
-            update = params.update
+            update = params.update,
         )
         stopFlowNextExecution()
 

@@ -44,14 +44,14 @@ object KeyboardUtil {
             keyboards.add(
                 KeyboardRow().also {
                     it.add(TextCommands.CATEGORY_CHOOSE_TEXT_ACTION())
-                }
+                },
             )
         }
         if (UserRole.ROOT in roles) {
             keyboards.add(
                 KeyboardRow().also {
                     it.add(TextCommands.PERMISSIONS_SETUP())
-                }
+                },
             )
         }
         val defaultKeyboard =

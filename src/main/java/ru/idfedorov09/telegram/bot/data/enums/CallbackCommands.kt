@@ -52,8 +52,7 @@ enum class CallbackCommands(
     BANNED_CONFIRM("ban_confirm"),
 
     UNBANNED_USER("unban_user|%d"),
-    UNBANNED_CONFIRM("unban_confirm|%d")
-
+    UNBANNED_CONFIRM("unban_confirm|%d"),
     ;
 
     fun format(vararg args: Any?): String {
