@@ -43,7 +43,7 @@ data class Broadcast(
     /** флаг отложенной рассылки **/
     @Column(name = "is_scheduled")
     val isScheduled: Boolean = false,
-    /** флаг завершения рассылки **/
+    /** флаг создания рассылки **/
     @Column(name = "is_built")
     val isBuilt: Boolean = false,
     /** флаг мероприятий недели **/

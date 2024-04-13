@@ -1,7 +1,6 @@
 package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
-import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
@@ -9,25 +8,21 @@ import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.data.model.User
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
-import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.flow.ExpContainer
-import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
-import ru.idfedorov09.telegram.bot.repo.CategoryRepository
-import ru.idfedorov09.telegram.bot.repo.QuestDialogRepository
-import ru.idfedorov09.telegram.bot.repo.UserRepository
+import ru.idfedorov09.telegram.bot.repo.*
 import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import kotlin.jvm.optionals.getOrNull
 
 @Component
 class ActualizeUserInfoFetcher(
-    private val bot: Executor,
     private val updatesUtil: UpdatesUtil,
     private val userRepository: UserRepository,
     private val categoryRepository: CategoryRepository,
     private val questDialogRepository: QuestDialogRepository,
     private val broadcastRepository: BroadcastRepository,
+    private val banRepository: BanRepository,
 ) : DefaultFetcher() {
     companion object {
         private val log = org.slf4j.LoggerFactory.getLogger(ActualizeUserInfoFetcher::class.java)
@@ -79,6 +74,13 @@ class ActualizeUserInfoFetcher(
                 broadcastRepository.findLatestUnbuiltBroadcastByAuthor(it)
             }
 
+        val isBaned = banRepository.isBanned(tui)
+
+        val banData =
+            userDataFromDatabase.id?.let {
+                banRepository.findLatestUnbuiltBanByModerator(it)
+            }
+
         val lastUserActionType = userDataFromDatabase.lastUserActionType?: if (userDataFromDatabase.isRegistered) {
             LastUserActionType.DEFAULT
         } else {
@@ -99,6 +101,8 @@ class ActualizeUserInfoFetcher(
                 data = data,
                 isRegistered = isRegistered,
                 bcData = bcData,
+                isBaned = isBaned ?: false,
+                banData = banData,
             )
         }
     }
