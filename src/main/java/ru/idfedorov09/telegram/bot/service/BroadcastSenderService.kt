@@ -89,7 +89,7 @@ open class BroadcastSenderService(
                 replyMarkup = createChooseKeyboard(broadcast),
                 parseMode = ParseMode.HTML,
                 photo = broadcast.imageHash?.let { InputFile(it) },
-                disableWebPagePreview = !broadcast.shouldShowWebPreview
+                disableWebPagePreview = !broadcast.shouldShowWebPreview,
             ),
         )
 

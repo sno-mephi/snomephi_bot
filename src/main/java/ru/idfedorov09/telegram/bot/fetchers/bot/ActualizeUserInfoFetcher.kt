@@ -81,11 +81,14 @@ class ActualizeUserInfoFetcher(
                 banRepository.findLatestUnbuiltBanByModerator(it)
             }
 
-        val lastUserActionType = userDataFromDatabase.lastUserActionType?: if (userDataFromDatabase.isRegistered) {
-            LastUserActionType.DEFAULT
-        } else {
-            LastUserActionType.REGISTRATION_START
-        }
+        val lastUserActionType =
+            userDataFromDatabase.lastUserActionType
+                ?:
+                if (userDataFromDatabase.isRegistered) {
+                    LastUserActionType.DEFAULT
+                } else {
+                    LastUserActionType.REGISTRATION_START
+                }
 
         userDataFromDatabase.apply {
             return UserActualizedInfo(

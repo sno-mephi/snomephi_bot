@@ -18,7 +18,8 @@ interface BanRepository : JpaRepository<Ban, Long> {
                 AND is_built IS true
                 AND is_deleted IS false
                 AND user_tui = :tui
-        """, nativeQuery = true
+        """,
+        nativeQuery = true,
     )
     fun isBanned(tui: String): Boolean?
 
@@ -32,9 +33,11 @@ interface BanRepository : JpaRepository<Ban, Long> {
                 AND TIMEZONE('Europe/Moscow', CURRENT_TIMESTAMP) > TIMEZONE('Europe/Moscow', finish_dttm) 
                 AND is_built IS true
                 AND is_deleted IS false
-        """, nativeQuery = true
+        """,
+        nativeQuery = true,
     )
     fun updateBanInfo()
+
     @Query(
         """
             SELECT *
@@ -45,7 +48,8 @@ interface BanRepository : JpaRepository<Ban, Long> {
                 AND is_deleted = false
             ORDER BY ban_id DESC
             LIMIT 1
-        """, nativeQuery = true
+        """,
+        nativeQuery = true,
     )
     fun findLatestUnbuiltBanByModerator(moderatorId: Long): Ban?
 
@@ -62,7 +66,8 @@ interface BanRepository : JpaRepository<Ban, Long> {
                 AND is_built IS true
                 AND is_deleted IS false
                 AND user_tui = :tui
-        """, nativeQuery = true
+        """,
+        nativeQuery = true,
     )
     fun unbanUser(tui: String)
 }

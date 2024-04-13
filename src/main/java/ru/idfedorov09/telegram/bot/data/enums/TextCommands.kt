@@ -21,7 +21,7 @@ enum class TextCommands(
         commandText = "/category",
         allowedRoles =
             listOf(
-                UserRole.CATEGORY_BUILDER
+                UserRole.CATEGORY_BUILDER,
             ),
         description = "настройка категорий",
     ),
@@ -29,9 +29,9 @@ enum class TextCommands(
     CATEGORY_CHOOSE_TEXT_ACTION(
         commandText = "Настройка категорий",
         allowedRoles =
-        listOf(
-            UserRole.CATEGORY_BUILDER
-        ),
+            listOf(
+                UserRole.CATEGORY_BUILDER,
+            ),
         description = "настройка категорий",
     ),
 
@@ -98,7 +98,7 @@ enum class TextCommands(
         allowedRoles =
             listOf(
                 UserRole.ROOT,
-                UserRole.MODERATOR
+                UserRole.MODERATOR,
             ),
     ),
 
@@ -106,12 +106,11 @@ enum class TextCommands(
         commandText = "/unban",
         description = "Разбанить пользователя по tui",
         allowedRoles =
-        listOf(
-            UserRole.ROOT,
-            UserRole.MODERATOR
-        ),
-    )
-
+            listOf(
+                UserRole.ROOT,
+                UserRole.MODERATOR,
+            ),
+    ),
     ;
 
     /** Проверяет, является ли текст командой **/

@@ -47,7 +47,10 @@ class UpdateDataFetcher(
         }
     }
 
-    private fun updateUser(userActualizedInfo: UserActualizedInfo, update: Update) {
+    private fun updateUser(
+        userActualizedInfo: UserActualizedInfo,
+        update: Update,
+    ) {
         userActualizedInfo.apply {
             val lastUserActionTypeFromRepository = id?.let { userRepository.findById(it).get().lastUserActionType }
             if (lastUserActionTypeFromRepository != lastUserActionType) newUserAction(userActualizedInfo, update)
@@ -79,21 +82,28 @@ class UpdateDataFetcher(
         }
     }
 
-    private fun newUserAction(userActualizedInfo: UserActualizedInfo, update: Update) {
+    private fun newUserAction(
+        userActualizedInfo: UserActualizedInfo,
+        update: Update,
+    ) {
         userActualizedInfo.apply {
-            val callbackId = if (update.callbackQuery?.data?.contains(Regex("\"\\\\d\"")) == true) {
-                update.callbackQuery?.data!!.toLong()
-            } else null
+            val callbackId =
+                if (update.callbackQuery?.data?.contains(Regex("\"\\\\d\"")) == true) {
+                    update.callbackQuery?.data!!.toLong()
+                } else {
+                    null
+                }
             userActionRepository.save(
                 UserAction(
                     lastUserActionType = lastUserActionType,
-                    actionTime = updatesUtil.getDate(update)
-                        ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() },
+                    actionTime =
+                        updatesUtil.getDate(update)
+                            ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() },
                     userId = id,
                     tui = tui,
                     messageText = update.message?.text,
-                    callbackData = update.callbackQuery?.data
-                )
+                    callbackData = update.callbackQuery?.data,
+                ),
             )
         }
     }

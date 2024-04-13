@@ -5,7 +5,6 @@ import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUEST_RESPONDENT_CHAT_ID
-import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.*
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
@@ -13,8 +12,8 @@ import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.model.*
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
-import ru.idfedorov09.telegram.bot.repo.QuestMessageRepository
 import ru.idfedorov09.telegram.bot.repo.QuestDialogRepository
+import ru.idfedorov09.telegram.bot.repo.QuestMessageRepository
 import ru.idfedorov09.telegram.bot.repo.QuestSegmentRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
@@ -81,24 +80,27 @@ class QuestStartFetcher(
         // если пришла команда - ничего не делаем
         if (TextCommands.isTextCommand(messageText)) return
 
-        val questSegment = QuestSegment(
-            startTime = updatesUtil.getDate(update)
-                ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
-        ).let { questSegmentRepository.save(it) }
+        val questSegment =
+            QuestSegment(
+                startTime =
+                    updatesUtil.getDate(update)
+                        ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() },
+            ).let { questSegmentRepository.save(it) }
 
         val questDialog =
             QuestDialog(
                 authorId = userActualizedInfo.id,
                 questionStatus = QuestionStatus.WAIT,
-                startTime = updatesUtil.getDate(update)
-                    ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() },
-                lastQuestSegmentId = questSegment.id
+                startTime =
+                    updatesUtil.getDate(update)
+                        ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() },
+                lastQuestSegmentId = questSegment.id,
             ).let { questDialogRepository.save(it) }
 
         questSegmentRepository.save(
             questSegment.copy(
-                questId = questDialog.id
-            )
+                questId = questDialog.id,
+            ),
         )
 
         val questMessage =
@@ -111,8 +113,9 @@ class QuestStartFetcher(
                 messageId = update.message.messageId,
                 messageDocumentHash = documentHash,
                 messagePhotoHash = photoHash,
-                messageTime = updatesUtil.getDate(update)
-                    ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
+                messageTime =
+                    updatesUtil.getDate(update)
+                        ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() },
             ).let { questMessageRepository.save(it) }
 
         questDialog.dialogHistory.add(questMessage.id!!)
@@ -176,22 +179,22 @@ class QuestStartFetcher(
 
     private fun createChooseKeyboard(vararg callbackData: CallbackData): InlineKeyboardMarkup {
         val (first, rest) = callbackData.withIndex().partition { it.index == 0 }
-        val firstList = first.map { it.value }.map { button ->
-            InlineKeyboardButton().also {
-                it.text = button.metaText!!
-                it.callbackData = button.id?.toString()
+        val firstList =
+            first.map { it.value }.map { button ->
+                InlineKeyboardButton().also {
+                    it.text = button.metaText!!
+                    it.callbackData = button.id?.toString()
+                }
             }
-        }
-        val secondList = rest.map { it.value }.map { button ->
-            InlineKeyboardButton().also {
-                it.text = button.metaText!!
-                it.callbackData = button.id?.toString()
-
+        val secondList =
+            rest.map { it.value }.map { button ->
+                InlineKeyboardButton().also {
+                    it.text = button.metaText!!
+                    it.callbackData = button.id?.toString()
+                }
             }
-        }
         return createKeyboard(listOf(firstList, secondList))
     }
 
     private fun CallbackData.save() = callbackDataRepository.save(this)
-
 }

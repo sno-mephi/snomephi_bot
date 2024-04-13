@@ -151,7 +151,8 @@ interface UserRepository : JpaRepository<User, Long> {
 
     @Transactional
     @Modifying
-    @Query("""
+    @Query(
+        """
         UPDATE users_table
         SET categories = (
             SELECT ARRAY(
@@ -159,6 +160,8 @@ interface UserRepository : JpaRepository<User, Long> {
                 WHERE is_setup_by_default = true
             )
         ) WHERE id = :userId
-    """, nativeQuery = true)
+    """,
+        nativeQuery = true,
+    )
     fun updateUserCategoriesById(userId: Long)
 }

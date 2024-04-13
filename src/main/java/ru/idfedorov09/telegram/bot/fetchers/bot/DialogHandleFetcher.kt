@@ -10,8 +10,8 @@ import ru.idfedorov09.telegram.bot.data.GlobalConstants
 import ru.idfedorov09.telegram.bot.data.enums.*
 import ru.idfedorov09.telegram.bot.data.model.*
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
-import ru.idfedorov09.telegram.bot.repo.QuestMessageRepository
 import ru.idfedorov09.telegram.bot.repo.QuestDialogRepository
+import ru.idfedorov09.telegram.bot.repo.QuestMessageRepository
 import ru.idfedorov09.telegram.bot.repo.QuestSegmentRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
@@ -55,8 +55,9 @@ class DialogHandleFetcher(
         val author = userRepository.findActiveUsersById(quest.authorId!!)!!
         val responder = userRepository.findActiveUsersById(segment?.responderId!!)!!
         val isByQuestionAuthor = author.tui == userActualizedInfo.tui
-        val messageTime = updatesUtil.getDate(update)
-            ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
+        val messageTime =
+            updatesUtil.getDate(update)
+                ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
 
         val photoHash =
             if (update.message.hasPhoto()) {
@@ -294,7 +295,7 @@ class DialogHandleFetcher(
                     messageDocumentHash = documentHash,
                     messageId = update.message.messageId,
                     messageTime = messageTime,
-                    ).let { questMessageRepository.save(it) }
+                ).let { questMessageRepository.save(it) }
             questDialog.dialogHistory.add(questMessage.id!!)
             questDialogRepository.save(questDialog)
 
@@ -372,14 +373,14 @@ class DialogHandleFetcher(
         questDialogRepository.save(
             params.questDialog.copy(
                 questionStatus = QuestionStatus.CLOSED,
-                finishTime = params.messageTime
+                finishTime = params.messageTime,
             ),
         )
 
         questSegmentRepository.save(
             params.questSegment.copy(
-                finishTime = params.messageTime
-            )
+                finishTime = params.messageTime,
+            ),
         )
 
         userRepository.save(
@@ -412,7 +413,7 @@ class DialogHandleFetcher(
                 params.responder.copy(
                     lastUserActionType = null,
                     questDialogId = null,
-                )
+                ),
             )
         } else {
             messageSenderService.sendMessage(
@@ -438,13 +439,13 @@ class DialogHandleFetcher(
                 text =
                     "✅ ${MessageSenderUtil.userName(params.responder.lastTgNick, params.responder.fullName)} " +
                         "пообщался(-ась)",
-                replyMarkup = createRecreateKeyboard(params.questDialog)
+                replyMarkup = createRecreateKeyboard(params.questDialog),
             ),
         )
 
         return params.userActualizedInfo.copy(
             lastUserActionType = null,
-            activeQuestDialog = null
+            activeQuestDialog = null,
         )
     }
 
@@ -460,7 +461,6 @@ class DialogHandleFetcher(
         )
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
-
 
     /**
      * Вспомогательный класс для передачи параметров

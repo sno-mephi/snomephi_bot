@@ -43,7 +43,6 @@ class BroadcastConstructorFetcher(
     private val broadcastSenderService: BroadcastSenderService,
     private val messageSenderService: MessageSenderService,
 ) : DefaultFetcher() {
-
     companion object {
         private val FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
     }
@@ -148,11 +147,12 @@ class BroadcastConstructorFetcher(
     private fun bcToggleWebPreview(params: Params) {
         params.userActualizedInfo.apply {
             bcData ?: return
-            params.userActualizedInfo.bcData = broadcastRepository.save(
-                bcData!!.copy(
-                    shouldShowWebPreview = !bcData!!.shouldShowWebPreview
+            params.userActualizedInfo.bcData =
+                broadcastRepository.save(
+                    bcData!!.copy(
+                        shouldShowWebPreview = !bcData!!.shouldShowWebPreview,
+                    ),
                 )
-            )
         }
         showBcConsole(params)
     }
@@ -241,14 +241,15 @@ class BroadcastConstructorFetcher(
 
     private fun changeStartTime(params: Params) {
         val msgText = params.update.message.text.trim()
-        val startTime = when {
-            msgText.matches(Regex("\\d{2}.\\d{2}.\\d{4} \\d{2}:\\d{2}")) -> resolveFullDate(msgText)
-            msgText.matches(Regex("\\d{2}:\\d{2}")) -> resolveShortDate(msgText)
-            else -> null
-        } ?: run {
-            bcChangeStartTime(params, prefix = "Неверный формат даты и времени")
-            return
-        }
+        val startTime =
+            when {
+                msgText.matches(Regex("\\d{2}.\\d{2}.\\d{4} \\d{2}:\\d{2}")) -> resolveFullDate(msgText)
+                msgText.matches(Regex("\\d{2}:\\d{2}")) -> resolveShortDate(msgText)
+                else -> null
+            } ?: run {
+                bcChangeStartTime(params, prefix = "Неверный формат даты и времени")
+                return
+            }
         params.userActualizedInfo.apply {
             bcData =
                 bcData?.copy(
@@ -263,15 +264,14 @@ class BroadcastConstructorFetcher(
     /**
      * Возвращает по сообщению формата dd.MM.yyyy HH:mm текущую дату и время в LocalDateTime
      */
-    private fun resolveFullDate(fullDateText: String) = LocalDateTime.parse(fullDateText, FORMATTER)
-        .atZone(BOT_TIME_ZONE).toLocalDateTime()
+    private fun resolveFullDate(fullDateText: String) =
+        LocalDateTime.parse(fullDateText, FORMATTER)
+            .atZone(BOT_TIME_ZONE).toLocalDateTime()
 
     /**
      * Возвращает по сообщению формата HH:mm текущую дату с таким временем в LocalDateTime
      */
-    private fun resolveShortDate(
-        timeText: String,
-    ): LocalDateTime {
+    private fun resolveShortDate(timeText: String): LocalDateTime {
         val nowDttm = LocalDateTime.now().atZone(BOT_TIME_ZONE).toLocalDateTime()
         val currentDate = nowDttm.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
         val formatString = "$currentDate $timeText"
@@ -471,7 +471,7 @@ class BroadcastConstructorFetcher(
                         authorId = params.userActualizedInfo.id,
                         isWeekly = isWeekly,
                         lastConsoleMessageId = params.update.callbackQuery.message.messageId,
-                        shouldShowWebPreview = false
+                        shouldShowWebPreview = false,
                     ),
                 )
             showBcConsole(params)
@@ -745,7 +745,8 @@ class BroadcastConstructorFetcher(
     ) {
         removeBcConsole(params)
         val msgStart = prefix?.let { "$prefix\n" } ?: ""
-        val msgText = msgStart + "\uD83D\uDD57 Отправь время запуска рассылки в формате <b><i>ДД.ММ.ГГГГ ЧЧ:ММ</i></b>" +
+        val msgText =
+            msgStart + "\uD83D\uDD57 Отправь время запуска рассылки в формате <b><i>ДД.ММ.ГГГГ ЧЧ:ММ</i></b>" +
                 " или напиши время рассыли в формате <b><i>ЧЧ:ММ</i></b>, " +
                 "если хочешь разослать <b><i><u>сегодня</u></i></b>\n\n" +
                 "Например, если ты отправишь\n<pre>24.06.2077 19:25</pre>\nто рассылка начнется " +
@@ -924,7 +925,7 @@ class BroadcastConstructorFetcher(
                             parseMode = ParseMode.HTML,
                             replyMarkup = createKeyboard(keyboard),
                             chatId = params.userActualizedInfo.tui,
-                            disableWebPagePreview = !params.userActualizedInfo.bcData!!.shouldShowWebPreview
+                            disableWebPagePreview = !params.userActualizedInfo.bcData!!.shouldShowWebPreview,
                         ),
                     )
 
@@ -1004,7 +1005,7 @@ class BroadcastConstructorFetcher(
                                     text = text,
                                     replyMarkup = createKeyboard(keyboard),
                                     parseMode = ParseMode.HTML,
-                                    disableWebPagePreview = !params.userActualizedInfo.bcData!!.shouldShowWebPreview
+                                    disableWebPagePreview = !params.userActualizedInfo.bcData!!.shouldShowWebPreview,
                                 ),
                             )
 
@@ -1016,7 +1017,7 @@ class BroadcastConstructorFetcher(
                                     parseMode = ParseMode.HTML,
                                     replyMarkup = createKeyboard(keyboard),
                                     photo = InputFile(bcData?.imageHash),
-                                    disableWebPagePreview = !params.userActualizedInfo.bcData!!.shouldShowWebPreview
+                                    disableWebPagePreview = !params.userActualizedInfo.bcData!!.shouldShowWebPreview,
                                 ),
                             )
                     }

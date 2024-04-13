@@ -280,10 +280,9 @@ class CategoryButtonHandlerFetcher(
             ),
         )
         // TODO: Пока что нет логики, которая делает isSetupByDefault = false
-        if (category.isSetupByDefault)
-            {
-                category.id?.let { userRepository.addCategoryForAllUser(it) }
-            }
+        if (category.isSetupByDefault) {
+            category.id?.let { userRepository.addCategoryForAllUser(it) }
+        }
     }
 
     private fun actionDeleteCategory(
