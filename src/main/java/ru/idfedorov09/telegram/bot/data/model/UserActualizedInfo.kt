@@ -22,7 +22,7 @@ data class UserActualizedInfo(
     // TODO: readme -> активный вопрос - вопрос с диалогом
     val activeQuestDialog: QuestDialog?,
     /** Временные данные **/
-    var data: String? = null,
+    var data: UserData? = null,
     val isRegistered: Boolean,
     var isDeleted: Boolean = false,
     /** Текущая создаваемая рассылка пользователя **/

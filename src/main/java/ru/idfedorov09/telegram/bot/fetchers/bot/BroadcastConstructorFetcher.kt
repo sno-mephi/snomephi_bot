@@ -9,6 +9,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import ru.idfedorov09.telegram.bot.annotation.FetcherPerms
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.BOT_TIME_ZONE
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.MAX_BROADCAST_BUTTONS_COUNT
+import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands.BROADCAST_CONSTRUCTOR
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
@@ -98,26 +99,26 @@ class BroadcastConstructorFetcher(
 
         callbackData.callbackData?.apply {
             when {
-                startsWith("#bc_cancel") -> bcCancel(params)
-                startsWith("#bc_change_text") -> bcChangeTextMessage(params)
-                startsWith("#bc_change_photo") -> bcChangePhoto(params)
-                startsWith("#bc_to_schedule_console") -> bcChangeStartTime(params)
-                startsWith("#bc_delete_photo") -> bcDeletePhoto(params)
-                startsWith("#bc_change_categories") -> bcChangeCategories(params)
-                startsWith("#bc_action_cancel") -> bcCancelAction(params)
-                startsWith("#bc_preview") -> bcPreview(params)
-                startsWith("#bc_send_now") -> bcSendNow(params)
-                startsWith("#bc_add_button") -> bcAddButton(params)
-                startsWith("#bc_change_button_caption") -> changeButtonCaptionMessage(params)
-                startsWith("#bc_change_button_link") -> changeButtonLinkMessage(params)
-                startsWith("#bc_action_show_btn_console") -> showChangeButtonConsole(params)
-                startsWith("#bc_change_button_with_id") -> editButton(params)
-                startsWith("#bc_button_remove") -> removeButton(params)
-                startsWith("#bc_change_button_callback") -> changeButtonCallbackDataMessage(params)
-                startsWith("#bc_complete") -> bcComplete(params)
-                startsWith("#bc_start_common") -> bcEntryPoint(params, false)
-                startsWith("#bc_start_weekly") -> bcEntryPoint(params, true)
-                startsWith("#bc_web_preview_state") -> bcToggleWebPreview(params)
+                startsWith(CallbackCommands.BROADCAST_CANCEL.data) -> bcCancel(params)
+                startsWith(CallbackCommands.BROADCAST_CHANGE_TEXT.data) -> bcChangeTextMessage(params)
+                startsWith(CallbackCommands.BROADCAST_CHANGE_PHOTO.data) -> bcChangePhoto(params)
+                startsWith(CallbackCommands.BROADCAST_TO_SCHEDULE_CONSOLE.data) -> bcChangeStartTime(params)
+                startsWith(CallbackCommands.BROADCAST_DELETE_PHOTO.data) -> bcDeletePhoto(params)
+                startsWith(CallbackCommands.BROADCAST_CHANGE_CATEGORIES.data) -> bcChangeCategories(params)
+                startsWith(CallbackCommands.BROADCAST_ACTION_CANCEL.data) -> bcCancelAction(params)
+                startsWith(CallbackCommands.BROADCAST_PREVIEW.data) -> bcPreview(params)
+                startsWith(CallbackCommands.BROADCAST_SEND_NOW.data) -> bcSendNow(params)
+                startsWith(CallbackCommands.BROADCAST_ADD_BUTTON.data) -> bcAddButton(params)
+                startsWith(CallbackCommands.BROADCAST_CHANGE_BUTTON_CAPTION.data) -> changeButtonCaptionMessage(params)
+                startsWith(CallbackCommands.BROADCAST_CHANGE_BUTTON_LINK.data) -> changeButtonLinkMessage(params)
+                startsWith(CallbackCommands.BROADCAST_ACTION_SHOW_BTN_CONSOLE.data) -> showChangeButtonConsole(params)
+                startsWith(CallbackCommands.BROADCAST_CHANGE_BUTTON_WITH_ID.data) -> editButton(params)
+                startsWith(CallbackCommands.BROADCAST_BUTTON_REMOVE.data) -> removeButton(params)
+                startsWith(CallbackCommands.BROADCAST_CHANGE_BUTTON_CALLBACK.data) -> changeButtonCallbackDataMessage(params)
+                startsWith(CallbackCommands.BROADCAST_COMPLETE.data) -> bcComplete(params)
+                startsWith(CallbackCommands.BROADCAST_START_COMMON.data) -> bcEntryPoint(params, false)
+                startsWith(CallbackCommands.BROADCAST_START_WEEKLY.data) -> bcEntryPoint(params, true)
+                startsWith(CallbackCommands.BROADCAST_WB_PREVIEW_STATE.data) -> bcToggleWebPreview(params)
             }
         }
     }
@@ -163,7 +164,7 @@ class BroadcastConstructorFetcher(
 
             val backToBc =
                 CallbackData(
-                    callbackData = "#bc_action_show_btn_console",
+                    callbackData = CallbackCommands.BROADCAST_ACTION_SHOW_BTN_CONSOLE.data,
                     metaText = "К настройкам кнопки",
                 ).save()
 
@@ -396,7 +397,8 @@ class BroadcastConstructorFetcher(
         params.userActualizedInfo.apply {
             val backToConsole =
                 CallbackData(
-                    callbackData = if (backToDefaultConsole) "#bc_action_cancel" else "#bc_action_show_btn_console",
+                    callbackData = if (backToDefaultConsole) CallbackCommands.BROADCAST_ACTION_CANCEL.data
+                    else CallbackCommands.BROADCAST_ACTION_SHOW_BTN_CONSOLE.data,
                     metaText = if (backToDefaultConsole) "Отменить создание кнопки" else "К настройкам кнопки",
                 ).save()
 
@@ -430,7 +432,7 @@ class BroadcastConstructorFetcher(
         params.userActualizedInfo.apply {
             val backToBc =
                 CallbackData(
-                    callbackData = "#bc_action_show_btn_console",
+                    callbackData = CallbackCommands.BROADCAST_ACTION_SHOW_BTN_CONSOLE.data,
                     metaText = "К настройкам кнопки",
                 ).save()
 
@@ -483,7 +485,7 @@ class BroadcastConstructorFetcher(
         if (caption.length >= 32) {
             val backToBc =
                 CallbackData(
-                    callbackData = "#bc_action_show_btn_console",
+                    callbackData = CallbackCommands.BROADCAST_ACTION_SHOW_BTN_CONSOLE.data,
                     metaText = "К настройкам кнопки",
                 ).save()
 
@@ -555,31 +557,31 @@ class BroadcastConstructorFetcher(
 
             val changeButtonCaption =
                 CallbackData(
-                    callbackData = "#bc_change_button_caption",
+                    callbackData = CallbackCommands.BROADCAST_CHANGE_BUTTON_CAPTION.data,
                     metaText = button.text?.let { "Изменить текст" } ?: "Добавить текст",
                 ).save()
 
             val changeButtonLink =
                 CallbackData(
-                    callbackData = "#bc_change_button_link",
+                    callbackData = CallbackCommands.BROADCAST_CHANGE_BUTTON_LINK.data,
                     metaText = button.link?.let { "Изменить ссылку" } ?: "Добавить ссылку",
                 ).save()
 
             val changeButtonCallback =
                 CallbackData(
-                    callbackData = "#bc_change_button_callback",
+                    callbackData = CallbackCommands.BROADCAST_CHANGE_BUTTON_CALLBACK.data,
                     metaText = button.callbackData?.let { "Изменить коллбэк" } ?: "Добавить коллбэк",
                 ).save()
 
             val removeButton =
                 CallbackData(
-                    callbackData = "#bc_button_remove",
+                    callbackData = CallbackCommands.BROADCAST_BUTTON_REMOVE.data,
                     metaText = "Удалить кнопку",
                 ).save()
 
             val backToBc =
                 CallbackData(
-                    callbackData = "#bc_action_cancel",
+                    callbackData = CallbackCommands.BROADCAST_ACTION_CANCEL.data,
                     metaText = "Назад к конструктору",
                 ).save()
 
@@ -633,13 +635,13 @@ class BroadcastConstructorFetcher(
         )
 
         val messageText = "<b>Конструктор рассылки</b>\n\nВыберите дальнейшее действие"
-        val sendNow = CallbackData(callbackData = "#bc_send_now", metaText = "Разослать сейчас").save()
+        val sendNow = CallbackData(callbackData = CallbackCommands.BROADCAST_SEND_NOW.data, metaText = "Разослать сейчас").save()
         val scheduleSending =
             CallbackData(
-                callbackData = "#bc_to_schedule_console",
+                callbackData = CallbackCommands.BROADCAST_TO_SCHEDULE_CONSOLE.data,
                 metaText = "Запланировать рассылку",
             ).save()
-        val backToBc = CallbackData(callbackData = "#bc_action_cancel", metaText = "Назад к конструктору").save()
+        val backToBc = CallbackData(callbackData = CallbackCommands.BROADCAST_ACTION_CANCEL.data, metaText = "Назад к конструктору").save()
 
         val keyboard =
             listOf(sendNow, scheduleSending, backToBc).map { button ->
@@ -677,7 +679,7 @@ class BroadcastConstructorFetcher(
                 "<pre language\\=\"c\\+\\+\"\\>текст</pre\\> \\- исходный код или любой другой текст\n" +
                 "<a href\\='https://sno\\.mephi\\.ru/'\\>Сайт СНО</a\\> \\- ссылка"
 
-        val cancelButton = CallbackData(callbackData = "#bc_action_cancel", metaText = "Отмена").save()
+        val cancelButton = CallbackData(callbackData = CallbackCommands.BROADCAST_ACTION_CANCEL.data, metaText = "Отмена").save()
 
         val sent =
             messageSenderService.sendMessage(
@@ -708,8 +710,8 @@ class BroadcastConstructorFetcher(
     private fun bcChangePhoto(params: Params) {
         removeBcConsole(params)
         val msgText = "Отправьте фотографию, которую вы хотите прикрепить к рассылке"
-        val cancelButton = CallbackData(callbackData = "#bc_action_cancel", metaText = "Отмена").save()
-        val deletePhoto = CallbackData(callbackData = "#bc_delete_photo", metaText = "Удалить фото").save()
+        val cancelButton = CallbackData(callbackData = CallbackCommands.BROADCAST_ACTION_CANCEL.data, metaText = "Отмена").save()
+        val deletePhoto = CallbackData(callbackData = CallbackCommands.BROADCAST_DELETE_PHOTO.data, metaText = "Удалить фото").save()
         val buttonsList =
             mutableListOf(
                 listOf(
@@ -751,7 +753,7 @@ class BroadcastConstructorFetcher(
                 "если хочешь разослать <b><i><u>сегодня</u></i></b>\n\n" +
                 "Например, если ты отправишь\n<pre>24.06.2077 19:25</pre>\nто рассылка начнется " +
                 "24 июня 2077 года в 19:25, а если \n<pre>23:50</pre>\nто рассылка начнется <u>сегодня</u> в 23:50"
-        val cancelButton = CallbackData(callbackData = "#bc_action_cancel", metaText = "Отмена").save()
+        val cancelButton = CallbackData(callbackData = CallbackCommands.BROADCAST_ACTION_CANCEL.data, metaText = "Отмена").save()
         val sent =
             messageSenderService.sendMessage(
                 MessageParams(
@@ -791,8 +793,8 @@ class BroadcastConstructorFetcher(
 
     private fun bcChangeCategories(params: Params) {
         removeBcConsole(params)
-        val backToBc = CallbackData(callbackData = "#bc_action_cancel", metaText = "Назад к конструктору").save()
-        val cancelButton = CallbackData(callbackData = "#bc_complete", metaText = "Подтвердить рассылку").save()
+        val backToBc = CallbackData(callbackData = CallbackCommands.BROADCAST_ACTION_CANCEL.data, metaText = "Назад к конструктору").save()
+        val cancelButton = CallbackData(callbackData = CallbackCommands.BROADCAST_COMPLETE.data, metaText = "Подтвердить рассылку").save()
         params.userActualizedInfo.apply {
             val allCategoriesInfo =
                 categoryRepository.findAll().map {
@@ -872,8 +874,8 @@ class BroadcastConstructorFetcher(
 
     private fun chooseType(params: Params) {
         val messageText = "Выберите тип рассылки"
-        val common = CallbackData(callbackData = "#bc_start_common", metaText = "Обычная рассылка").save()
-        val weeklyEvents = CallbackData(callbackData = "#bc_start_weekly", metaText = "Мероприятия недели").save()
+        val common = CallbackData(callbackData = CallbackCommands.BROADCAST_START_COMMON.data, metaText = "Обычная рассылка").save()
+        val weeklyEvents = CallbackData(callbackData = CallbackCommands.BROADCAST_START_WEEKLY.data, metaText = "Мероприятия недели").save()
         val keyboard =
             listOf(common, weeklyEvents).map { button ->
                 InlineKeyboardButton().also {
@@ -904,11 +906,11 @@ class BroadcastConstructorFetcher(
                         )
                 }
                 val messageText = "<b>Конструктор рассылки</b>\n\nВыберите дальнейшее действие"
-                val newPhoto = CallbackData(callbackData = "#bc_change_photo", metaText = "Добавить фото").save()
-                val addText = CallbackData(callbackData = "#bc_change_text", metaText = "Добавить текст").save()
-                val addButton = CallbackData(callbackData = "#bc_add_button", metaText = "Добавить кнопку").save()
+                val newPhoto = CallbackData(callbackData = CallbackCommands.BROADCAST_CHANGE_PHOTO.data, metaText = "Добавить фото").save()
+                val addText = CallbackData(callbackData = CallbackCommands.BROADCAST_CHANGE_TEXT.data, metaText = "Добавить текст").save()
+                val addButton = CallbackData(callbackData = CallbackCommands.BROADCAST_ADD_BUTTON.data, metaText = "Добавить кнопку").save()
                 val webPreviewButton = createWebPreviewToggleButton(bcData!!)
-                val cancelButton = CallbackData(callbackData = "#bc_cancel", metaText = "Отмена").save()
+                val cancelButton = CallbackData(callbackData = CallbackCommands.BROADCAST_CANCEL.data, metaText = "Отмена").save()
 
                 val keyboard =
                     listOfNotNull(newPhoto, addText, addButton, webPreviewButton, cancelButton).map { button ->
@@ -939,19 +941,19 @@ class BroadcastConstructorFetcher(
 
                 val photoProp =
                     CallbackData(
-                        callbackData = "#bc_change_photo",
+                        callbackData = CallbackCommands.BROADCAST_CHANGE_PHOTO.data,
                         metaText = bcData!!.imageHash?.let { "Изменить фото" } ?: "Добавить фото",
                     ).save()
                 val textProp =
                     CallbackData(
-                        callbackData = "#bc_change_text",
+                        callbackData = CallbackCommands.BROADCAST_CHANGE_TEXT.data,
                         metaText = bcData!!.text?.let { "Изменить текст" } ?: "Добавить текст",
                     ).save()
-                val addButton = CallbackData(callbackData = "#bc_add_button", metaText = "Добавить кнопку").save()
+                val addButton = CallbackData(callbackData = CallbackCommands.BROADCAST_ADD_BUTTON.data, metaText = "Добавить кнопку").save()
                 val webPreviewButton = createWebPreviewToggleButton(bcData!!)
 
-                val previewButton = CallbackData(callbackData = "#bc_preview", metaText = "Предпросмотр").save()
-                val cancelButton = CallbackData(callbackData = "#bc_cancel", metaText = "Отмена").save()
+                val previewButton = CallbackData(callbackData = CallbackCommands.BROADCAST_PREVIEW.data, metaText = "Предпросмотр").save()
+                val cancelButton = CallbackData(callbackData = CallbackCommands.BROADCAST_CANCEL.data, metaText = "Отмена").save()
 
                 val keyboardList =
                     listOfNotNull(
@@ -964,7 +966,7 @@ class BroadcastConstructorFetcher(
                         addAll(
                             buttonRepository.findAllValidButtonsForBroadcast(bcData!!.id!!).map {
                                 CallbackData(
-                                    callbackData = "#bc_change_button_with_id=${it.id}",
+                                    callbackData = CallbackCommands.BROADCAST_CHANGE_BUTTON_WITH_ID.data + "=${it.id}",
                                     metaText = it.text,
                                 ).save()
                             },
@@ -1053,7 +1055,7 @@ class BroadcastConstructorFetcher(
         val smile = if (broadcast.shouldShowWebPreview) "✅" else "❌"
         val state = if (broadcast.shouldShowWebPreview) "(вкл)" else "(выкл)"
         val text = "$smile Превью веб-страницы $state"
-        return CallbackData(callbackData = "#bc_web_preview_state", metaText = text).save()
+        return CallbackData(callbackData = CallbackCommands.BROADCAST_WB_PREVIEW_STATE.data, metaText = text).save()
     }
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }

@@ -65,7 +65,7 @@ class RegistrationFetcher(
                 )
 
             lastUserActionType = LastUserActionType.REGISTRATION_ENTER_FULL_NAME
-            data = sendMessage.messageId.toString()
+            data?.registrationMessageId = sendMessage.messageId
             return this
         }
     }
@@ -79,15 +79,13 @@ class RegistrationFetcher(
                 ),
             )
 
-            if (data?.let { Regex("\\d+").matches(it) } == true) {
-                messageSenderService.deleteMessage(
-                    MessageParams(
-                        chatId = tui,
-                        messageId = data!!.toInt(),
-                    ),
-                )
-                data = null
-            }
+            messageSenderService.deleteMessage(
+                MessageParams(
+                    chatId = tui,
+                    messageId = data?.registrationMessageId
+                ),
+            )
+            data?.registrationMessageId = null
 
             if (params.update.message?.text.isValidFullName()) {
                 val confirm =
@@ -108,7 +106,7 @@ class RegistrationFetcher(
                     ),
                 )
                 lastUserActionType = LastUserActionType.REGISTRATION_CONFIRM_FULL_NAME
-                data = params.update.message.text
+                data?.registrationData = params.update.message.text
             } else {
                 val sendMessage =
                     messageSenderService.sendMessage(
@@ -117,7 +115,7 @@ class RegistrationFetcher(
                             text = RegistrationMessageText.InvalidFullName(),
                         ),
                     )
-                data = sendMessage.messageId.toString()
+                data?.registrationMessageId = sendMessage.messageId
             }
             return this
         }
@@ -132,15 +130,13 @@ class RegistrationFetcher(
                 ),
             )
 
-            if (data?.let { Regex("\\d+").matches(it) } == true) {
-                messageSenderService.deleteMessage(
-                    MessageParams(
-                        chatId = tui,
-                        messageId = data!!.toInt(),
-                    ),
-                )
-                data = null
-            }
+            messageSenderService.deleteMessage(
+                MessageParams(
+                    chatId = tui,
+                    messageId = data?.registrationMessageId
+                ),
+            )
+            data?.registrationMessageId = null
 
             if (params.update.message.text.isValidGroup()) {
                 val confirm =
@@ -162,7 +158,7 @@ class RegistrationFetcher(
                     ),
                 )
                 lastUserActionType = LastUserActionType.REGISTRATION_CONFIRM_GROUP
-                data = params.update.message.text.uppercase()
+                data?.registrationData = params.update.message.text.uppercase()
             } else {
                 val withoutGroup =
                     CallbackData(
@@ -177,7 +173,7 @@ class RegistrationFetcher(
                             replyMarkup = createActionsKeyboard(withoutGroup),
                         ),
                     )
-                data = sendMessage.messageId.toString()
+                data?.registrationMessageId = sendMessage.messageId
             }
             return this
         }
@@ -250,7 +246,7 @@ class RegistrationFetcher(
                     ),
                 )
             lastUserActionType = LastUserActionType.REGISTRATION_ENTER_GROUP
-            data = sendMessage.messageId.toString()
+            data?.registrationMessageId = sendMessage.messageId
             messageSenderService.deleteMessage(
                 MessageParams(
                     chatId = tui,
@@ -266,15 +262,15 @@ class RegistrationFetcher(
             params.userActualizedInfo =
                 params.userActualizedInfo.copy(
                     lastUserActionType = LastUserActionType.DEFAULT,
-                    studyGroup = data,
-                    data = null,
+                    studyGroup = data?.registrationData,
                     isRegistered = true,
                 )
+            data?.registrationData = null
             switchKeyboardService.switchKeyboard(
                 userId = id!!,
                 newKeyboardType = UserKeyboardType.DEFAULT_MAIN_BOT,
             )
-            userRepository.updateUserCategoriesById(userId = id!!)
+            userRepository.updateUserCategoriesById(userId = id)
             messageSenderService.sendMessage(
                 messageParams =
                     MessageParams(
@@ -302,7 +298,7 @@ class RegistrationFetcher(
                     ),
                 )
             lastUserActionType = LastUserActionType.REGISTRATION_ENTER_FULL_NAME
-            data = sendMessage.messageId.toString()
+            data?.registrationMessageId = sendMessage.messageId
             messageSenderService.deleteMessage(
                 MessageParams(
                     chatId = tui,
@@ -337,9 +333,10 @@ class RegistrationFetcher(
             params.userActualizedInfo =
                 params.userActualizedInfo.copy(
                     lastUserActionType = LastUserActionType.REGISTRATION_ENTER_GROUP,
-                    fullName = data,
-                    data = sendMessage.messageId.toString(),
+                    fullName = data?.registrationData,
                 )
+            data?.registrationMessageId = sendMessage.messageId
+
             return params.userActualizedInfo
         }
     }
