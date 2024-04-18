@@ -53,6 +53,9 @@ enum class CallbackCommands(
 
     UNBANNED_USER("unban_user|%d"),
     UNBANNED_CONFIRM("unban_confirm|%d"),
+
+    SETTING_USER_CHANGE_FULL_NAME("setting_user_full_name"),
+    SETTING_USER_CHANGE_STUDY_GROUP("setting_user_study_group"),
     ;
 
     fun format(vararg args: Any?): String {
