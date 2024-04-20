@@ -20,7 +20,7 @@ import kotlin.reflect.full.findAnnotation
  * Фетчер, который выполняет также проверку на права, если требуется
  */
 @Component
-open class DefaultFetcher: GeneralFetcher() {
+open class DefaultFetcher : GeneralFetcher() {
     private lateinit var flowContext: FlowContext
 
     @Autowired
@@ -79,17 +79,19 @@ open class DefaultFetcher: GeneralFetcher() {
      * Вызывает исключение RuntimeException если в контексте нет Update или обновление не содержит сообщение
      */
     fun deleteUpdateMessage() {
-        val update = flowContext.get<Update>()
-            ?: throw RuntimeException("Can't delete the message: there's no update in the context.")
+        val update =
+            flowContext.get<Update>()
+                ?: throw RuntimeException("Can't delete the message: there's no update in the context.")
 
-        if (!update.hasMessage())
+        if (!update.hasMessage()) {
             throw RuntimeException("Can't delete the message: there's no message in the update.")
+        }
 
         messageSenderService.deleteMessage(
             MessageParams(
                 chatId = update.message.chatId.toString(),
                 messageId = update.message.messageId,
-            )
+            ),
         )
     }
 }

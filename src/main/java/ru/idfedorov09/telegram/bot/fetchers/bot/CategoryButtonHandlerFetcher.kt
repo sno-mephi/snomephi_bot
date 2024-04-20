@@ -34,6 +34,7 @@ class CategoryButtonHandlerFetcher(
         val update: Update,
         var userActualizedInfo: UserActualizedInfo,
     )
+
     companion object {
         private val PAGESIZE: Long = 6
     }

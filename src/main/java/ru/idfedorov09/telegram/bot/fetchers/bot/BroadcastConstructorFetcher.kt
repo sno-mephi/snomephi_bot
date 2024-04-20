@@ -400,8 +400,12 @@ class BroadcastConstructorFetcher(
         params.userActualizedInfo.apply {
             val backToConsole =
                 CallbackData(
-                    callbackData = if (backToDefaultConsole) CallbackCommands.BROADCAST_ACTION_CANCEL.data
-                    else CallbackCommands.BROADCAST_ACTION_SHOW_BTN_CONSOLE.data,
+                    callbackData =
+                        if (backToDefaultConsole) {
+                            CallbackCommands.BROADCAST_ACTION_CANCEL.data
+                        } else {
+                            CallbackCommands.BROADCAST_ACTION_SHOW_BTN_CONSOLE.data
+                        },
                     metaText = if (backToDefaultConsole) "Отменить создание кнопки" else "К настройкам кнопки",
                 ).save()
 
@@ -737,13 +741,14 @@ class BroadcastConstructorFetcher(
                 ),
             )
         }
-        val sent = messageSenderService.sendMessage(
-            MessageParams(
-                chatId = params.userActualizedInfo.tui,
-                text = msgText,
-                replyMarkup = createKeyboard(buttonsList),
-            ),
-        )
+        val sent =
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = params.userActualizedInfo.tui,
+                    text = msgText,
+                    replyMarkup = createKeyboard(buttonsList),
+                ),
+            )
 
         params.userActualizedInfo.bcData =
             params.userActualizedInfo.bcData?.copy(
