@@ -132,6 +132,7 @@ class BroadcastConstructorFetcher(
 
     private fun changeButtonCallback(params: Params) {
         val newCallbackDataText = params.update.message.text
+        deleteUpdateMessage()
 
         params.userActualizedInfo.apply {
             id ?: return
@@ -237,6 +238,8 @@ class BroadcastConstructorFetcher(
             }
             showBcConsole(params)
             lastUserActionType = LastUserActionType.DEFAULT
+
+            deleteUpdateMessage()
         }
     }
 
@@ -482,6 +485,8 @@ class BroadcastConstructorFetcher(
 
     private fun changeButtonCaption(params: Params) {
         val caption = params.update.message.text
+        deleteUpdateMessage()
+
         if (caption.length >= 32) {
             val backToBc =
                 CallbackData(
@@ -525,6 +530,7 @@ class BroadcastConstructorFetcher(
 
     private fun changeButtonLink(params: Params) {
         val newUrl = params.update.message.text
+        deleteUpdateMessage()
 
         params.userActualizedInfo.apply {
             id ?: return
@@ -731,13 +737,18 @@ class BroadcastConstructorFetcher(
                 ),
             )
         }
-        messageSenderService.sendMessage(
+        val sent = messageSenderService.sendMessage(
             MessageParams(
                 chatId = params.userActualizedInfo.tui,
                 text = msgText,
                 replyMarkup = createKeyboard(buttonsList),
             ),
         )
+
+        params.userActualizedInfo.bcData =
+            params.userActualizedInfo.bcData?.copy(
+                lastConsoleMessageId = sent.messageId,
+            )
         params.userActualizedInfo.lastUserActionType = LastUserActionType.BC_PHOTO_TYPE
     }
 
