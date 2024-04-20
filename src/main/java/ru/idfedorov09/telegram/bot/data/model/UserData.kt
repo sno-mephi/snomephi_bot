@@ -8,6 +8,7 @@ import ru.mephi.sno.libs.flow.belly.Mutable
 @Mutable
 data class UserData(
     /** Уже не используется, но имет такой же смысл как и тарая data **/
+    @Deprecated("Не рекомендуется к использованию, лучше завести ноовое поле")
     var dataLegacy: String? = null,
     /** id сообщение консоли при разблокировки **/
     var unBanMessageId: Int? = null,

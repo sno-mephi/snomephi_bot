@@ -1,5 +1,6 @@
 package ru.idfedorov09.telegram.bot.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -49,6 +50,11 @@ public class GeneralConfig {
 		);
 		executor.initialize();
 		return executor;
+	}
+
+	@Bean
+	public ObjectMapper objectMapper() {
+		return new ObjectMapper();
 	}
 
 }

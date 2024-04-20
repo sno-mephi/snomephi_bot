@@ -5,9 +5,9 @@ import jakarta.persistence.*
 import ru.idfedorov09.telegram.bot.data.model.UserData
 
 @Converter(autoApply = true)
-class UserDataConverter : AttributeConverter<UserData, String> {
-
-    private val objectMapper = ObjectMapper()
+class UserDataConverter(
+    private val objectMapper: ObjectMapper
+) : AttributeConverter<UserData, String> {
 
     override fun convertToDatabaseColumn(attribute: UserData?): String? {
         return attribute?.let { objectMapper.writeValueAsString(it) }
