@@ -111,6 +111,11 @@ enum class TextCommands(
                 UserRole.MODERATOR,
             ),
     ),
+
+    USER_SETTING(
+        commandText = "/setting",
+        description = "Настройки пользователя"
+    ),
     ;
 
     /** Проверяет, является ли текст командой **/

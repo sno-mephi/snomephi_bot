@@ -19,4 +19,6 @@ data class UserData(
     var permissionMessageId: Int? = null,
     /** id сообщение консоли при настройке категорий **/
     var categoryMessageId: Int? = null,
+    /** id сообщения настроек юзера **/
+    var userSettingMessageId: Int? = null,
 )

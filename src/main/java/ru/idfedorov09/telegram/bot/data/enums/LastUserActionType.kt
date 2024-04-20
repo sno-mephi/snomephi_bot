@@ -84,4 +84,10 @@ enum class LastUserActionType {
 
     /** ввод времени конца бана **/
     BANNED_ENTER_FINISH_TIME,
+
+    /** ввод измененного ФИО **/
+    SETTING_USER_ENTER_FULL_NAME,
+
+    /** ввод измененной группы **/
+    SETTING_USER_ENTER_STUDY_GROUP,
 }
