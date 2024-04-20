@@ -1,10 +1,15 @@
 package ru.idfedorov09.telegram.bot.fetchers
 
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
+import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.annotation.FetcherPerms
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
+import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.flow.ExpContainer
+import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.util.OnReceiver
 import ru.mephi.sno.libs.flow.belly.FlowContext
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
@@ -14,8 +19,12 @@ import kotlin.reflect.full.findAnnotation
 /**
  * Фетчер, который выполняет также проверку на права, если требуется
  */
-open class DefaultFetcher : GeneralFetcher() {
+@Component
+open class DefaultFetcher: GeneralFetcher() {
     private lateinit var flowContext: FlowContext
+
+    @Autowired
+    private lateinit var messageSenderService: MessageSenderService
 
     companion object {
         private val log = LoggerFactory.getLogger(OnReceiver::class.java)
@@ -63,5 +72,24 @@ open class DefaultFetcher : GeneralFetcher() {
             shouldContinueExecutionFlow = false
             flowContext.insertObject(this)
         }
+    }
+
+    /**
+     * Метод который удаляет сообщение из только что пришедшего обновления
+     * Вызывает исключение RuntimeException если в контексте нет Update или обновление не содержит сообщение
+     */
+    fun deleteUpdateMessage() {
+        val update = flowContext.get<Update>()
+            ?: throw RuntimeException("Can't delete the message: there's no update in the context.")
+
+        if (!update.hasMessage())
+            throw RuntimeException("Can't delete the message: there's no message in the update.")
+
+        messageSenderService.deleteMessage(
+            MessageParams(
+                chatId = update.message.chatId.toString(),
+                messageId = update.message.messageId,
+            )
+        )
     }
 }
