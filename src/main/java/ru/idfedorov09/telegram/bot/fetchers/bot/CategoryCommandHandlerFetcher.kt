@@ -23,10 +23,10 @@ class CategoryCommandHandlerFetcher(
     private val messageSenderService: MessageSenderService,
     private val updatesUtil: UpdatesUtil,
 ) : DefaultFetcher() {
-    private data class RequestData(
+    private data class Params(
         val chatId: String,
         val update: Update,
-        var userInfo: UserActualizedInfo,
+        var userActualizedInfo: UserActualizedInfo,
     )
 
     @InjectData
@@ -38,73 +38,68 @@ class CategoryCommandHandlerFetcher(
         if (update.message == null || !update.message.hasText()) return userActualizedInfo
         val messageText = update.message.text
         val chatId = updatesUtil.getChatId(update) ?: return userActualizedInfo
-        val requestData =
-            RequestData(
+        val params =
+            Params(
                 chatId,
                 update,
                 userActualizedInfo,
             )
         when (messageText) {
             TextCommands.CATEGORY_CHOOSE_ACTION() ->
-                commandChooseAction(requestData)
+                commandChooseAction(params)
             TextCommands.CATEGORY_CHOOSE_TEXT_ACTION() ->
-                commandChooseAction(requestData)
+                commandChooseAction(params)
         }
-        return requestData.userInfo
+        return params.userActualizedInfo
     }
 
-    private fun commandChooseAction(data: RequestData) {
-        if (TextCommands.CATEGORY_CHOOSE_ACTION.isAllowed(data.userInfo)) {
+    private fun commandChooseAction(params: Params) {
+        if (TextCommands.CATEGORY_CHOOSE_ACTION.isAllowed(params.userActualizedInfo)) {
             sendMessage(
-                data,
+                params,
                 "⬇️ Выберите действие",
                 CategoryKeyboards.choosingAction(),
             )
         } else {
-            data.userInfo =
-                data.userInfo.copy(
+            params.userActualizedInfo =
+                params.userActualizedInfo.copy(
                     lastUserActionType = LastUserActionType.DEFAULT,
                 )
             sendMessage(
-                data,
+                params,
                 "🔒 Действие недоступно для вас",
             )
         }
     }
 
     private fun sendMessage(
-        data: RequestData,
+        params: Params,
         text: String,
     ) {
-        val lastSent =
+        val sendMessage =
             messageSenderService.sendMessage(
                 MessageParams(
-                    chatId = data.chatId,
+                    chatId = params.chatId,
                     text = text,
                 ),
-            ).chatId
-        data.userInfo =
-            data.userInfo.copy(
-                data = lastSent.toString(),
             )
+        params.userActualizedInfo.data?.categoryMessageId = sendMessage.messageId
+
     }
 
     private fun sendMessage(
-        data: RequestData,
+        params: Params,
         text: String,
         keyboard: InlineKeyboardMarkup,
     ) {
-        val lastSent =
+        val sendMessage =
             messageSenderService.sendMessage(
                 MessageParams(
-                    chatId = data.chatId,
+                    chatId = params.chatId,
                     text = text,
                     replyMarkup = keyboard,
                 ),
-            ).messageId
-        data.userInfo =
-            data.userInfo.copy(
-                data = lastSent.toString(),
             )
+        params.userActualizedInfo.data?.categoryMessageId = sendMessage.messageId
     }
 }

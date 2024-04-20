@@ -116,7 +116,7 @@ class PermissionsFetcher(
 
             messageSenderService.editMessage(
                 MessageParams(
-                    messageId = userActualizedInfo.data?.toIntOrNull(),
+                    messageId = userActualizedInfo.data?.permissionMessageId,
                     chatId = userActualizedInfo.tui,
                     text = text,
                     replyMarkup = keyboard,
@@ -159,7 +159,7 @@ class PermissionsFetcher(
 
             messageSenderService.editMessage(
                 MessageParams(
-                    messageId = userActualizedInfo.data?.toIntOrNull(),
+                    messageId = userActualizedInfo.data?.permissionMessageId,
                     chatId = userActualizedInfo.tui,
                     text = text,
                 ),
@@ -187,7 +187,7 @@ class PermissionsFetcher(
 
             messageSenderService.editMessage(
                 MessageParams(
-                    messageId = userActualizedInfo.data?.toIntOrNull(),
+                    messageId = userActualizedInfo.data?.permissionMessageId,
                     chatId = userActualizedInfo.tui,
                     text = text,
                 ),
@@ -230,7 +230,7 @@ class PermissionsFetcher(
 
             messageSenderService.editMessage(
                 MessageParams(
-                    messageId = userActualizedInfo.data?.toIntOrNull(),
+                    messageId = userActualizedInfo.data?.permissionMessageId,
                     chatId = userActualizedInfo.tui,
                     text = text,
                     replyMarkup = keyboard,
@@ -259,7 +259,7 @@ class PermissionsFetcher(
                         MessageParams(
                             chatId = userActualizedInfo.tui,
                             text = "Некорректный tui. Повтори попытку",
-                            messageId = userActualizedInfo.data?.toIntOrNull(),
+                            messageId = userActualizedInfo.data?.permissionMessageId,
                             replyMarkup = createKeyboard(cancel),
                         ),
                     )
@@ -271,7 +271,7 @@ class PermissionsFetcher(
                         MessageParams(
                             chatId = userActualizedInfo.tui,
                             text = "Такого юзера нет, повтори попытку",
-                            messageId = userActualizedInfo.data?.toIntOrNull(),
+                            messageId = userActualizedInfo.data?.permissionMessageId,
                             replyMarkup = createKeyboard(cancel),
                         ),
                     )
@@ -299,10 +299,10 @@ class PermissionsFetcher(
                     replyMarkup = createKeyboard(cancel),
                 ),
             )
+        params.userActualizedInfo.data?.permissionMessageId = sentMessage.messageId
 
         return params.userActualizedInfo.copy(
             lastUserActionType = LastUserActionType.PERMS_ENTER_TUI,
-            data = sentMessage.messageId.toString(),
         )
     }
 
@@ -333,7 +333,7 @@ class PermissionsFetcher(
         val keyboard = createKeyboard(addRole, removeRole, cancel)
         messageSenderService.editMessage(
             MessageParams(
-                messageId = params.userActualizedInfo.data?.toIntOrNull(),
+                messageId = params.userActualizedInfo.data?.permissionMessageId,
                 chatId = params.userActualizedInfo.tui,
                 text = text,
                 replyMarkup = keyboard,
