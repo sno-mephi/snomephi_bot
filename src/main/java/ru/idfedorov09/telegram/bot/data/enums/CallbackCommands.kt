@@ -40,11 +40,15 @@ enum class CallbackCommands(
 
     CATEGORY_EXIT("category_exit"),
 
+    /** Блок регистрации **/
+
     REGISTRATION_CONFIRM_FULL_NAME("registration_confirm_full_name"),
     REGISTRATION_DECLINE_FULL_NAME("registration_decline_full_name"),
     REGISTRATION_CONFIRM_STUDY_GROUP("registration_confirm_study_group"),
     REGISTRATION_DECLINE_STUDY_GROUP("registration_decline_study_group"),
     REGISTRATION_WITHOUT_STUDY_GROUP("registration_without_study_group"),
+
+    /** Блок банов **/
 
     BANNED_USER("ban_user|%d|%d"),
     BANNED_CANCEL("ban_cancel"),
@@ -53,6 +57,29 @@ enum class CallbackCommands(
 
     UNBANNED_USER("unban_user|%d"),
     UNBANNED_CONFIRM("unban_confirm|%d"),
+
+    /** Блок конструктора рассылок **/
+
+    BROADCAST_CANCEL("#bc_cancel"),
+    BROADCAST_CHANGE_TEXT("#bc_change_text"),
+    BROADCAST_CHANGE_PHOTO("#bc_change_photo"),
+    BROADCAST_TO_SCHEDULE_CONSOLE("#bc_to_schedule_console"),
+    BROADCAST_DELETE_PHOTO("#bc_delete_photo"),
+    BROADCAST_CHANGE_CATEGORIES("#bc_change_categories"),
+    BROADCAST_ACTION_CANCEL("#bc_action_cancel"),
+    BROADCAST_PREVIEW("#bc_preview"),
+    BROADCAST_SEND_NOW("#bc_send_now"),
+    BROADCAST_ADD_BUTTON("#bc_add_button"),
+    BROADCAST_CHANGE_BUTTON_CAPTION("#bc_change_button_caption"),
+    BROADCAST_CHANGE_BUTTON_LINK("#bc_change_button_link"),
+    BROADCAST_ACTION_SHOW_BTN_CONSOLE("#bc_action_show_btn_console"),
+    BROADCAST_CHANGE_BUTTON_WITH_ID("#bc_change_button_with_id"),
+    BROADCAST_BUTTON_REMOVE("#bc_button_remove"),
+    BROADCAST_CHANGE_BUTTON_CALLBACK("#bc_change_button_callback"),
+    BROADCAST_COMPLETE("#bc_complete"),
+    BROADCAST_START_COMMON("#bc_start_common"),
+    BROADCAST_START_WEEKLY("#bc_start_weekly"),
+    BROADCAST_WB_PREVIEW_STATE("#bc_web_preview_state"),
 
     SETTING_USER_CHANGE_FULL_NAME("setting_user_full_name"),
     SETTING_USER_CHANGE_STUDY_GROUP("setting_user_study_group"),

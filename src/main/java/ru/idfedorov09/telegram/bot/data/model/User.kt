@@ -13,7 +13,9 @@ import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.data.model.converter.LastUserActionTypeConverter
+import ru.idfedorov09.telegram.bot.data.model.converter.UserDataConverter
 import ru.idfedorov09.telegram.bot.data.model.converter.UserKeyboardTypeConverter
+
 
 @Entity
 @Table(name = "users_table")
@@ -38,8 +40,9 @@ data class User(
     @Column(name = "categories", updatable = false)
     val categories: MutableSet<Long> = mutableSetOf(),
     /** поле для временных данных юзера **/
-    @Column(name = "data", columnDefinition = "TEXT")
-    val data: String? = null,
+    @Convert(converter = UserDataConverter::class)
+    @Column(name = "data")
+    val data: UserData? = null,
     /** роли **/
     @Enumerated(EnumType.STRING)
     @Column(name = "roles")

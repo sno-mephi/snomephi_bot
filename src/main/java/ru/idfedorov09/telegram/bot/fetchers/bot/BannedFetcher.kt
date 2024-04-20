@@ -103,7 +103,7 @@ class BannedFetcher(
                 lastUserActionType = LastUserActionType.BANED_ENTER_TUI
             } else {
                 lastUserActionType = LastUserActionType.UNBANED_ENTER_TUI
-                data = sentMessage.messageId.toString()
+                data?.unBanMessageId = sentMessage.messageId
             }
         }
     }
@@ -187,7 +187,7 @@ class BannedFetcher(
                         chatId = userActualizedInfo.tui,
                         text = text,
                         replyMarkup = createKeyboard(cancel, confirm),
-                        messageId = userActualizedInfo.data?.toInt(),
+                        messageId = userActualizedInfo.data?.unBanMessageId,
                     ),
                 )
                 userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
@@ -383,11 +383,12 @@ class BannedFetcher(
         params.apply {
             val tui = callbackData.split("|").last()
             banRepository.unbanUser(tui)
+            userActualizedInfo.data?.unBanMessageId = null
             messageSenderService.editMessage(
                 MessageParams(
                     chatId = userActualizedInfo.tui,
                     text = "Вы успешно разблокировали пользователя $tui.",
-                    messageId = userActualizedInfo.data?.toInt(),
+                    messageId = userActualizedInfo.data?.unBanMessageId,
                 ),
             )
         }
@@ -479,7 +480,7 @@ class BannedFetcher(
                         ),
                     )
 
-                userActualizedInfo.data = sentMessage.messageId.toString()
+                userActualizedInfo.data?.unBanMessageId = sentMessage.messageId
             }
         }
     }

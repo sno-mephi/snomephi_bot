@@ -26,10 +26,10 @@ class CategoryActionTypeHandlerFetcher(
     private val updatesUtil: UpdatesUtil,
     private val categoryRepository: CategoryRepository,
 ) : DefaultFetcher() {
-    private data class RequestData(
+    private data class Params(
         val chatId: String,
         val update: Update,
-        var userInfo: UserActualizedInfo,
+        var userActualizedInfo: UserActualizedInfo,
     )
 
     @InjectData
@@ -39,41 +39,41 @@ class CategoryActionTypeHandlerFetcher(
         userActualizedInfo: UserActualizedInfo,
     ): UserActualizedInfo {
         val chatId = updatesUtil.getChatId(update) ?: return userActualizedInfo
-        val requestData =
-            RequestData(
+        val params =
+            Params(
                 chatId,
                 update,
                 userActualizedInfo,
             )
         when (userActualizedInfo.lastUserActionType) {
             LastUserActionType.CATEGORY_INPUT_START ->
-                actionAddTitle(requestData)
+                actionAddTitle(params)
 
             LastUserActionType.CATEGORY_INPUT_TITLE ->
-                actionAddSuffix(requestData)
+                actionAddSuffix(params)
 
             LastUserActionType.CATEGORY_INPUT_SUFFIX ->
-                actionAddDescription(requestData)
+                actionAddDescription(params)
 
             else ->
                 return userActualizedInfo
         }
-        return requestData.userInfo
+        return params.userActualizedInfo
     }
 
-    private fun actionAddTitle(data: RequestData) {
-        if (data.update.message == null || !data.update.message.hasText()) return
-        val messageText = data.update.message.text
+    private fun actionAddTitle(params: Params) {
+        if (params.update.message == null || !params.update.message.hasText()) return
+        val messageText = params.update.message.text
         if (TextCommands.isTextCommand(messageText)) return
         if (messageText.length > 64) {
             sendMessage(
-                data,
+                params,
                 "❗Слишком длинное сообщение",
                 CategoryKeyboards.inputCancel(),
             )
             return
         }
-        val category = categoryRepository.findByChangedByTui(data.userInfo.tui) ?: return
+        val category = categoryRepository.findByChangedByTui(params.userActualizedInfo.tui) ?: return
         categoryRepository.save(
             Category(
                 id = category.id,
@@ -87,32 +87,32 @@ class CategoryActionTypeHandlerFetcher(
 
         messageSenderService.deleteMessage(
             MessageParams(
-                chatId = data.chatId,
-                messageId = data.update.message.messageId,
+                chatId = params.chatId,
+                messageId = params.update.message.messageId,
             ),
         )
-        data.userInfo.data?.toInt()?.let {
+        params.userActualizedInfo.data?.categoryMessageId?.let {
             editMessage(
                 it,
-                data,
+                params,
                 "✏️ Введите тэг категории (до 64 символов):",
                 CategoryKeyboards.inputCancel(),
             )
         }
-        data.userInfo =
-            data.userInfo.copy(
+        params.userActualizedInfo =
+            params.userActualizedInfo.copy(
                 lastUserActionType = LastUserActionType.CATEGORY_INPUT_TITLE,
             )
     }
 
-    private fun actionAddSuffix(data: RequestData) {
-        if (data.update.message == null || !data.update.message.hasText()) return
-        if (TextCommands.isTextCommand(data.update.message.text)) return
-        val messageText = data.update.message.text.lowercase().replace(' ', '_')
-        val category = categoryRepository.findByChangedByTui(data.userInfo.tui) ?: return
+    private fun actionAddSuffix(params: Params) {
+        if (params.update.message == null || !params.update.message.hasText()) return
+        if (TextCommands.isTextCommand(params.update.message.text)) return
+        val messageText = params.update.message.text.lowercase().replace(' ', '_')
+        val category = categoryRepository.findByChangedByTui(params.userActualizedInfo.tui) ?: return
         if (messageText.length > 64) {
             sendMessage(
-                data,
+                params,
                 "❗Слишком длинное сообщение",
                 CategoryKeyboards.inputCancel(),
             )
@@ -120,7 +120,7 @@ class CategoryActionTypeHandlerFetcher(
         }
         if (categoryRepository.findBySuffix(messageText) != null) {
             sendMessage(
-                data,
+                params,
                 "❗Категория с таким тэгом уже есть, попробуйте ввести другой",
                 CategoryKeyboards.inputCancel(),
             )
@@ -128,7 +128,7 @@ class CategoryActionTypeHandlerFetcher(
         }
         if (!messageText.matches(Regex("^[a-z0-9_]+$"))) {
             sendMessage(
-                data,
+                params,
                 "❗Тэг может содержать в себе только буквы латинского алфавита или цифры, попробуйте ввести другой",
                 CategoryKeyboards.inputCancel(),
             )
@@ -146,32 +146,32 @@ class CategoryActionTypeHandlerFetcher(
         )
         messageSenderService.deleteMessage(
             MessageParams(
-                chatId = data.chatId,
-                messageId = data.update.message.messageId,
+                chatId = params.chatId,
+                messageId = params.update.message.messageId,
             ),
         )
-        data.userInfo.data?.toInt()?.let {
+        params.userActualizedInfo.data?.categoryMessageId?.let {
             editMessage(
                 it,
-                data,
+                params,
                 "✏️ Введите описание категории (до 140 символов):",
                 CategoryKeyboards.inputCancel(),
             )
         }
-        data.userInfo =
-            data.userInfo.copy(
+        params.userActualizedInfo =
+            params.userActualizedInfo.copy(
                 lastUserActionType = LastUserActionType.CATEGORY_INPUT_SUFFIX,
             )
     }
 
-    private fun actionAddDescription(data: RequestData) {
-        if (data.update.message == null || !data.update.message.hasText()) return
-        val messageText = data.update.message.text
+    private fun actionAddDescription(params: Params) {
+        if (params.update.message == null || !params.update.message.hasText()) return
+        val messageText = params.update.message.text
         if (TextCommands.isTextCommand(messageText)) return
-        val category = categoryRepository.findByChangedByTui(data.userInfo.tui) ?: return
+        val category = categoryRepository.findByChangedByTui(params.userActualizedInfo.tui) ?: return
         if (messageText.length > 140) {
             sendMessage(
-                data,
+                params,
                 "❗Слишком длинное сообщение",
                 CategoryKeyboards.inputCancel(),
             )
@@ -189,35 +189,35 @@ class CategoryActionTypeHandlerFetcher(
         )
         messageSenderService.deleteMessage(
             MessageParams(
-                chatId = data.chatId,
-                messageId = data.update.message.messageId,
+                chatId = params.chatId,
+                messageId = params.update.message.messageId,
             ),
         )
 
-        data.userInfo.data?.toInt()?.let {
+        params.userActualizedInfo.data?.categoryMessageId?.let {
             editMessage(
                 it,
-                data,
+                params,
                 "✏️ Пользователь может отписаться от рассылки?",
                 CategoryKeyboards.questionIsUnremovable(),
             )
         }
-        data.userInfo =
-            data.userInfo.copy(
+        params.userActualizedInfo =
+            params.userActualizedInfo.copy(
                 lastUserActionType = LastUserActionType.CATEGORY_INPUT_DESCRIPTION,
             )
     }
 
     private fun editMessage(
         messageId: Int,
-        data: RequestData,
+        params: Params,
         text: String,
         keyboard: InlineKeyboardMarkup?,
     ) {
         val msgId = messageId
         messageSenderService.editMessage(
             MessageParams(
-                chatId = data.chatId,
+                chatId = params.chatId,
                 messageId = msgId,
                 text = text,
                 replyMarkup = keyboard,
@@ -226,21 +226,18 @@ class CategoryActionTypeHandlerFetcher(
     }
 
     private fun sendMessage(
-        data: RequestData,
+        params: Params,
         text: String,
         keyboard: InlineKeyboardMarkup,
     ) {
-        val lastSent =
+        val sendMessage =
             messageSenderService.sendMessage(
                 MessageParams(
-                    chatId = data.chatId,
+                    chatId = params.chatId,
                     text = text,
                     replyMarkup = keyboard,
                 ),
-            ).messageId
-        data.userInfo =
-            data.userInfo.copy(
-                data = lastSent.toString(),
             )
+        params.userActualizedInfo.data?.categoryMessageId = sendMessage.messageId
     }
 }

@@ -8,6 +8,7 @@ import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.data.model.User
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
+import ru.idfedorov09.telegram.bot.data.model.UserData
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.flow.ExpContainer
 import ru.idfedorov09.telegram.bot.repo.*
@@ -91,6 +92,15 @@ class ActualizeUserInfoFetcher(
                 }
 
         userDataFromDatabase.apply {
+            val userData =
+                UserData(
+                    dataLegacy = data?.dataLegacy,
+                    unBanMessageId = data?.unBanMessageId,
+                    registrationMessageId = data?.registrationMessageId,
+                    registrationData = data?.registrationData,
+                    permissionMessageId = data?.permissionMessageId,
+                    categoryMessageId = data?.categoryMessageId,
+            )
             return UserActualizedInfo(
                 id = id,
                 tui = tui,
@@ -101,7 +111,7 @@ class ActualizeUserInfoFetcher(
                 roles = roles,
                 lastUserActionType = lastUserActionType,
                 activeQuestDialog = activeQuest,
-                data = data,
+                data = userData,
                 isRegistered = isRegistered,
                 bcData = bcData,
                 isBaned = isBaned ?: false,
