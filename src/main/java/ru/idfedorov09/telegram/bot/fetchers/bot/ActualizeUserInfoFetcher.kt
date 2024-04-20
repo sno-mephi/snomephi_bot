@@ -84,8 +84,7 @@ class ActualizeUserInfoFetcher(
 
         val lastUserActionType =
             userDataFromDatabase.lastUserActionType
-                ?:
-                if (userDataFromDatabase.isRegistered) {
+                ?: if (userDataFromDatabase.isRegistered) {
                     LastUserActionType.DEFAULT
                 } else {
                     LastUserActionType.REGISTRATION_START
@@ -101,7 +100,7 @@ class ActualizeUserInfoFetcher(
                     permissionMessageId = data?.permissionMessageId,
                     categoryMessageId = data?.categoryMessageId,
                     userSettingMessageId = data?.userSettingMessageId,
-            )
+                )
             return UserActualizedInfo(
                 id = id,
                 tui = tui,

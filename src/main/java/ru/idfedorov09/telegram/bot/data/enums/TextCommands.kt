@@ -114,7 +114,7 @@ enum class TextCommands(
 
     USER_SETTING(
         commandText = "/setting",
-        description = "Настройки пользователя"
+        description = "Настройки пользователя",
     ),
     ;
 

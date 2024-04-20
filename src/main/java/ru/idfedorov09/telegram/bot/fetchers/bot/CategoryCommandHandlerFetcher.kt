@@ -84,7 +84,6 @@ class CategoryCommandHandlerFetcher(
                 ),
             )
         params.userActualizedInfo.data?.categoryMessageId = sendMessage.messageId
-
     }
 
     private fun sendMessage(

@@ -86,16 +86,15 @@ class QuestButtonHandlerFetcher(
     }
 
     private fun clickStartDialog(params: Params): UserActualizedInfo {
-        if (params.questDialog.questionStatus != QuestionStatus.WAIT)
-            {
-                val callbackAnswer =
-                    AnswerCallbackQuery().also {
-                        it.text = "\uD83D\uDC40 Возможно, на этот вопрос уже ответили или отвечают"
-                        it.callbackQueryId = params.update.callbackQuery.id
-                    }
-                bot.execute(callbackAnswer)
-                return params.userActualizedInfo
-            }
+        if (params.questDialog.questionStatus != QuestionStatus.WAIT) {
+            val callbackAnswer =
+                AnswerCallbackQuery().also {
+                    it.text = "\uD83D\uDC40 Возможно, на этот вопрос уже ответили или отвечают"
+                    it.callbackQueryId = params.update.callbackQuery.id
+                }
+            bot.execute(callbackAnswer)
+            return params.userActualizedInfo
+        }
         if (params.userActualizedInfo.activeQuestDialog != null) return params.userActualizedInfo
 
         val quest =
@@ -203,18 +202,17 @@ class QuestButtonHandlerFetcher(
 
         val questionAuthor = userRepository.findActiveUsersById(params.questDialog.authorId!!)!!
 
-        if (params.userActualizedInfo.tui == questionAuthor.tui)
-            {
-                val answerCallbackQuery =
-                    AnswerCallbackQuery().also {
-                        it.callbackQueryId = params.update.callbackQuery.id
-                        it.text = "Вы не можете отвечать самому себе!"
-                        it.showAlert = true
-                    }
-                bot.execute(answerCallbackQuery)
+        if (params.userActualizedInfo.tui == questionAuthor.tui) {
+            val answerCallbackQuery =
+                AnswerCallbackQuery().also {
+                    it.callbackQueryId = params.update.callbackQuery.id
+                    it.text = "Вы не можете отвечать самому себе!"
+                    it.showAlert = true
+                }
+            bot.execute(answerCallbackQuery)
 
-                return params.userActualizedInfo
-            }
+            return params.userActualizedInfo
+        }
 
         if (params.userActualizedInfo.activeQuestDialog != null) return params.userActualizedInfo
         val firstMessage = questMessageRepository.findById(params.questDialog.dialogHistory.first()).get()
@@ -255,18 +253,17 @@ class QuestButtonHandlerFetcher(
 
             val questionAuthor = userRepository.findActiveUsersById(questDialog.authorId!!)!!
 
-            if (userActualizedInfo.tui == questionAuthor.tui)
-                {
-                    val answerCallbackQuery =
-                        AnswerCallbackQuery().also {
-                            it.callbackQueryId = update.callbackQuery.id
-                            it.text = "Вы не можете переоткрывать свое обращение!"
-                            it.showAlert = true
-                        }
-                    bot.execute(answerCallbackQuery)
+            if (userActualizedInfo.tui == questionAuthor.tui) {
+                val answerCallbackQuery =
+                    AnswerCallbackQuery().also {
+                        it.callbackQueryId = update.callbackQuery.id
+                        it.text = "Вы не можете переоткрывать свое обращение!"
+                        it.showAlert = true
+                    }
+                bot.execute(answerCallbackQuery)
 
-                    return userActualizedInfo
-                }
+                return userActualizedInfo
+            }
 
             if (userActualizedInfo.activeQuestDialog != null) return userActualizedInfo
             val firstMessage = questMessageRepository.findById(params.questDialog.dialogHistory.first()).get()
@@ -297,7 +294,7 @@ class QuestButtonHandlerFetcher(
         }
     }
 
-    private fun clickRecreateStartDialog(params: Params): UserActualizedInfo  {
+    private fun clickRecreateStartDialog(params: Params): UserActualizedInfo {
         params.apply {
             if (questDialog.questionStatus != QuestionStatus.IGNORE &&
                 questDialog.questionStatus != QuestionStatus.CLOSED

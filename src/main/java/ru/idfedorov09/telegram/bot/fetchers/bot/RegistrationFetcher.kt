@@ -82,7 +82,7 @@ class RegistrationFetcher(
             messageSenderService.deleteMessage(
                 MessageParams(
                     chatId = tui,
-                    messageId = data?.registrationMessageId
+                    messageId = data?.registrationMessageId,
                 ),
             )
             data?.registrationMessageId = null
@@ -133,7 +133,7 @@ class RegistrationFetcher(
             messageSenderService.deleteMessage(
                 MessageParams(
                     chatId = tui,
-                    messageId = data?.registrationMessageId
+                    messageId = data?.registrationMessageId,
                 ),
             )
             data?.registrationMessageId = null
@@ -263,7 +263,7 @@ class RegistrationFetcher(
             params.userActualizedInfo =
                 params.userActualizedInfo.copy(
                     lastUserActionType = LastUserActionType.DEFAULT,
-                    studyGroup = data?.registrationData?: "Не из МИФИ",
+                    studyGroup = data?.registrationData ?: "Не из МИФИ",
                     isRegistered = true,
                 )
             data?.registrationData = null

@@ -136,18 +136,17 @@ class BannedFetcher(
                     )
                     return
                 }
-            if (tui.toString() == userActualizedInfo.tui)
-                {
-                    messageSenderService.editMessage(
-                        MessageParams(
-                            chatId = userActualizedInfo.tui,
-                            text = "Невозможно заблокировать себя",
-                            messageId = userActualizedInfo.banData?.lastConsoleMessageId,
-                            replyMarkup = createKeyboard(cancel),
-                        ),
-                    )
-                    return
-                }
+            if (tui.toString() == userActualizedInfo.tui) {
+                messageSenderService.editMessage(
+                    MessageParams(
+                        chatId = userActualizedInfo.tui,
+                        text = "Невозможно заблокировать себя",
+                        messageId = userActualizedInfo.banData?.lastConsoleMessageId,
+                        replyMarkup = createKeyboard(cancel),
+                    ),
+                )
+                return
+            }
             val user =
                 userRepository.findByTui(tui.toString()) ?: run {
                     messageSenderService.editMessage(
@@ -438,30 +437,29 @@ class BannedFetcher(
 
             val questDialogId = callbackData.split("|")[1].toLong()
 
-            if (isBan)
-                {
-                    val text = "Нашел пользователя ${user.fullName}.\nПожалуйста, укажите причину бана текстом."
-                    userActualizedInfo.lastUserActionType = LastUserActionType.BANNED_ENTER_REASON
+            if (isBan) {
+                val text = "Нашел пользователя ${user.fullName}.\nПожалуйста, укажите причину бана текстом."
+                userActualizedInfo.lastUserActionType = LastUserActionType.BANNED_ENTER_REASON
 
-                    val sentMessage =
-                        messageSenderService.sendMessage(
-                            MessageParams(
-                                chatId = userActualizedInfo.tui,
-                                text = text,
-                                replyMarkup = createKeyboard(cancel),
-                            ),
-                        )
+                val sentMessage =
+                    messageSenderService.sendMessage(
+                        MessageParams(
+                            chatId = userActualizedInfo.tui,
+                            text = text,
+                            replyMarkup = createKeyboard(cancel),
+                        ),
+                    )
 
-                    userActualizedInfo.banData =
-                        banRepository.save(
-                            Ban(
-                                moderatorId = userActualizedInfo.id,
-                                lastConsoleMessageId = sentMessage.messageId,
-                                userTui = tui,
-                                questDialogId = questDialogId,
-                            ),
-                        )
-                } else {
+                userActualizedInfo.banData =
+                    banRepository.save(
+                        Ban(
+                            moderatorId = userActualizedInfo.id,
+                            lastConsoleMessageId = sentMessage.messageId,
+                            userTui = tui,
+                            questDialogId = questDialogId,
+                        ),
+                    )
+            } else {
                 val text = "Нашел пользователя ${user.fullName}.\nПодтвердите разблокировку."
                 val confirm =
                     CallbackData(

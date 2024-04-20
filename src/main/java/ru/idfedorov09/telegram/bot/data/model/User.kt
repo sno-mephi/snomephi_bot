@@ -16,7 +16,6 @@ import ru.idfedorov09.telegram.bot.data.model.converter.LastUserActionTypeConver
 import ru.idfedorov09.telegram.bot.data.model.converter.UserDataConverter
 import ru.idfedorov09.telegram.bot.data.model.converter.UserKeyboardTypeConverter
 
-
 @Entity
 @Table(name = "users_table")
 data class User(
