@@ -247,6 +247,7 @@ class RegistrationFetcher(
                 )
             lastUserActionType = LastUserActionType.REGISTRATION_ENTER_GROUP
             data?.registrationMessageId = sendMessage.messageId
+            data?.registrationData = null
             messageSenderService.deleteMessage(
                 MessageParams(
                     chatId = tui,
@@ -262,7 +263,7 @@ class RegistrationFetcher(
             params.userActualizedInfo =
                 params.userActualizedInfo.copy(
                     lastUserActionType = LastUserActionType.DEFAULT,
-                    studyGroup = data?.registrationData,
+                    studyGroup = data?.registrationData?: "Не из МИФИ",
                     isRegistered = true,
                 )
             data?.registrationData = null
@@ -299,6 +300,7 @@ class RegistrationFetcher(
                 )
             lastUserActionType = LastUserActionType.REGISTRATION_ENTER_FULL_NAME
             data?.registrationMessageId = sendMessage.messageId
+            data?.registrationData = null
             messageSenderService.deleteMessage(
                 MessageParams(
                     chatId = tui,
@@ -336,6 +338,7 @@ class RegistrationFetcher(
                     fullName = data?.registrationData,
                 )
             data?.registrationMessageId = sendMessage.messageId
+            data?.registrationData = null
 
             return params.userActualizedInfo
         }

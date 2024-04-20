@@ -100,6 +100,7 @@ class ActualizeUserInfoFetcher(
                     registrationData = data?.registrationData,
                     permissionMessageId = data?.permissionMessageId,
                     categoryMessageId = data?.categoryMessageId,
+                    userSettingMessageId = data?.userSettingMessageId,
             )
             return UserActualizedInfo(
                 id = id,
