@@ -21,13 +21,13 @@ import kotlin.reflect.full.findAnnotation
  */
 @Component
 open class DefaultFetcher : GeneralFetcher() {
-    private lateinit var flowContext: FlowContext
+    protected lateinit var flowContext: FlowContext
 
     @Autowired
     private lateinit var messageSenderService: MessageSenderService
 
     companion object {
-        private val log = LoggerFactory.getLogger(OnReceiver::class.java)
+        private val log = LoggerFactory.getLogger(DefaultFetcher::class.java)
     }
 
     override fun fetchCall(
