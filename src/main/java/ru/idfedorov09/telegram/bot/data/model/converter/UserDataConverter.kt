@@ -1,5 +1,6 @@
 package ru.idfedorov09.telegram.bot.data.model.converter
 
+import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.persistence.*
 import ru.idfedorov09.telegram.bot.data.model.UserData
@@ -13,6 +14,10 @@ class UserDataConverter : AttributeConverter<UserData, String> {
     }
 
     override fun convertToEntityAttribute(dbData: String?): UserData? {
-        return dbData?.let { objectMapper.readValue(it, UserData::class.java) }
+        return try {
+            dbData?.let { objectMapper.readValue(it, UserData::class.java) }
+        } catch (e: JsonProcessingException) {
+            UserData(dataLegacy = dbData)
+        }
     }
 }
