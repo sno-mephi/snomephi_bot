@@ -66,7 +66,7 @@ class UpdateDataFetcher(
                     roles = roles,
                     lastUserActionType = lastUserActionType,
                     questDialogId = getQuestDialogId(activeQuestDialog),
-                    data = UserData(dataLegacy = data?.dataLegacy),
+                    data = data,
                     isRegistered = isRegistered,
                     constructorId = bcData?.id,
                     isDeleted = isDeleted,

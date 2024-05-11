@@ -50,6 +50,7 @@ class ActualizeUserInfoFetcher(
                     tui = tgUser.id.toString(),
                     lastTgNick = tgUser.userName,
                     roles = mutableSetOf(UserRole.USER),
+                    data = UserData(),
                     isRegistered = false,
                     currentKeyboardType = UserKeyboardType.WITHOUT_KEYBOARD, // изачально без выбранной клавиатуры
                 ).apply {
