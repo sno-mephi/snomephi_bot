@@ -14,10 +14,7 @@ import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_RECREATE
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_RECREATE_START_DIALOG
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_SHOW_HISTORY
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_START_DIALOG
-import ru.idfedorov09.telegram.bot.data.model.MessageParams
-import ru.idfedorov09.telegram.bot.data.model.QuestDialog
-import ru.idfedorov09.telegram.bot.data.model.QuestSegment
-import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
+import ru.idfedorov09.telegram.bot.data.model.*
 import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.*
@@ -29,6 +26,7 @@ import ru.mephi.sno.libs.flow.belly.InjectData
 import java.lang.NumberFormatException
 import java.time.Instant
 import java.time.ZoneId
+import javax.security.auth.callback.Callback
 import kotlin.jvm.optionals.getOrNull
 
 /**
@@ -186,12 +184,17 @@ class QuestButtonHandlerFetcher(
             params.userActualizedInfo.lastTgNick,
             params.userActualizedInfo.fullName,
         )}."
+        val recreateDialog =
+            CallbackData(
+                callbackData = QUEST_RECREATE.format(params.questDialog.id),
+                metaText = "Переоткрыть диалог",
+        ).save()
         messageSenderService.editMessage(
             MessageParams(
                 chatId = QUEST_RESPONDENT_CHAT_ID,
                 messageId = params.questDialog.consoleMessageId?.toInt(),
                 text = newText,
-                replyMarkup = createRecreateKeyboard(params.questDialog),
+                replyMarkup = createKeyboard(recreateDialog)
             ),
         )
         return params.userActualizedInfo
@@ -232,11 +235,16 @@ class QuestButtonHandlerFetcher(
             ),
         )
 
+        val startDialog = CallbackData(
+            callbackData = QUEST_START_DIALOG.format(params.questDialog.id),
+            metaText = "\uD83D\uDCAC Начать диалог"
+        ).save()
+
         messageSenderService.sendMessage(
             MessageParams(
                 chatId = params.userActualizedInfo.tui,
                 text = "Ты можешь начать анонимный диалог с пользователем:",
-                replyMarkup = createChooseKeyboard(params.questDialog),
+                replyMarkup = createKeyboard(startDialog),
             ),
         )
 
@@ -281,12 +289,22 @@ class QuestButtonHandlerFetcher(
                     messageId = firstMessage.messageId!!,
                 ),
             )
+            val recreateStartDialog =
+                CallbackData(
+                    callbackData = QUEST_RECREATE_START_DIALOG.format(questDialog.id),
+                    metaText = "Начать диалог",
+                ).save()
+            val showHistory =
+                CallbackData(
+                    callbackData = QUEST_SHOW_HISTORY.format(questDialog.id),
+                    metaText = "\uD83D\uDCAC Посмотреть историю (не паботает)"
+                ).save()
             messageSenderService.sendMessage(
                 MessageParams(
                     chatId = params.userActualizedInfo.tui,
                     text =
                         "Ты можешь начать анонимный диалог с пользователем.",
-                    replyMarkup = createRecreateStartKeyboard(questDialog),
+                    replyMarkup = createKeyboard(recreateStartDialog, showHistory)
                 ),
             )
 
@@ -369,42 +387,20 @@ class QuestButtonHandlerFetcher(
         }
     }
 
-    private fun createChooseKeyboard(questDialog: QuestDialog) =
-        createKeyboard(
-            listOf(
-                listOf(
-                    InlineKeyboardButton("\uD83D\uDCAC Начать диалог")
-                        .also { it.callbackData = QUEST_START_DIALOG.format(questDialog.id) },
-                ),
-            ),
-        )
-
-    private fun createRecreateStartKeyboard(questDialog: QuestDialog) =
-        createKeyboard(
-            listOf(
-                listOf(
-                    InlineKeyboardButton("\uD83D\uDCAC Начать диалог")
-                        .also { it.callbackData = QUEST_RECREATE_START_DIALOG.format(questDialog.id) },
-                ),
-                listOf(
-                    InlineKeyboardButton("\uD83D\uDCAC Посмотреть историю (не паботает)")
-                        .also { it.callbackData = QUEST_SHOW_HISTORY.format(questDialog.id) },
-                ),
-            ),
-        )
-
-    private fun createRecreateKeyboard(questDialog: QuestDialog) =
-        createKeyboard(
-            listOf(
-                listOf(
-                    InlineKeyboardButton("Переоткрыть диалог")
-                        // TODO("разбан еще не реализован")
-                        .also { it.callbackData = QUEST_RECREATE.format(questDialog.id) },
-                ),
-            ),
-        )
+    private fun createKeyboard(vararg callbackData: CallbackData): InlineKeyboardMarkup {
+        val keyboard =
+            listOf(*callbackData).map { button ->
+                InlineKeyboardButton().also {
+                    it.text = button.metaText!!
+                    it.callbackData = button.id?.toString()
+                }
+            }.map { listOf(it) }
+        return createKeyboard(keyboard)
+    }
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
+
+    private fun CallbackData.save() = callbackDataRepository.save(this)
 
     private fun getQuestByCallbackData(callbackData: String): QuestDialog? {
         val questId = parseQuestId(callbackData)
