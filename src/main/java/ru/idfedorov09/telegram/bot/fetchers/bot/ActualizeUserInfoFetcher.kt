@@ -91,16 +91,6 @@ class ActualizeUserInfoFetcher(
                 }
 
         userDataFromDatabase.apply {
-            val userData =
-                UserData(
-                    dataLegacy = data?.dataLegacy,
-                    unBanMessageId = data?.unBanMessageId,
-                    registrationMessageId = data?.registrationMessageId,
-                    registrationData = data?.registrationData,
-                    permissionMessageId = data?.permissionMessageId,
-                    categoryMessageId = data?.categoryMessageId,
-                    userSettingMessageId = data?.userSettingMessageId,
-                )
             return UserActualizedInfo(
                 id = id,
                 tui = tui,
@@ -111,7 +101,7 @@ class ActualizeUserInfoFetcher(
                 roles = roles,
                 lastUserActionType = lastUserActionType,
                 activeQuestDialog = activeQuest,
-                data = userData,
+                data = data,
                 isRegistered = isRegistered,
                 bcData = bcData,
                 isBaned = isBaned ?: false,

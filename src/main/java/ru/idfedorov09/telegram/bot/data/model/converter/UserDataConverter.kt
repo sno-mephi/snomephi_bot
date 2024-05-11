@@ -15,10 +15,10 @@ class UserDataConverter : AttributeConverter<UserData, String> {
     override fun convertToEntityAttribute(dbData: String?): UserData? {
         return runCatching {
             dbData?.let { objectMapper.readValue(it, UserData::class.java) }
-        }.onFailure {
+        }.getOrElse {
             UserData(
                 dataLegacy = dbData
             )
-        }.getOrNull()
+        }
     }
 }
