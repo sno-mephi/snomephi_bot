@@ -10,7 +10,10 @@ import ru.idfedorov09.telegram.bot.data.GlobalConstants
 import ru.idfedorov09.telegram.bot.data.enums.*
 import ru.idfedorov09.telegram.bot.data.model.*
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
-import ru.idfedorov09.telegram.bot.repo.*
+import ru.idfedorov09.telegram.bot.repo.QuestDialogRepository
+import ru.idfedorov09.telegram.bot.repo.QuestMessageRepository
+import ru.idfedorov09.telegram.bot.repo.QuestSegmentRepository
+import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.service.SwitchKeyboardService
 import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
@@ -32,7 +35,6 @@ class DialogHandleFetcher(
     private val questMessageRepository: QuestMessageRepository,
     private val userRepository: UserRepository,
     private val switchKeyboardService: SwitchKeyboardService,
-    private val callbackDataRepository: CallbackDataRepository,
 ) : DefaultFetcher() {
     @InjectData
     fun doFetch(
@@ -430,13 +432,6 @@ class DialogHandleFetcher(
                 ),
             )
         }
-
-        val recreateDialog =
-            CallbackData(
-                callbackData = CallbackCommands.QUEST_RECREATE.format(params.questDialog.id),
-                metaText = "Переоткрыть диалог",
-            ).save()
-
         messageSenderService.editMessage(
             MessageParams(
                 chatId = GlobalConstants.QUEST_RESPONDENT_CHAT_ID,
@@ -444,7 +439,7 @@ class DialogHandleFetcher(
                 text =
                     "✅ ${MessageSenderUtil.userName(params.responder.lastTgNick, params.responder.fullName)} " +
                         "пообщался(-ась)",
-                replyMarkup = createKeyboard(recreateDialog),
+                replyMarkup = createRecreateKeyboard(params.questDialog),
             ),
         )
 
@@ -454,20 +449,18 @@ class DialogHandleFetcher(
         )
     }
 
-    private fun createKeyboard(vararg callbackData: CallbackData): InlineKeyboardMarkup {
-        val keyboard =
-            listOf(*callbackData).map { button ->
-                InlineKeyboardButton().also {
-                    it.text = button.metaText!!
-                    it.callbackData = button.id?.toString()
-                }
-            }.map { listOf(it) }
-        return createKeyboard(keyboard)
-    }
+    private fun createRecreateKeyboard(questDialog: QuestDialog) =
+        createKeyboard(
+            listOf(
+                listOf(
+                    InlineKeyboardButton("Переоткрыть диалог")
+                        // TODO("разбан еще не реализован")
+                        .also { it.callbackData = CallbackCommands.QUEST_RECREATE.format(questDialog.id) },
+                ),
+            ),
+        )
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
-
-    private fun CallbackData.save() = callbackDataRepository.save(this)
 
     /**
      * Вспомогательный класс для передачи параметров
