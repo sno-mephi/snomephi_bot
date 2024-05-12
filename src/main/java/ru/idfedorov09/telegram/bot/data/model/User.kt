@@ -40,7 +40,7 @@ data class User(
     val categories: MutableSet<Long> = mutableSetOf(),
     /** поле для временных данных юзера **/
     @Convert(converter = UserDataConverter::class)
-    @Column(name = "data")
+    @Column(name = "data", columnDefinition = "TEXT")
     val data: UserData? = null,
     /** роли **/
     @Enumerated(EnumType.STRING)

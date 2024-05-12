@@ -9,10 +9,18 @@ class UserDataConverter : AttributeConverter<UserData, String> {
     private val objectMapper = ObjectMapper()
 
     override fun convertToDatabaseColumn(attribute: UserData?): String? {
-        return attribute?.let { objectMapper.writeValueAsString(it) }
+        return attribute?.let {
+            objectMapper.writeValueAsString(it)
+        }
     }
 
-    override fun convertToEntityAttribute(dbData: String?): UserData? {
-        return dbData?.let { objectMapper.readValue(it, UserData::class.java) }
+    override fun convertToEntityAttribute(dbData: String?): UserData {
+        return runCatching {
+            dbData?.let { objectMapper.readValue(it, UserData::class.java) }
+        }.getOrElse {
+            UserData(
+                dataLegacy = dbData
+            )
+        } ?: UserData()
     }
 }
