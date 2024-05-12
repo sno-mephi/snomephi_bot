@@ -77,21 +77,20 @@ class UserSettingFetcher(
                         replyMarkup = createKeyboard(changeFullName, changeStudyGroup),
                     ),
                 )
-            if (userActualizedInfo.data?.userSettingMessageId != null)
-                {
-                    messageSenderService.deleteMessage(
-                        MessageParams(
-                            chatId = userActualizedInfo.tui,
-                            messageId = userActualizedInfo.data?.userSettingMessageId,
-                        ),
-                    )
-                }
+            if (userActualizedInfo.data?.userSettingMessageId != null) {
+                messageSenderService.deleteMessage(
+                    MessageParams(
+                        chatId = userActualizedInfo.tui,
+                        messageId = userActualizedInfo.data?.userSettingMessageId,
+                    ),
+                )
+            }
             userActualizedInfo.data?.userSettingMessageId = sentMessage.messageId
             return userActualizedInfo
         }
     }
 
-    private fun enterFullName(params: Params): UserActualizedInfo  {
+    private fun enterFullName(params: Params): UserActualizedInfo {
         params.apply {
             val msgText = update.message.text
             if (msgText.isValidFullName()) {
@@ -132,7 +131,7 @@ class UserSettingFetcher(
         }
     }
 
-    private fun enterStudyGroup(params: Params): UserActualizedInfo  {
+    private fun enterStudyGroup(params: Params): UserActualizedInfo {
         params.apply {
             val msgText = update.message.text
             if (msgText.isValidGroup()) {
@@ -195,7 +194,7 @@ class UserSettingFetcher(
         } ?: params.userActualizedInfo
     }
 
-    private fun withoutStudyGroup(params: Params): UserActualizedInfo  {
+    private fun withoutStudyGroup(params: Params): UserActualizedInfo {
         params.apply {
             val repeat =
                 CallbackData(

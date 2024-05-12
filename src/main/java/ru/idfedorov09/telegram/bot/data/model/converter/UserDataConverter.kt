@@ -19,7 +19,7 @@ class UserDataConverter : AttributeConverter<UserData, String> {
             dbData?.let { objectMapper.readValue(it, UserData::class.java) }
         }.getOrElse {
             UserData(
-                dataLegacy = dbData
+                dataLegacy = dbData,
             )
         } ?: UserData()
     }
