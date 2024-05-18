@@ -2,7 +2,6 @@ package ru.idfedorov09.telegram.bot.flow
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import ru.idfedorov09.telegram.bot.base.data.GlobalConstants.QUALIFIER_FLOW_SELECT_FLOW
 import ru.idfedorov09.telegram.bot.base.service.FlowBuilderService
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUALIFIER_FLOW_HEALTH_STATUS
 import ru.idfedorov09.telegram.bot.fetchers.health.HealthStatusMapper

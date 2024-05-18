@@ -2,7 +2,6 @@ package ru.idfedorov09.telegram.bot.flow
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import ru.idfedorov09.telegram.bot.base.data.GlobalConstants.QUALIFIER_FLOW_SELECT_FLOW
 import ru.idfedorov09.telegram.bot.base.service.FlowBuilderService
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUALIFIER_FLOW_TG_BOT
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
@@ -38,6 +37,7 @@ open class TelegramBotFlowConfiguration(
     private val bugReportFetcher: BugReportFetcher,
     private val bannedFetcher: BannedFetcher,
     private val userSettingFetcher: UserSettingFetcher,
+    private val createExpContainerFetcher: CreateExpContainerFetcher,
 ) {
     /**
      * Возвращает построенный граф; выполняется только при запуске приложения
@@ -52,6 +52,7 @@ open class TelegramBotFlowConfiguration(
 
     private fun FlowBuilder.buildFlow() {
         sequence {
+            fetch(createExpContainerFetcher)
             fetch(actualizeUserInfoFetcher)
             /** Если в бане, то граф тормозится **/
             sequence(condition = { it.isByUser() && !it.isUserBanned() }) {
