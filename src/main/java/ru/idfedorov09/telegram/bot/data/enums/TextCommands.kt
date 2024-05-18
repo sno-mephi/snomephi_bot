@@ -67,6 +67,16 @@ enum class TextCommands(
         description = "рассылка уведомлений - открывает конструктор рассылки уведомлений для дальнейшей настройки",
     ),
 
+    SURVEY_CONSTRUCTOR(
+        commandText = "Рассылка опроса",
+        allowedRoles =
+            listOf(
+                UserRole.MAILER,
+                UserRole.ROOT,
+            ),
+        description = "открывает конструктор рассылки опросов для дальнейшей настройки"
+    ),
+
     WEEKLY_EVENTS(
         commandText = "Мероприятия недели",
         description = "присылает информацию о всех мероприятиях, запланированных на текущую неделю",

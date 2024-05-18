@@ -24,6 +24,7 @@ class ActualizeUserInfoFetcher(
     private val questDialogRepository: QuestDialogRepository,
     private val broadcastRepository: BroadcastRepository,
     private val banRepository: BanRepository,
+    private val surveyQuestionRepository: SurveyQuestionRepository,
 ) : DefaultFetcher() {
     companion object {
         private val log = org.slf4j.LoggerFactory.getLogger(ActualizeUserInfoFetcher::class.java)
@@ -83,6 +84,11 @@ class ActualizeUserInfoFetcher(
                 banRepository.findLatestUnbuiltBanByModerator(it)
             }
 
+        val surveyQuestionData =
+            userDataFromDatabase.id?.let {
+                surveyQuestionRepository.findLatestUnbuiltSurveyQuestionByAuthor(it)
+            }
+
         val lastUserActionType =
             userDataFromDatabase.lastUserActionType
                 ?: if (userDataFromDatabase.isRegistered) {
@@ -107,6 +113,7 @@ class ActualizeUserInfoFetcher(
                 bcData = bcData,
                 isBaned = isBaned ?: false,
                 banData = banData,
+                surveyQuestionData = surveyQuestionData,
             )
         }
     }

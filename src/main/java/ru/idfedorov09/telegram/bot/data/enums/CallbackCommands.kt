@@ -81,10 +81,19 @@ enum class CallbackCommands(
     BROADCAST_START_WEEKLY("#bc_start_weekly"),
     BROADCAST_WB_PREVIEW_STATE("#bc_web_preview_state"),
 
+    /** Блок настройки юзера **/
+
     SETTING_USER_CHANGE_FULL_NAME("setting_user_full_name"),
     SETTING_USER_CHANGE_STUDY_GROUP("setting_user_study_group"),
     SETTING_USER_WITHOUT_STUDY_GROUP("setting_user_without_study_group"),
     SETTING_USER_BACK_TO_CONSOLE("setting_user_back_to_console"),
+
+    /** Блок конструктора опроса **/
+
+    SURVEY_NEW_QUESTION("survey_new_question"),
+    SURVEY_SHOW_QUESTIONS("survey_show_questions"),
+    SURVEY_ORDER_QUESTION("survey_order_question"),
+    SURVEY_CANCEL("survey_cancel"),
     ;
 
     fun format(vararg args: Any?): String {

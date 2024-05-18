@@ -90,4 +90,7 @@ enum class LastUserActionType {
 
     /** ввод измененной группы **/
     SETTING_USER_ENTER_STUDY_GROUP,
+
+    /** начал создание вопроса в рассылке**/
+    SURVEY_CREATE_QUESTION,
 }

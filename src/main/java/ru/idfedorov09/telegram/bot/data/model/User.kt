@@ -55,6 +55,8 @@ data class User(
     val questDialogId: Long? = null,
     @Column(name = "is_registered")
     val isRegistered: Boolean = false,
+    @Column(name = "is_baned")
+    val isBaned: Boolean = false,
     @Column(name = "last_constructor_id")
     val constructorId: Long? = null,
     @Column(name = "is_deleted")
