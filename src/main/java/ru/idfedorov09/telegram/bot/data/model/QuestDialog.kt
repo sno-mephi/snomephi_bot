@@ -30,3 +30,4 @@ data class QuestDialog(
     @Convert(converter = QuestionStatusConverter::class)
     val questionStatus: QuestionStatus = QuestionStatus.WAIT,
 )
+//asd
