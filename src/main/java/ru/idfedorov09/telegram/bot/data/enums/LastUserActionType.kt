@@ -93,4 +93,7 @@ enum class LastUserActionType {
 
     /** начал создание вопроса в рассылке**/
     SURVEY_CREATE_QUESTION,
+
+    /** выбрал тип опроса **/
+    SURVEY_CHOSEN_TYPE
 }

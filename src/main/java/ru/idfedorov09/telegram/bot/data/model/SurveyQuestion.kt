@@ -12,12 +12,15 @@ data class SurveyQuestion(
     /** id рассылки которая является опросом, так же ее уникальный идентификатор **/
     @Column(name = "broadcast_id")
     val broadcastId: Long? = null,
+    /** текст вопроса **/
     @Column(name = "answer_text", columnDefinition = "TEXT")
     val text: String? = null,
     @Column(name = "is_first_question")
     val isFirstQuestion: Boolean? = null,
     @Column(name = "is_last_question")
     val isLastQuestion: Boolean? = null,
+    @Column(name = "survey_depth")
+    val surveyDepth: Long? = null,
     @Column(name = "is_multiply_choice_question")
     val isMultiplyChoiceQuestion: Boolean? = null,
     @Column(name = "is_built")

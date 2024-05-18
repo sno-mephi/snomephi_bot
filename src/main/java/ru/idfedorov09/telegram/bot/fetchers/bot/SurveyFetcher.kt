@@ -12,6 +12,7 @@ import ru.idfedorov09.telegram.bot.data.model.*
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
 import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
+import ru.idfedorov09.telegram.bot.repo.SurveyAnswerOptionRepository
 import ru.idfedorov09.telegram.bot.repo.SurveyQuestionRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
@@ -23,6 +24,7 @@ class SurveyFetcher (
     private val broadcastRepository: BroadcastRepository,
     private val messageSenderService: MessageSenderService,
     private val surveyQuestionRepository: SurveyQuestionRepository,
+    private val surveyAnswerOptionRepository: SurveyAnswerOptionRepository
 ) : DefaultFetcher() {
     @InjectData
     fun doFetch(
@@ -66,7 +68,30 @@ class SurveyFetcher (
     private fun commonTextHandler(params: Params) {
         when (params.userActualizedInfo.lastUserActionType) {
             LastUserActionType.SURVEY_CREATE_QUESTION -> enterAnswerText(params)
+            LastUserActionType.SURVEY_CHOSEN_TYPE -> enterAnswerOptions(params)
             else -> return
+        }
+    }
+
+    private fun enterAnswerOptions(params: Params) {
+        params.apply {
+            update.message.text.split("\n").forEach{
+                SurveyAnswerOption(
+                    optionText = it,
+                    broadcastId = userActualizedInfo.bcData?.id,
+                    surveyQuestionId = userActualizedInfo.surveyQuestionData?.id
+                ).save()
+            }
+        }
+    }
+
+    private fun showSurveyQuestion(params: Params, surveyQuestion: SurveyQuestion){
+        params.userActualizedInfo.apply {
+            messageSenderService.sendMessage(
+                MessageParams(
+
+                )
+            )
         }
     }
 
@@ -101,8 +126,37 @@ class SurveyFetcher (
             when {
                 startsWith(CallbackCommands.SURVEY_CANCEL.data) -> surveyCancel(params)
                 startsWith(CallbackCommands.SURVEY_NEW_QUESTION.data) -> createQuestion(params)
-                startsWith(CallbackCommands.SURVEY_TEXT_QUESTION.data) ->
+                startsWith(CallbackCommands.SURVEY_TEXT_QUESTION.data) -> completeQuestion(params, false)
+                startsWith(CallbackCommands.SURVEY_MULTIPLY_CHOICE_QUESTION.data) -> createAnswerOptions(params)
             }
+        }
+    }
+
+    private fun createAnswerOptions(params: Params) {
+        params.userActualizedInfo.apply {
+            val messageText = "Запишите одним сообщение варианты ответов, разделяя их новой строкой"
+
+            messageSenderService.editMessage(
+                MessageParams(
+                    messageId = bcData?.lastConsoleMessageId,
+                    text = messageText,
+                    chatId = tui,
+                )
+            )
+
+            lastUserActionType = LastUserActionType.SURVEY_CHOSEN_TYPE
+        }
+    }
+
+    private fun completeQuestion(params: Params, isMultiplyChoiceQuestion: Boolean) {
+        params.userActualizedInfo.apply {
+            surveyQuestionData =
+                surveyQuestionRepository.save(
+                    SurveyQuestion(
+                        isMultiplyChoiceQuestion = isMultiplyChoiceQuestion,
+                    )
+                )
+            lastUserActionType = LastUserActionType.DEFAULT
         }
     }
 
@@ -185,6 +239,8 @@ class SurveyFetcher (
     }
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
+
+    private fun SurveyAnswerOption.save() = surveyAnswerOptionRepository.save(this)
 
     private fun CallbackData.save() = callbackDataRepository.save(this)
 

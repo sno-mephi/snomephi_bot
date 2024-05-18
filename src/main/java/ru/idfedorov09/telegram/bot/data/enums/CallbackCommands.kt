@@ -94,6 +94,8 @@ enum class CallbackCommands(
     SURVEY_SHOW_QUESTIONS("survey_show_questions"),
     SURVEY_ORDER_QUESTION("survey_order_question"),
     SURVEY_CANCEL("survey_cancel"),
+    SURVEY_MULTIPLY_CHOICE_QUESTION("survey_multiply_choice_question"),
+    SURVEY_TEXT_QUESTION("survey_text_question")
     ;
 
     fun format(vararg args: Any?): String {
