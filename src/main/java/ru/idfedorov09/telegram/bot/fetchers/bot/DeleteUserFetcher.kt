@@ -5,6 +5,7 @@ import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.base.executor.Executor
+import ru.idfedorov09.telegram.bot.base.util.UpdatesUtil
 import ru.idfedorov09.telegram.bot.data.GlobalConstants
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
@@ -17,7 +18,6 @@ import ru.mephi.sno.libs.flow.belly.InjectData
 import kotlin.jvm.optionals.getOrNull
 import ru.idfedorov09.telegram.bot.repo.QuestSegmentRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
-import ru.idfedorov09.telegram.bot.util.UpdatesUtil
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
