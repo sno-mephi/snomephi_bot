@@ -121,18 +121,6 @@ class DeleteUserFetcher(
             ),
         )
 
-       val messagesToDelete = questDialogRepository.findAllMessageOfDeletedUser(params.userActualizedInfo.id)
-        messagesToDelete.forEach { message ->
-
-            messageSenderService.editMessage(
-                MessageParams(
-                    messageId = message?.toIntOrNull(),
-                    chatId = GlobalConstants.QUEST_RESPONDENT_CHAT_ID,
-                    text ="Пользователь удалён, ответ невозможен.",
-                ),
-            )
-        }
-
 
         if (params.userActualizedInfo.activeQuestDialog != null){
             val quest = params.userActualizedInfo.activeQuestDialog
