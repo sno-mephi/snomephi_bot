@@ -10,7 +10,6 @@ import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.flow.ExpContainer
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
-import ru.idfedorov09.telegram.bot.util.OnReceiver
 import ru.mephi.sno.libs.flow.belly.FlowContext
 import ru.mephi.sno.libs.flow.fetcher.GeneralFetcher
 import kotlin.reflect.KFunction
@@ -27,7 +26,7 @@ open class DefaultFetcher : GeneralFetcher() {
     private lateinit var messageSenderService: MessageSenderService
 
     companion object {
-        private val log = LoggerFactory.getLogger(OnReceiver::class.java)
+        private val log = LoggerFactory.getLogger(DefaultFetcher::class.java)
     }
 
     override fun fetchCall(
