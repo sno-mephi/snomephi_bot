@@ -13,4 +13,5 @@ data class CloseDialogMessages(
     ),
     // Сообщения в консоли по завершению действия; null - дефолтное
     val consoleResultText: String? = null,
+    val showRecreateButton: Boolean = true,
 )

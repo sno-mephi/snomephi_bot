@@ -132,11 +132,12 @@ class DeleteUserFetcher(
             val messageTime =
                 updatesUtil.getDate(params.update)
                     ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
+            val isByQuestionAuthor = params.userActualizedInfo.tui == author.tui
 
             params.userActualizedInfo = dialogService.closeDialog(
                 questDialog = quest,
                 finishTime = messageTime,
-                isByQuestionAuthor = params.userActualizedInfo.tui == author.tui,
+                isByQuestionAuthor = isByQuestionAuthor,
                 author = author,
                 responder = responder,
                 currentUserActualizedInfo = params.userActualizedInfo,
@@ -150,7 +151,8 @@ class DeleteUserFetcher(
                         toResponder = "<b>Диалог экстренно завершен.</b>"
                     ),
                     consoleResultText = "\uD83E\uDDA7 ${MessageSenderUtil.userName(responder.lastTgNick, responder.fullName)} вел диалог, " +
-                            "но он завершился из-за удаления одного из пользователей."
+                            "но он завершился из-за удаления ${if (isByQuestionAuthor) "автора вопроса" else "репондера"}.",
+                    showRecreateButton = !isByQuestionAuthor,
                 )
             )
         }
