@@ -122,6 +122,12 @@ enum class TextCommands(
         description = "Настройки пользователя",
         isFullCommand = false,
     ),
+
+    FEEDBACK_CONSTRUCTOR(
+        commandText = "Настройка обратной связи",
+        description = "Настройка обратной связи",
+        isFullCommand = false,
+    )
     ;
 
     /** Проверяет, является ли текст командой **/

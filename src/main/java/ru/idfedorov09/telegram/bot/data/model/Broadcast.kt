@@ -60,4 +60,8 @@ data class Broadcast(
     /** Нужно ли web preview **/
     @Column(name = "should_show_web_preview")
     val shouldShowWebPreview: Boolean = false,
+
+    /** метка обратной связи **/
+    @Column(name = "is_feedback")
+    val isFeedback: Boolean = false,
 )

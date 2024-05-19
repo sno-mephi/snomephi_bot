@@ -36,6 +36,11 @@ object KeyboardUtil {
                     it.add(TextCommands.BROADCAST_CONSTRUCTOR())
                 },
             )
+            keyboards.add(
+                KeyboardRow().also {
+                    it.add(TextCommands.FEEDBACK_CONSTRUCTOR())
+                },
+            )
         }
         if (UserRole.ROOT in roles || UserRole.CATEGORY_BUILDER in roles) {
             keyboards.add(
