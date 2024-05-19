@@ -45,6 +45,7 @@ class DialogService(
         responder: User,
         currentUserActualizedInfo: UserActualizedInfo,
         closeDialogMessages: CloseDialogMessages,
+        showRecreateButton: Boolean = true,
     ): UserActualizedInfo {
         val questSegment = questDialog.lastQuestSegmentId?.let { questSegmentRepository.findById(it).get() } ?: run {
             log.error("Can't find questSegment for questDialog=$questDialog")
@@ -126,7 +127,7 @@ class DialogService(
                 messageId = questDialog.consoleMessageId!!.toInt(),
                 text = closeDialogMessages.consoleResultText
                     ?: "✅ ${MessageSenderUtil.userName(responder.lastTgNick, responder.fullName)} пообщался(-ась)",
-                replyMarkup = createKeyboard(recreateDialog),
+                replyMarkup = if (showRecreateButton) createKeyboard(recreateDialog) else createKeyboard()
             ),
         )
 

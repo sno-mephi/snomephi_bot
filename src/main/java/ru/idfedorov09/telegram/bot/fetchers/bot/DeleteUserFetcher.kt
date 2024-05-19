@@ -152,8 +152,8 @@ class DeleteUserFetcher(
                     ),
                     consoleResultText = "\uD83E\uDDA7 ${MessageSenderUtil.userName(responder.lastTgNick, responder.fullName)} вел диалог, " +
                             "но он завершился из-за удаления ${if (isByQuestionAuthor) "автора вопроса" else "репондера"}.",
-                    showRecreateButton = !isByQuestionAuthor,
-                )
+                ),
+                showRecreateButton = !isByQuestionAuthor
             )
         }
 
