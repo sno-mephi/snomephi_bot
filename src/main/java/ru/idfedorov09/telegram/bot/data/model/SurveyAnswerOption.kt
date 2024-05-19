@@ -3,7 +3,7 @@ package ru.idfedorov09.telegram.bot.data.model
 import jakarta.persistence.*
 
 @Entity
-@Table(name = "survey_answers_table")
+@Table(name = "survey_answers_option_table")
 data class SurveyAnswerOption(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

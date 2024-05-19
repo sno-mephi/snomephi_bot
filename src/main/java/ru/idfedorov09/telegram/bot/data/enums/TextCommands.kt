@@ -126,6 +126,15 @@ enum class TextCommands(
         commandText = "/setting",
         description = "Настройки пользователя",
     ),
+
+    SURVEY_QUESTION(
+        commandText = "/show_question",
+        isFullCommand = false,
+        allowedRoles = listOf(
+            UserRole.MAILER,
+            UserRole.ROOT,
+        ),
+    )
     ;
 
     /** Проверяет, является ли текст командой **/

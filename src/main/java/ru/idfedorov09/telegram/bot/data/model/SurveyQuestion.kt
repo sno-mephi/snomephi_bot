@@ -13,7 +13,7 @@ data class SurveyQuestion(
     @Column(name = "broadcast_id")
     val broadcastId: Long? = null,
     /** текст вопроса **/
-    @Column(name = "answer_text", columnDefinition = "TEXT")
+    @Column(name = "question_text", columnDefinition = "TEXT")
     val text: String? = null,
     @Column(name = "is_first_question")
     val isFirstQuestion: Boolean? = null,

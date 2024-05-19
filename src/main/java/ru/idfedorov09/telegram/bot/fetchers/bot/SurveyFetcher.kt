@@ -5,9 +5,11 @@ import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
+import ru.idfedorov09.telegram.bot.annotation.FetcherPerms
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
+import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.data.model.*
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
@@ -27,6 +29,7 @@ class SurveyFetcher (
     private val surveyAnswerOptionRepository: SurveyAnswerOptionRepository
 ) : DefaultFetcher() {
     @InjectData
+    @FetcherPerms(UserRole.MAILER)
     fun doFetch(
         update: Update,
         userActualizedInfo: UserActualizedInfo,
@@ -45,8 +48,39 @@ class SurveyFetcher (
         text.apply {
             when {
                 startsWith(TextCommands.BROADCAST_CONSTRUCTOR()) -> createConsole(params)
+                startsWith(TextCommands.SURVEY_QUESTION()) -> changeSurveyQuestion(params, text)
                 else -> commonTextHandler(params)
             }
+        }
+    }
+
+    private fun changeSurveyQuestion(params: Params, textCommand: String) {
+        params.userActualizedInfo.apply {
+            val surveyQuestion = surveyQuestionRepository.findById(textCommand.split("_").last().toLong()).getOrNull()
+            surveyQuestion?: return
+            surveyQuestionData = surveyQuestion
+
+            val messageText = "Вы можете изменить этот вопрос"
+
+            val changeText = CallbackData(callbackData = CallbackCommands.SURVEY_CHANGE_TEXT.data , metaText = "Изменить текст вопроса").save()
+            val changeType = CallbackData(callbackData = CallbackCommands.SURVEY_CHANGE_TYPE.data , metaText = "Изменить тип вопроса").save()
+            val changeAnswerOption = CallbackData(callbackData = CallbackCommands.SURVEY_CHANGE_ANSWER_OPTION.data, metaText = "Изменить варианты ответа").save()
+            val deleteQuestion = CallbackData(callbackData = CallbackCommands.SURVEY_DELETE_QUESTION.data, metaText = "Удалить вопрос").save()
+            val backToConsole = CallbackData(callbackData = CallbackCommands.SURVEY_BACK_TO_CONSOLE.data, metaText = "Назад").save()
+
+            val callbackDataList = mutableListOf(changeText, changeType)
+            if (surveyQuestion.isMultiplyChoiceQuestion == true) callbackDataList.add(changeAnswerOption)
+            callbackDataList.add(deleteQuestion)
+            callbackDataList.add(backToConsole)
+
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = tui,
+                    text = messageText,
+                    replyMarkup = createKeyboard(*callbackDataList.toTypedArray())
+                )
+            )
+            showSurveyQuestion(params, surveyQuestion)
         }
     }
 
@@ -67,9 +101,19 @@ class SurveyFetcher (
 
     private fun commonTextHandler(params: Params) {
         when (params.userActualizedInfo.lastUserActionType) {
-            LastUserActionType.SURVEY_CREATE_QUESTION -> enterAnswerText(params)
-            LastUserActionType.SURVEY_CHOSEN_TYPE -> enterAnswerOptions(params)
+            LastUserActionType.SURVEY_CREATE_QUESTION -> enterQuestionText(params)
+            LastUserActionType.SURVEY_QUESTION_CHOSEN_TYPE -> enterAnswerOptions(params)
+            LastUserActionType.SURVEY_QUESTION_CHANGE_TEXT -> enterChangeQuestionText(params)
             else -> return
+        }
+    }
+
+    private fun enterChangeQuestionText(params: Params) {
+        params.apply {
+            userActualizedInfo.surveyQuestionData =
+                userActualizedInfo.surveyQuestionData?.copy(
+                    text = update.message.text
+                )
         }
     }
 
@@ -82,20 +126,66 @@ class SurveyFetcher (
                     surveyQuestionId = userActualizedInfo.surveyQuestionData?.id
                 ).save()
             }
+            val messageText = "Выберите дальнейшее действие"
+
+            val backToConsole = CallbackData(callbackData = CallbackCommands.SURVEY_BACK_TO_CONSOLE.data, metaText = "вернуться").save()
+
+            messageSenderService.editMessage(
+                MessageParams(
+                    messageId = userActualizedInfo.bcData?.lastConsoleMessageId,
+                    text = messageText,
+                    chatId = userActualizedInfo.tui,
+                    replyMarkup = createKeyboard(backToConsole)
+                )
+            )
+            completeQuestion(params, true)
+            userActualizedInfo.surveyQuestionData?.let { showSurveyQuestion(params, it) }
+            userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
+            deleteUpdateMessage()
         }
     }
 
     private fun showSurveyQuestion(params: Params, surveyQuestion: SurveyQuestion){
-        params.userActualizedInfo.apply {
-            messageSenderService.sendMessage(
-                MessageParams(
+        val callbackDataList = surveyQuestion.id?.let {
+            surveyAnswerOptionRepository.findAllSurveyAnswerOptionByQuestion(surveyQuestionId = it)
+        }?.map{ callbackDataRepository.findBySurveyAnswerOptionId(it) } ?: run {
+            // TODO: log
+            return
+        }
 
+        deleteMessageWithSurveyQuestion(params)
+
+        val keyboard = createKeyboard(*callbackDataList.toTypedArray())
+
+        params.userActualizedInfo.apply {
+            val sent = messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = tui,
+                    text = surveyQuestion.text,
+                    replyMarkup = keyboard,
                 )
             )
+            data?.surveyQuestionMessageId = sent.messageId
         }
     }
 
-    private fun enterAnswerText(params: Params) {
+    /** Удаляет сообщение с примером вопроса, если оно есть **/
+
+    private fun deleteMessageWithSurveyQuestion(params: Params){
+        params.userActualizedInfo.apply {
+            if (data?.surveyQuestionMessageId != null) {
+                messageSenderService.deleteMessage(
+                    MessageParams(
+                        chatId = tui,
+                        messageId = data!!.surveyQuestionMessageId
+                    )
+                )
+                data!!.surveyQuestionMessageId = null
+            }
+        }
+    }
+
+    private fun enterQuestionText(params: Params) {
         params.apply {
             val messageText = "Выберите тип опроса"
 
@@ -114,6 +204,7 @@ class SurveyFetcher (
                 userActualizedInfo.surveyQuestionData?.copy(
                     text = update.message.text
                 )
+            deleteUpdateMessage()
         }
     }
 
@@ -128,7 +219,65 @@ class SurveyFetcher (
                 startsWith(CallbackCommands.SURVEY_NEW_QUESTION.data) -> createQuestion(params)
                 startsWith(CallbackCommands.SURVEY_TEXT_QUESTION.data) -> completeQuestion(params, false)
                 startsWith(CallbackCommands.SURVEY_MULTIPLY_CHOICE_QUESTION.data) -> createAnswerOptions(params)
+                startsWith(CallbackCommands.SURVEY_SHOW_QUESTIONS.data) -> showQuestions(params)
+                startsWith(CallbackCommands.SURVEY_BACK_TO_CONSOLE.data) -> showConsole(params)
+                startsWith(CallbackCommands.SURVEY_CHANGE_TEXT.data) -> surveyChangeText(params)
+                startsWith(CallbackCommands.SURVEY_CHANGE_TYPE.data) -> surveyChangeType(params)
+                startsWith(CallbackCommands.SURVEY_CHANGE_ANSWER_OPTION.data) -> surveyChangeAnswer(params)
+                startsWith(CallbackCommands.SURVEY_DELETE_QUESTION.data) -> surveyQuestionDelete(params)
             }
+        }
+    }
+
+    private fun surveyChangeText(params: Params) {
+        params.userActualizedInfo.apply {
+            deleteMessageWithSurveyQuestion(params)
+            val messageText = "Введите, пожалуйста новый текст вопроса"
+            messageSenderService.editMessage(
+                MessageParams(
+                    chatId = tui,
+                    messageId = bcData?.lastConsoleMessageId,
+                    text = messageText,
+                )
+            )
+            lastUserActionType = LastUserActionType.SURVEY_QUESTION_CHANGE_TEXT
+        }
+    }
+
+    private fun surveyChangeType(params: Params) {
+        TODO("Not yet implemented")
+    }
+
+    private fun surveyChangeAnswer(params: Params) {
+        TODO("Not yet implemented")
+    }
+
+    private fun surveyQuestionDelete(params: Params){
+        params.userActualizedInfo.apply {
+            surveyQuestionData =
+                surveyQuestionData?.copy(
+                    isDeleted = true,
+                )
+            deleteMessageWithSurveyQuestion(params)
+        }
+    }
+
+    private fun showQuestions(params: Params) {
+        params.userActualizedInfo.apply {
+            val allQuestion = bcData?.id?.let { surveyQuestionRepository.findAllSurveyQuestionByBroadcast(it) }?.map {
+                it.text + " /show_question_" + it.id.toString()
+            }?.joinToString(separator = "\n\n") { it }
+            val mailText = "<b>Список вопросов в опросе:</b>\n\n$allQuestion"
+            val backToConsole = CallbackData(callbackData = CallbackCommands.SURVEY_BACK_TO_CONSOLE.data, metaText = "вернуться").save()
+            messageSenderService.editMessage(
+                MessageParams(
+                    messageId = bcData?.lastConsoleMessageId,
+                    chatId = tui,
+                    text = mailText,
+                    parseMode = ParseMode.HTML,
+                    replyMarkup = createKeyboard(backToConsole),
+                ),
+            )
         }
     }
 
@@ -144,7 +293,7 @@ class SurveyFetcher (
                 )
             )
 
-            lastUserActionType = LastUserActionType.SURVEY_CHOSEN_TYPE
+            lastUserActionType = LastUserActionType.SURVEY_QUESTION_CHOSEN_TYPE
         }
     }
 
@@ -154,6 +303,7 @@ class SurveyFetcher (
                 surveyQuestionRepository.save(
                     SurveyQuestion(
                         isMultiplyChoiceQuestion = isMultiplyChoiceQuestion,
+                        isBuilt = true,
                     )
                 )
             lastUserActionType = LastUserActionType.DEFAULT
@@ -204,6 +354,8 @@ class SurveyFetcher (
         params.userActualizedInfo.apply {
             bcData?: return
             messageSenderService.editMessage(consoleMessageParams(params, bcData!!.lastConsoleMessageId))
+
+            deleteMessageWithSurveyQuestion(params)
         }
     }
 

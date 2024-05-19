@@ -8,7 +8,7 @@ interface SurveyQuestionRepository : JpaRepository<SurveyQuestion, Long> {
     @Query(
         """
             SELECT *
-            FROM survey_table
+            FROM survey_questions_table
             WHERE 1=1
                 AND author_id = :authorId 
                 AND is_built = false 
@@ -19,4 +19,17 @@ interface SurveyQuestionRepository : JpaRepository<SurveyQuestion, Long> {
         nativeQuery = true
     )
     fun findLatestUnbuiltSurveyQuestionByAuthor(authorId: Long): SurveyQuestion?
+
+    @Query(
+        """
+            SELECT *
+            FROM survey_questions_table
+            WHERE 1=1
+                AND broadcast_id = :broadcastId
+                AND is_built = false 
+                AND is_deleted = false
+        """,
+        nativeQuery = true
+    )
+    fun findAllSurveyQuestionByBroadcast(broadcastId: Long): List<SurveyQuestion>
 }
