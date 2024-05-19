@@ -21,4 +21,6 @@ data class SurveyAnswerOption(
     /** Завершает ли опрос этот вариант ответа **/
     @Column(name = "is_finish_answer_option")
     val isFinishAnswerOption: Boolean = false,
+    @Column(name = "is_deleted")
+    val isDeleted: Boolean = false,
 )

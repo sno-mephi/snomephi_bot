@@ -60,6 +60,12 @@ class SurveyFetcher (
             surveyQuestion?: return
             surveyQuestionData = surveyQuestion
 
+            showSurveyQuestionConsole(params, surveyQuestion)
+        }
+    }
+
+    private fun showSurveyQuestionConsole(params: Params, surveyQuestion: SurveyQuestion) {
+        params.userActualizedInfo.apply {
             val messageText = "Вы можете изменить этот вопрос"
 
             val changeText = CallbackData(callbackData = CallbackCommands.SURVEY_CHANGE_TEXT.data , metaText = "Изменить текст вопроса").save()
@@ -73,11 +79,12 @@ class SurveyFetcher (
             callbackDataList.add(deleteQuestion)
             callbackDataList.add(backToConsole)
 
-            messageSenderService.sendMessage(
+            messageSenderService.editMessage(
                 MessageParams(
                     chatId = tui,
                     text = messageText,
-                    replyMarkup = createKeyboard(*callbackDataList.toTypedArray())
+                    replyMarkup = createKeyboard(*callbackDataList.toTypedArray()),
+                    messageId = bcData?.lastConsoleMessageId,
                 )
             )
             showSurveyQuestion(params, surveyQuestion)
@@ -104,16 +111,41 @@ class SurveyFetcher (
             LastUserActionType.SURVEY_CREATE_QUESTION -> enterQuestionText(params)
             LastUserActionType.SURVEY_QUESTION_CHOSEN_TYPE -> enterAnswerOptions(params)
             LastUserActionType.SURVEY_QUESTION_CHANGE_TEXT -> enterChangeQuestionText(params)
+            LastUserActionType.SURVEY_QUESTION_CHANGE_ANSWER_OPTIONS -> enterChangeAnswerOption(params)
             else -> return
+        }
+    }
+
+    private fun enterChangeAnswerOption(params: Params) {
+        params.apply {
+            userActualizedInfo.surveyQuestionData?: return
+            showSurveyQuestionConsole(params, userActualizedInfo.surveyQuestionData!!)
+            deleteUpdateMessage()
+
+            userActualizedInfo.surveyQuestionData =
+                userActualizedInfo.surveyQuestionData?.copy(
+                    text = update.message.text
+                )
+            userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
+
         }
     }
 
     private fun enterChangeQuestionText(params: Params) {
         params.apply {
-            userActualizedInfo.surveyQuestionData =
-                userActualizedInfo.surveyQuestionData?.copy(
-                    text = update.message.text
-                )
+            userActualizedInfo.surveyQuestionData?: return
+            showSurveyQuestionConsole(params, userActualizedInfo.surveyQuestionData!!)
+            deleteUpdateMessage()
+
+            update.message.text.split("\n").forEach{
+                SurveyAnswerOption(
+                    optionText = it,
+                    broadcastId = userActualizedInfo.bcData?.id,
+                    surveyQuestionId = userActualizedInfo.surveyQuestionData?.id
+                ).save()
+            }
+
+            userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
         }
     }
 
@@ -126,18 +158,8 @@ class SurveyFetcher (
                     surveyQuestionId = userActualizedInfo.surveyQuestionData?.id
                 ).save()
             }
-            val messageText = "Выберите дальнейшее действие"
+            showConsole(params)
 
-            val backToConsole = CallbackData(callbackData = CallbackCommands.SURVEY_BACK_TO_CONSOLE.data, metaText = "вернуться").save()
-
-            messageSenderService.editMessage(
-                MessageParams(
-                    messageId = userActualizedInfo.bcData?.lastConsoleMessageId,
-                    text = messageText,
-                    chatId = userActualizedInfo.tui,
-                    replyMarkup = createKeyboard(backToConsole)
-                )
-            )
             completeQuestion(params, true)
             userActualizedInfo.surveyQuestionData?.let { showSurveyQuestion(params, it) }
             userActualizedInfo.lastUserActionType = LastUserActionType.DEFAULT
@@ -245,7 +267,30 @@ class SurveyFetcher (
     }
 
     private fun surveyChangeType(params: Params) {
-        TODO("Not yet implemented")
+        params.userActualizedInfo.apply {
+            val flg = surveyQuestionData?.isMultiplyChoiceQuestion?: return
+            val messageText = "Тип вопроса успешно изменен\n\n" + if (flg) {
+                "Варианты ответов теперь не отображаются, но будут возвращены, если вы снова измените тип вопроса"
+            } else {
+                "Запишите одним сообщение варианты ответов, разделяя их новой строкой"
+            }
+            val keyboard = mutableListOf<CallbackData>()
+            if (flg) keyboard.add(CallbackData(callbackData = CallbackCommands.SURVEY_BACK_TO_CONSOLE.data, metaText = "назад").save())
+
+            messageSenderService.editMessage(
+                MessageParams(
+                    chatId = tui,
+                    text = messageText,
+                    replyMarkup = createKeyboard(*keyboard.toTypedArray()),
+                    messageId = bcData?.lastConsoleMessageId,
+                )
+            )
+
+            surveyQuestionData =
+                surveyQuestionData!!.copy(
+                    isMultiplyChoiceQuestion = !flg
+                )
+        }
     }
 
     private fun surveyChangeAnswer(params: Params) {
