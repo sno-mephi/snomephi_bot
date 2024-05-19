@@ -3,8 +3,8 @@ package ru.idfedorov09.telegram.bot.service
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.Message
+import ru.idfedorov09.telegram.bot.base.executor.Executor
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
-import ru.idfedorov09.telegram.bot.executor.Executor
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.util.KeyboardUtil
 import ru.idfedorov09.telegram.bot.util.MessageSenderUtil

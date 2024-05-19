@@ -1,0 +1,3 @@
+[submodule "BaseTelegramBot"]
+	path = BaseTelegramBot
+	url = https://github.com/idfedorov09/BaseTelegramBot
