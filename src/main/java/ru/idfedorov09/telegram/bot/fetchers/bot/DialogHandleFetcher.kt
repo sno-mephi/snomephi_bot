@@ -12,6 +12,7 @@ import ru.idfedorov09.telegram.bot.data.enums.*
 import ru.idfedorov09.telegram.bot.data.model.*
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.*
+import ru.idfedorov09.telegram.bot.service.DialogService
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.service.SwitchKeyboardService
 import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
@@ -31,7 +32,7 @@ class DialogHandleFetcher(
     private val questSegmentRepository: QuestSegmentRepository,
     private val questMessageRepository: QuestMessageRepository,
     private val userRepository: UserRepository,
-    private val switchKeyboardService: SwitchKeyboardService,
+    private val dialogService: DialogService,
     private val callbackDataRepository: CallbackDataRepository,
 ) : DefaultFetcher() {
     @InjectData
@@ -367,90 +368,15 @@ class DialogHandleFetcher(
         }
     }
 
-    private fun closeDialog(params: Params): UserActualizedInfo {
-        questDialogRepository.save(
-            params.questDialog.copy(
-                questionStatus = QuestionStatus.CLOSED,
-                finishTime = params.messageTime,
-            ),
-        )
-
-        questSegmentRepository.save(
-            params.questSegment.copy(
-                finishTime = params.messageTime,
-            ),
-        )
-
-        userRepository.save(
-            params.responder.copy(
-                lastUserActionType = LastUserActionType.ACT_QUEST_DIALOG_CLOSE,
-            ),
-        )
-
-        switchKeyboardService.switchKeyboard(params.author.id!!, UserKeyboardType.DEFAULT_MAIN_BOT)
-        switchKeyboardService.switchKeyboard(params.responder.id!!, UserKeyboardType.DEFAULT_MAIN_BOT)
-
-        if (params.isByQuestionAuthor) {
-            messageSenderService.sendMessage(
-                MessageParams(
-                    chatId = params.responder.tui!!,
-                    text = "_\uD83D\uDD18 Пользователь завершил диалог\\._",
-                    parseMode = ParseMode.MARKDOWNV2,
-                ),
-            )
-
-            messageSenderService.sendMessage(
-                MessageParams(
-                    chatId = params.author.tui!!,
-                    text = "*Диалог завершен\\.*",
-                    parseMode = ParseMode.MARKDOWNV2,
-                ),
-            )
-
-            userRepository.save(
-                params.responder.copy(
-                    lastUserActionType = null,
-                    questDialogId = null,
-                ),
-            )
-        } else {
-            messageSenderService.sendMessage(
-                MessageParams(
-                    chatId = params.author.tui!!,
-                    text = "_\uD83D\uDD18 Оператор завершил диалог\\._",
-                    parseMode = ParseMode.MARKDOWNV2,
-                ),
-            )
-
-            messageSenderService.sendMessage(
-                MessageParams(
-                    chatId = params.responder.tui!!,
-                    text = "\uD83D\uDDA4 Спасибо за обратную связь\\! *Диалог завершен\\.*",
-                    parseMode = ParseMode.MARKDOWNV2,
-                ),
-            )
-        }
-
-        val recreateDialog =
-            CallbackData(
-                callbackData = CallbackCommands.QUEST_RECREATE.format(params.questDialog.id),
-                metaText = "Переоткрыть диалог",
-            ).save()
-
-        messageSenderService.editMessage(
-            MessageParams(
-                chatId = GlobalConstants.QUEST_RESPONDENT_CHAT_ID,
-                messageId = params.questDialog.consoleMessageId!!.toInt(),
-                text =
-                "✅ ${MessageSenderUtil.userName(params.responder.lastTgNick, params.responder.fullName)} " +
-                        "пообщался(-ась)",
-                replyMarkup = createKeyboard(recreateDialog),
-            ),
-        )
-
-        return params.userActualizedInfo.copy(
-            lastUserActionType = null,
-            activeQuestDialog = null,
+    private fun closeDialog(params: Params) = params.let {
+        dialogService.closeDialog(
+            questDialog = it.questDialog,
+            finishTime = it.messageTime,
+            isByQuestionAuthor = it.isByQuestionAuthor,
+            author = it.author,
+            responder = it.responder,
+            currentUserActualizedInfo = it.userActualizedInfo,
+            closeDialogMessages = CloseDialogMessages(),
         )
     }
 

@@ -3,6 +3,7 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.base.util.UpdatesUtil
+import ru.idfedorov09.telegram.bot.data.GlobalConstants.ROOT_LIST
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
@@ -55,7 +56,7 @@ class ActualizeUserInfoFetcher(
                     isRegistered = false,
                     currentKeyboardType = UserKeyboardType.WITHOUT_KEYBOARD, // изачально без выбранной клавиатуры
                 ).apply {
-                    if (tui == "920061911" || tui == "731119845" || tui == "473458128") {
+                    if (tui in ROOT_LIST) {
                         roles.add(UserRole.ROOT)
                     }
                 }.let { userRepository.save(it) }
