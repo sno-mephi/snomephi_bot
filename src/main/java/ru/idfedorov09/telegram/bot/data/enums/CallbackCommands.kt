@@ -85,6 +85,8 @@ enum class CallbackCommands(
     SETTING_USER_CHANGE_STUDY_GROUP("setting_user_study_group"),
     SETTING_USER_WITHOUT_STUDY_GROUP("setting_user_without_study_group"),
     SETTING_USER_BACK_TO_CONSOLE("setting_user_back_to_console"),
+
+    BROADCAST_TYPE_FEEDBACK("#bc_tp_fb"),
     ;
 
     fun format(vararg args: Any?): String {

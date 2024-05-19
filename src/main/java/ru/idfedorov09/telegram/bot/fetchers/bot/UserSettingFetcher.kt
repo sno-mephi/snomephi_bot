@@ -57,9 +57,9 @@ class UserSettingFetcher(
     private fun showUserInfo(params: Params): UserActualizedInfo {
         params.apply {
             val text =
-                "Информация о вашем аккаунте:\n" +
+                "Информация о вашем аккаунте:\n\n" +
                     "Ваше ФИО: <code>${userActualizedInfo.fullName ?: "\uFE0F ИНФОРМАЦИЯ НЕ НАЙДЕНА"}</code>\n" +
-                    "Ваше СНО/СМУС: <code>${userActualizedInfo.snoName ?: "\uFE0F ИНФОРМАЦИЯ НЕ НАЙДЕНА"}</code>\n" +
+                    "Ваше СНО/СМУС: <code>${userActualizedInfo.snoName ?: "\uFE0F ИНФОРМАЦИЯ НЕ НАЙДЕНА"}</code>\n\n" +
                     "Если эта информация неверна или неактуальна, то вы можете ее изменить."
             val changeFullName =
                 CallbackData(
