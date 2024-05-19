@@ -116,6 +116,12 @@ enum class TextCommands(
         commandText = "/setting",
         description = "Настройки пользователя",
     ),
+
+    USER_SETTING_REPLY(
+        commandText = "Проверка данных",
+        description = "Настройки пользователя",
+        isFullCommand = false,
+    ),
     ;
 
     /** Проверяет, является ли текст командой **/

@@ -1,6 +1,7 @@
 package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
+import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
@@ -39,7 +40,7 @@ class UserSettingFetcher(
         val text = params.update.message.text
         text.apply {
             return when {
-                startsWith(TextCommands.USER_SETTING()) -> showUserInfo(params)
+                startsWith(TextCommands.USER_SETTING_REPLY()) -> showUserInfo(params)
                 else -> commonTextHandler(params)
             }
         }
@@ -57,9 +58,9 @@ class UserSettingFetcher(
         params.apply {
             val text =
                 "Информация о вашем аккаунте:\n" +
-                    "Ваше ФИО: ${userActualizedInfo.fullName ?: "\uFE0F ИНФОРМАЦИЯ НЕ НАЙДЕНА"}\n" +
-                    "Ваше СНО/СМУС ${userActualizedInfo.snoName ?: "\uFE0F ИНФОРМАЦИЯ НЕ НАЙДЕНА"}\n" +
-                    "Если эта информация неверна или не актуальна, то вы можете ее изменить."
+                    "Ваше ФИО: <code>${userActualizedInfo.fullName ?: "\uFE0F ИНФОРМАЦИЯ НЕ НАЙДЕНА"}</code>\n" +
+                    "Ваше СНО/СМУС: <code>${userActualizedInfo.snoName ?: "\uFE0F ИНФОРМАЦИЯ НЕ НАЙДЕНА"}</code>\n" +
+                    "Если эта информация неверна или неактуальна, то вы можете ее изменить."
             val changeFullName =
                 CallbackData(
                     callbackData = CallbackCommands.SETTING_USER_CHANGE_FULL_NAME.data,
@@ -76,6 +77,7 @@ class UserSettingFetcher(
                         chatId = userActualizedInfo.tui,
                         text = text,
                         replyMarkup = createKeyboard(changeFullName, changeStudyGroup),
+                        parseMode = ParseMode.HTML
                     ),
                 )
             if (userActualizedInfo.data?.userSettingMessageId != null) {
