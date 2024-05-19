@@ -98,7 +98,7 @@ class ActualizeUserInfoFetcher(
                 tui = tui,
                 lastTgNick = tgUser.userName,
                 fullName = fullName,
-                studyGroup = studyGroup,
+                snoName = snoName,
                 categories = categories,
                 roles = roles,
                 lastUserActionType = lastUserActionType,

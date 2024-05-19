@@ -14,7 +14,7 @@ data class UserActualizedInfo(
     val tui: String,
     val lastTgNick: String? = null,
     val fullName: String? = null,
-    val studyGroup: String? = null,
+    val snoName: String? = null,
     val categories: MutableSet<Category> = mutableSetOf(),
     val roles: MutableSet<UserRole> = mutableSetOf(),
     var lastUserActionType: LastUserActionType? = null,

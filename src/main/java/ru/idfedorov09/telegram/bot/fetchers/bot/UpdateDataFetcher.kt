@@ -60,7 +60,7 @@ class UpdateDataFetcher(
                     tui = tui,
                     lastTgNick = lastTgNick,
                     fullName = fullName,
-                    studyGroup = studyGroup,
+                    snoName = snoName,
                     categories = categories.mapNotNull { it.id }.toMutableSet(),
                     roles = roles,
                     lastUserActionType = lastUserActionType,

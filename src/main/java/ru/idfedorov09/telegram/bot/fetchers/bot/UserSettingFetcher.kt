@@ -21,6 +21,7 @@ class UserSettingFetcher(
     private val callbackDataRepository: CallbackDataRepository,
     private val messageSenderService: MessageSenderService,
 ) : DefaultFetcher() {
+
     @InjectData
     fun doFetch(
         update: Update,
@@ -38,7 +39,7 @@ class UserSettingFetcher(
         val text = params.update.message.text
         text.apply {
             return when {
-                startsWith(TextCommands.USER_SETTING.commandText) -> showUserInfo(params)
+                startsWith(TextCommands.USER_SETTING()) -> showUserInfo(params)
                 else -> commonTextHandler(params)
             }
         }
@@ -57,8 +58,8 @@ class UserSettingFetcher(
             val text =
                 "Информация о вашем аккаунте:\n" +
                     "Ваше ФИО: ${userActualizedInfo.fullName ?: "\uFE0F ИНФОРМАЦИЯ НЕ НАЙДЕНА"}\n" +
-                    "Ваша Группа ${userActualizedInfo.studyGroup ?: "\uFE0F ИНФОРМАЦИЯ НЕ НАЙДЕНА"}\n" +
-                    "Если эта информация неверна или не актуальна, то вы можете ее изменить!"
+                    "Ваше СНО/СМУС ${userActualizedInfo.snoName ?: "\uFE0F ИНФОРМАЦИЯ НЕ НАЙДЕНА"}\n" +
+                    "Если эта информация неверна или не актуальна, то вы можете ее изменить."
             val changeFullName =
                 CallbackData(
                     callbackData = CallbackCommands.SETTING_USER_CHANGE_FULL_NAME.data,
@@ -67,7 +68,7 @@ class UserSettingFetcher(
             val changeStudyGroup =
                 CallbackData(
                     callbackData = CallbackCommands.SETTING_USER_CHANGE_STUDY_GROUP.data,
-                    metaText = "Обновить учебную группу",
+                    metaText = "Обновить СНО/СМУС",
                 ).save()
             val sentMessage =
                 messageSenderService.sendMessage(
@@ -134,45 +135,29 @@ class UserSettingFetcher(
     private fun enterStudyGroup(params: Params): UserActualizedInfo {
         params.apply {
             val msgText = update.message.text
-            if (msgText.isValidGroup()) {
-                val repeat =
-                    CallbackData(
-                        callbackData = CallbackCommands.SETTING_USER_CHANGE_FULL_NAME.data,
-                        metaText = "Изменить номер группы снова",
-                    ).save()
-                val back =
-                    CallbackData(
-                        callbackData = CallbackCommands.SETTING_USER_BACK_TO_CONSOLE.data,
-                        metaText = "Вернуться назад",
-                    ).save()
-                messageSenderService.editMessage(
-                    MessageParams(
-                        chatId = userActualizedInfo.tui,
-                        messageId = userActualizedInfo.data?.userSettingMessageId,
-                        text = "Ваш номер группы изменен на $msgText",
-                        replyMarkup = createKeyboard(repeat, back),
-                    ),
+            val repeat =
+                CallbackData(
+                    callbackData = CallbackCommands.SETTING_USER_CHANGE_FULL_NAME.data,
+                    metaText = "Изменить СНО/СМУС снова",
+                ).save()
+            val back =
+                CallbackData(
+                    callbackData = CallbackCommands.SETTING_USER_BACK_TO_CONSOLE.data,
+                    metaText = "Вернуться назад",
+                ).save()
+            messageSenderService.editMessage(
+                MessageParams(
+                    chatId = userActualizedInfo.tui,
+                    messageId = userActualizedInfo.data?.userSettingMessageId,
+                    text = "Название вашего СНО/СМУС изменено на $msgText",
+                    replyMarkup = createKeyboard(repeat, back),
+                ),
+            )
+            userActualizedInfo =
+                userActualizedInfo.copy(
+                    snoName = msgText,
+                    lastUserActionType = LastUserActionType.DEFAULT,
                 )
-                userActualizedInfo =
-                    userActualizedInfo.copy(
-                        studyGroup = msgText,
-                        lastUserActionType = LastUserActionType.DEFAULT,
-                    )
-            } else {
-                val withoutGroup =
-                    CallbackData(
-                        metaText = "👾Я не из МИФИ",
-                        callbackData = CallbackCommands.SETTING_USER_WITHOUT_STUDY_GROUP.data,
-                    ).save()
-                messageSenderService.editMessage(
-                    MessageParams(
-                        chatId = userActualizedInfo.tui,
-                        messageId = userActualizedInfo.data?.userSettingMessageId,
-                        text = "Кажется Вы ввели номер группы неправильно.",
-                        replyMarkup = createKeyboard(withoutGroup),
-                    ),
-                )
-            }
             deleteUpdateMessage()
             return userActualizedInfo
         }
@@ -199,7 +184,7 @@ class UserSettingFetcher(
             val repeat =
                 CallbackData(
                     callbackData = CallbackCommands.SETTING_USER_CHANGE_FULL_NAME.data,
-                    metaText = "Изменить номер группы снова",
+                    metaText = "Изменить СНО/СМУС снова",
                 ).save()
             val back =
                 CallbackData(
@@ -216,7 +201,7 @@ class UserSettingFetcher(
             )
             userActualizedInfo =
                 userActualizedInfo.copy(
-                    studyGroup = "Не из МИФИ",
+                    snoName = "Не из МИФИ",
                     lastUserActionType = LastUserActionType.DEFAULT,
                 )
             return userActualizedInfo
@@ -225,18 +210,12 @@ class UserSettingFetcher(
 
     private fun changeStudyGroup(params: Params): UserActualizedInfo {
         params.apply {
-            val text = "Введите свой номер группы"
-            val withoutGroup =
-                CallbackData(
-                    metaText = "👾Я не из МИФИ",
-                    callbackData = CallbackCommands.SETTING_USER_WITHOUT_STUDY_GROUP.data,
-                ).save()
+            val text = "Введите название вашего СНО/СМУС"
             messageSenderService.editMessage(
                 MessageParams(
                     chatId = userActualizedInfo.tui,
                     messageId = userActualizedInfo.data?.userSettingMessageId,
                     text = text,
-                    replyMarkup = createKeyboard(withoutGroup),
                 ),
             )
             userActualizedInfo.lastUserActionType = LastUserActionType.SETTING_USER_ENTER_STUDY_GROUP
@@ -273,11 +252,6 @@ class UserSettingFetcher(
     private fun String?.isValidFullName() =
         this?.let {
             it.isNotEmpty() && it.length < 80
-        } ?: false
-
-    private fun String?.isValidGroup() =
-        this?.let {
-            it.isNotEmpty() && "([АМСБамсб]{1})([0-9]{2})-([0-9]{3})".toRegex().matches(it)
         } ?: false
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }

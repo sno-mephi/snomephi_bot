@@ -138,43 +138,26 @@ class RegistrationFetcher(
             )
             data?.registrationMessageId = null
 
-            if (params.update.message.text.isValidGroup()) {
-                val confirm =
-                    CallbackData(
-                        metaText = "✅ Подтвердить",
-                        callbackData = CallbackCommands.REGISTRATION_CONFIRM_STUDY_GROUP.data,
-                    ).save()
-                val cancel =
-                    CallbackData(
-                        metaText = "❌ Отменить",
-                        callbackData = CallbackCommands.REGISTRATION_DECLINE_STUDY_GROUP.data,
-                    ).save()
+            val confirm =
+                CallbackData(
+                    metaText = "✅ Подтвердить",
+                    callbackData = CallbackCommands.REGISTRATION_CONFIRM_STUDY_GROUP.data,
+                ).save()
+            val cancel =
+                CallbackData(
+                    metaText = "❌ Отменить",
+                    callbackData = CallbackCommands.REGISTRATION_DECLINE_STUDY_GROUP.data,
+                ).save()
 
-                messageSenderService.sendMessage(
-                    MessageParams(
-                        chatId = tui,
-                        text = RegistrationMessageText.GroupConfirmation.format(params.update.message.text),
-                        replyMarkup = createActionsKeyboard(confirm, cancel),
-                    ),
-                )
-                lastUserActionType = LastUserActionType.REGISTRATION_CONFIRM_GROUP
-                data?.registrationData = params.update.message.text.uppercase()
-            } else {
-                val withoutGroup =
-                    CallbackData(
-                        metaText = "👾Я не из МИФИ",
-                        callbackData = CallbackCommands.REGISTRATION_WITHOUT_STUDY_GROUP.data,
-                    ).save()
-                val sendMessage =
-                    messageSenderService.sendMessage(
-                        MessageParams(
-                            chatId = tui,
-                            text = RegistrationMessageText.InvalidGroup(),
-                            replyMarkup = createActionsKeyboard(withoutGroup),
-                        ),
-                    )
-                data?.registrationMessageId = sendMessage.messageId
-            }
+            messageSenderService.sendMessage(
+                MessageParams(
+                    chatId = tui,
+                    text = RegistrationMessageText.GroupConfirmation.format(params.update.message.text),
+                    replyMarkup = createActionsKeyboard(confirm, cancel),
+                ),
+            )
+            lastUserActionType = LastUserActionType.REGISTRATION_CONFIRM_GROUP
+            data?.registrationData = params.update.message.text.uppercase()
             return this
         }
     }
@@ -231,18 +214,11 @@ class RegistrationFetcher(
 
     private fun declineStudyGroup(params: Params): UserActualizedInfo {
         params.userActualizedInfo.apply {
-            val withoutGroup =
-                CallbackData(
-                    metaText = "👾Я не из МИФИ",
-                    callbackData = CallbackCommands.REGISTRATION_WITHOUT_STUDY_GROUP.data,
-                ).save()
-
             val sendMessage =
                 messageSenderService.sendMessage(
                     MessageParams(
                         chatId = tui,
                         text = RegistrationMessageText.GroupRequest(" заново"),
-                        replyMarkup = createActionsKeyboard(withoutGroup),
                     ),
                 )
             lastUserActionType = LastUserActionType.REGISTRATION_ENTER_GROUP
@@ -263,7 +239,7 @@ class RegistrationFetcher(
             params.userActualizedInfo =
                 params.userActualizedInfo.copy(
                     lastUserActionType = LastUserActionType.DEFAULT,
-                    studyGroup = data?.registrationData ?: "Не из МИФИ",
+                    snoName = data?.registrationData,
                     isRegistered = true,
                 )
             data?.registrationData = null
@@ -313,17 +289,11 @@ class RegistrationFetcher(
 
     private fun confirmFullName(params: Params): UserActualizedInfo {
         params.userActualizedInfo.apply {
-            val withoutGroup =
-                CallbackData(
-                    metaText = "👾Я не из МИФИ",
-                    callbackData = CallbackCommands.REGISTRATION_WITHOUT_STUDY_GROUP.data,
-                ).save()
             val sendMessage =
                 messageSenderService.sendMessage(
                     MessageParams(
                         chatId = tui,
                         text = RegistrationMessageText.GroupRequest(),
-                        replyMarkup = createActionsKeyboard(withoutGroup),
                     ),
                 )
             messageSenderService.deleteMessage(
@@ -347,11 +317,6 @@ class RegistrationFetcher(
     private fun String?.isValidFullName() =
         this?.let {
             it.isNotEmpty() && it.length < 80
-        } ?: false
-
-    private fun String?.isValidGroup() =
-        this?.let {
-            it.isNotEmpty() && "([АМСБамсб]{1})([0-9]{2})-([0-9]{3})".toRegex().matches(it)
         } ?: false
 
     private fun createActionsKeyboard(
