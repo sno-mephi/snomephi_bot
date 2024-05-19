@@ -23,4 +23,6 @@ data class UserData(
     var userSettingMessageId: Int? = null,
     /** id сообщения примера вопроса в опросе **/
     var surveyQuestionMessageId: Int? = null,
+    /** id вопроса который юзер редактирует**/
+    var surveyQuestionChangedId: Long? = null
 )

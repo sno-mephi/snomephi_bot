@@ -101,6 +101,12 @@ enum class CallbackCommands(
     SURVEY_CHANGE_TYPE("survey_change_type"),
     SURVEY_CHANGE_ANSWER_OPTION("survey_change_answer_option"),
     SURVEY_DELETE_QUESTION("survey_delete_question"),
+    SURVEY_USER_ANSWER("survey_user_answer"),
+    SURVEY_SHOW_QUESTION_CONSOLE("survey_show_question_console"),
+    SURVEY_CUSTOM_ORDER("survey_custom_order"),
+    SURVEY_STANDARD_ORDER("survey_standard_order"),
+    SURVEY_CHANGE_STANDARD_ORDER("survey_change_standard_order"),
+    SURVEY_DO_NOT_CHANGE_STANDARD_ORDER("survey_do_not_change_standard_order"),
     ;
 
     fun format(vararg args: Any?): String {

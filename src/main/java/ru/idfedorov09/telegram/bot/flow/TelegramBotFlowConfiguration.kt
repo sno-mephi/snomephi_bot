@@ -38,6 +38,7 @@ open class TelegramBotFlowConfiguration(
     private val bannedFetcher: BannedFetcher,
     private val userSettingFetcher: UserSettingFetcher,
     private val createExpContainerFetcher: CreateExpContainerFetcher,
+    private val surveyConstructorFetcher: SurveyConstructorFetcher,
 ) {
     /**
      * Возвращает построенный граф; выполняется только при запуске приложения
@@ -72,6 +73,7 @@ open class TelegramBotFlowConfiguration(
                         fetch(questButtonHandlerFetcher)
                         fetch(dialogHandleFetcher)
                         fetch(broadcastConstructorFetcher)
+                        fetch(surveyConstructorFetcher)
                         fetch(permissionsFetcher)
                         fetch(userSettingFetcher)
                         fetch(bannedFetcher)

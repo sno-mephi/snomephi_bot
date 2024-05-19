@@ -6,5 +6,5 @@ import ru.idfedorov09.telegram.bot.data.model.SurveyAnswerOption
 
 interface CallbackDataRepository : JpaRepository<CallbackData, Long> {
 
-    fun findBySurveyAnswerOptionId(surveyAnswerOption: SurveyAnswerOption) : CallbackData
+    fun findBySurveyAnswerOptionId(surveyAnswerOptionId: Long) : CallbackData
 }

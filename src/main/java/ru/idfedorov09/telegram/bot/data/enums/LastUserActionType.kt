@@ -102,4 +102,7 @@ enum class LastUserActionType {
 
     /** начад менять варианты ответов  опросе**/
     SURVEY_QUESTION_CHANGE_ANSWER_OPTIONS,
+
+    /** начал менять стандартный порядок вопросов **/
+    SURVEY_CHANGE_STANDARD_ORDER_QUESTIONS,
 }
