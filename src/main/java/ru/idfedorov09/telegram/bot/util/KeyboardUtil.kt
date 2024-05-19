@@ -29,6 +29,12 @@ object KeyboardUtil {
                 KeyboardRow().also {
                     it.add(TextCommands.USER_SETTING_REPLY())
                 },
+
+                // TODO: получить сертификат
+
+                KeyboardRow().also {
+                    it.add(TextCommands.FEEDBACK_BUTTON())
+                },
             )
         if (UserRole.ROOT in roles || UserRole.MAILER in roles) {
             keyboards.add(

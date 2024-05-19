@@ -115,19 +115,29 @@ enum class TextCommands(
     USER_SETTING(
         commandText = "/setting",
         description = "Настройки пользователя",
+        allowedRoles = listOf(UserRole.USER),
     ),
 
     USER_SETTING_REPLY(
         commandText = "Проверка данных",
         description = "Настройки пользователя",
         isFullCommand = false,
+        allowedRoles = listOf(UserRole.USER),
     ),
 
     FEEDBACK_CONSTRUCTOR(
         commandText = "Настройка обратной связи",
         description = "Настройка обратной связи",
         isFullCommand = false,
-    )
+        allowedRoles = listOf(UserRole.MAILER),
+    ),
+
+    FEEDBACK_BUTTON(
+        commandText = "Обратная связь",
+        description = "Присылает актуальное сообщение обратной связи",
+        isFullCommand = false,
+        allowedRoles = listOf(UserRole.USER),
+    ),
     ;
 
     /** Проверяет, является ли текст командой **/
