@@ -147,7 +147,7 @@ class DeleteUserFetcher(
                         toResponder = "<i>\uD83D\uDD34 Пользователь удалил профиль, диалог экстренно завершен.</i>"
                     ),
                     onResponderClose = CloseDialogMessagesPrimary(
-                        toAuthor = "<i>\uD83D\uDD34 Произошел сбой при работе бота. Вам постараются ответить в ближайшее время.</i>",
+                        toAuthor = "<i>\uD83D\uDD34 Произошел сбой при работе бота, диалог завершен. Вам постараются ответить в ближайшее время.</i>",
                         toResponder = "<b>Диалог экстренно завершен.</b>"
                     ),
                     consoleResultText = "\uD83E\uDDA7 ${MessageSenderUtil.userName(responder.lastTgNick, responder.fullName)} вел диалог, " +
