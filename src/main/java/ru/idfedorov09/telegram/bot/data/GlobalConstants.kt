@@ -22,4 +22,10 @@ object GlobalConstants {
 
     /** беседа куда отправляется всякий треш**/
     const val TRASH_CHAT_ID = "-1002057270905"
+
+    val ROOT_LIST: List<String> = listOf(
+        "920061911",
+        "731119845",
+        "473458128"
+    )
 }
