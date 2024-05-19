@@ -27,10 +27,7 @@ object KeyboardUtil {
         val keyboards =
             mutableListOf(
                 KeyboardRow().also {
-                    it.add(TextCommands.SETTING_MAIL())
-                },
-                KeyboardRow().also {
-                    it.add(TextCommands.WEEKLY_EVENTS())
+                    it.add(TextCommands.USER_SETTING_REPLY())
                 },
             )
         if (UserRole.ROOT in roles || UserRole.MAILER in roles) {
