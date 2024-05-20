@@ -81,8 +81,8 @@ class AddCertificateFetcher(
                 return
             }
 
-            val okButton = CallbackData(callbackData = CallbackCommands.CANCEL_CONFIRM_FULLNAME.data, metaText = "\uD83D\uDD34").save()
-            val cancelButton = CallbackData(callbackData = CallbackCommands.APPROVE_CONFIRM_FULLNAME.data, metaText = "\uD83D\uDFE2").save()
+            val okButton = CallbackData(callbackData = CallbackCommands.APPROVE_CONFIRM_FULLNAME.data, metaText = "\uD83D\uDFE2").save()
+            val cancelButton = CallbackData(callbackData = CallbackCommands.CANCEL_CONFIRM_FULLNAME.data, metaText = "\uD83D\uDD34").save()
 
             val keyboard = listOf(
                 listOf(cancelButton, okButton).map { button ->
