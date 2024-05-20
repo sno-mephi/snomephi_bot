@@ -81,10 +81,33 @@ enum class CallbackCommands(
     BROADCAST_START_WEEKLY("#bc_start_weekly"),
     BROADCAST_WB_PREVIEW_STATE("#bc_web_preview_state"),
 
+    /** Блок настройки юзера **/
+
     SETTING_USER_CHANGE_FULL_NAME("setting_user_full_name"),
     SETTING_USER_CHANGE_STUDY_GROUP("setting_user_study_group"),
     SETTING_USER_WITHOUT_STUDY_GROUP("setting_user_without_study_group"),
     SETTING_USER_BACK_TO_CONSOLE("setting_user_back_to_console"),
+
+    /** Блок конструктора опроса **/
+
+    SURVEY_NEW_QUESTION("survey_new_question"),
+    SURVEY_SHOW_QUESTIONS("survey_show_questions"),
+    SURVEY_ORDER_QUESTION("survey_order_question"),
+    SURVEY_CANCEL("survey_cancel"),
+    SURVEY_MULTIPLY_CHOICE_QUESTION("survey_multiply_choice_question"),
+    SURVEY_TEXT_QUESTION("survey_text_question"),
+    SURVEY_BACK_TO_CONSOLE("survey_back_to_console"),
+    SURVEY_CHANGE_TEXT("survey_change_text"),
+    SURVEY_CHANGE_TYPE("survey_change_type"),
+    SURVEY_CHANGE_ANSWER_OPTION("survey_change_answer_option"),
+    SURVEY_DELETE_QUESTION("survey_delete_question"),
+    SURVEY_USER_ANSWER("survey_user_answer"),
+    SURVEY_SHOW_QUESTION_CONSOLE("survey_show_question_console"),
+    SURVEY_CUSTOM_ORDER("survey_custom_order"),
+    SURVEY_STANDARD_ORDER("survey_standard_order"),
+    SURVEY_CHANGE_STANDARD_ORDER("survey_change_standard_order"),
+    SURVEY_DO_NOT_CHANGE_STANDARD_ORDER("survey_do_not_change_standard_order"),
+    SURVEY_USER_START("survey_user_start")
     ;
 
     fun format(vararg args: Any?): String {

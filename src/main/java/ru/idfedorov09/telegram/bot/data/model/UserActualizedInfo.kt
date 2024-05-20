@@ -31,4 +31,8 @@ data class UserActualizedInfo(
     var isBaned: Boolean = false,
     /** Текущий создаваемый бан **/
     var banData: Ban? = null,
+    /** Текущий создаваемый вопрос опроса**/
+    var surveyQuestionData: SurveyQuestion? = null,
+    var surveyId: Long? = null,
+    var currentSurveyQuestionNumber: Long? = null,
 )

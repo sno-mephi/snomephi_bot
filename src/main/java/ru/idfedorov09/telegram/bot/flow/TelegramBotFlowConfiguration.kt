@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import ru.idfedorov09.telegram.bot.base.service.FlowBuilderService
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUALIFIER_FLOW_TG_BOT
+import ru.idfedorov09.telegram.bot.data.model.SurveyAnswer
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.fetchers.bot.*
 import ru.idfedorov09.telegram.bot.fetchers.bot.PermissionsFetcher
@@ -38,6 +39,8 @@ open class TelegramBotFlowConfiguration(
     private val bannedFetcher: BannedFetcher,
     private val userSettingFetcher: UserSettingFetcher,
     private val createExpContainerFetcher: CreateExpContainerFetcher,
+    private val surveyConstructorFetcher: SurveyConstructorFetcher,
+    private val surveyAnswerFetcher: SurveyAnswerFetcher,
 ) {
     /**
      * Возвращает построенный граф; выполняется только при запуске приложения
@@ -72,6 +75,8 @@ open class TelegramBotFlowConfiguration(
                         fetch(questButtonHandlerFetcher)
                         fetch(dialogHandleFetcher)
                         fetch(broadcastConstructorFetcher)
+                        fetch(surveyConstructorFetcher)
+                        fetch(surveyAnswerFetcher)
                         fetch(permissionsFetcher)
                         fetch(userSettingFetcher)
                         fetch(bannedFetcher)

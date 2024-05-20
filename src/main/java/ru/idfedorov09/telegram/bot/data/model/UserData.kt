@@ -7,7 +7,7 @@ import ru.mephi.sno.libs.flow.belly.Mutable
  **/
 @Mutable
 data class UserData(
-    /** Уже не используется, но имет такой же смысл как и тарая data **/
+    /** Уже не используется, но имет такой же смысл как и старая data **/
     var dataLegacy: String? = null,
     /** id сообщение консоли при разблокировки **/
     var unBanMessageId: Int? = null,
@@ -21,4 +21,10 @@ data class UserData(
     var categoryMessageId: Int? = null,
     /** id сообщения настроек юзера **/
     var userSettingMessageId: Int? = null,
+    /** id сообщения примера вопроса в опросе **/
+    var surveyQuestionMessageId: Int? = null,
+    /** id вопроса который юзер редактирует**/
+    var surveyQuestionChangedId: Long? = null,
+    /** id сообщения с вопросом у юзера **/
+    var surveyUserQuestionMessageId: Int? = null,
 )

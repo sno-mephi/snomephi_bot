@@ -90,4 +90,21 @@ enum class LastUserActionType {
 
     /** ввод измененной группы **/
     SETTING_USER_ENTER_STUDY_GROUP,
+
+    /** начал создание вопроса в рассылке**/
+    SURVEY_CREATE_QUESTION,
+
+    /** выбрал тип вопроса **/
+    SURVEY_QUESTION_CHOSEN_TYPE,
+
+    /** начад менять текст вопроса в опросе**/
+    SURVEY_QUESTION_CHANGE_TEXT,
+
+    /** начад менять варианты ответов  опросе**/
+    SURVEY_QUESTION_CHANGE_ANSWER_OPTIONS,
+
+    /** начал менять стандартный порядок вопросов **/
+    SURVEY_CHANGE_STANDARD_ORDER_QUESTIONS,
+
+    SURVEY_START_ANSWER
 }
