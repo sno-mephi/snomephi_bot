@@ -5,7 +5,6 @@ import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.base.util.UpdatesUtil
-import ru.idfedorov09.telegram.bot.data.GlobalConstants.hasCertificate
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUEST_RESPONDENT_CHAT_ID
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.*
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
@@ -13,6 +12,7 @@ import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.model.*
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
+import ru.idfedorov09.telegram.bot.fetchers.AddCertificateFetcher.Companion.hasCertificate
 import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
 import ru.idfedorov09.telegram.bot.repo.QuestDialogRepository
 import ru.idfedorov09.telegram.bot.repo.QuestMessageRepository

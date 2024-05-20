@@ -32,10 +32,4 @@ object GlobalConstants {
     )
 
     const val DOCTYPE_PDF = "application/pdf"
-
-    // Проверка на сертификат
-    val hasCertificate: Update.(MutableSet<UserRole>) -> Boolean = { roles ->
-        (roles.contains(UserRole.MAILER) || roles.contains(UserRole.ROOT)) &&
-        this.hasMessage() && this.message.hasDocument() && this.message.document.mimeType == DOCTYPE_PDF
-    }
 }
