@@ -5,6 +5,7 @@ import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
+import ru.idfedorov09.telegram.bot.data.model.Certificate
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
@@ -68,10 +69,48 @@ class CertificateActionsFetcher(
     }
 
     private fun cancelConfirmFullName(update: Update, userActualizedInfo: UserActualizedInfo) {
-        // TODO
+        certificateRepository.findByCandidateOwnerId(userActualizedInfo.id!!)?.let {
+            // TODO: триггер на это действие
+            // триггер должен срабатываться по тому же сценарию, что и по истечению срока действия опроса
+            certificateRepository.delete(it)
+        }
+
+        messageSenderService.deleteMessage(
+            MessageParams(
+                chatId = userActualizedInfo.tui,
+                messageId = update.callbackQuery.message.messageId
+            )
+        )
     }
 
     private fun approveConfirmFullName(update: Update, userActualizedInfo: UserActualizedInfo) {
-        // TODO
+        val certificate = certificateRepository.findByCandidateOwnerId(userActualizedInfo.id!!) ?: run {
+            messageSenderService.editMessage(
+                MessageParams(
+                    chatId = userActualizedInfo.tui,
+                    messageId = update.callbackQuery.message.messageId,
+                    text = "Сертификат не найден. Возможно, вы слишком долго не отвечали на запрос. " +
+                            "Ждите еще одного запроса или создайте обращение, написав в бота.",
+                )
+            )
+            return
+        }
+
+        certificate.copy(
+            pollStartTime = null,
+            pollMessageId = null,
+            certificateOwnerId = userActualizedInfo.id
+        ).save()
+
+        messageSenderService.editMessage(
+            MessageParams(
+                chatId = userActualizedInfo.tui,
+                messageId = update.callbackQuery.message.messageId,
+                text = "Спасибо! Теперь вы можете получить сертификат, " +
+                        "нажав на кнопку '${TextCommands.GET_CERTIFICATE.commandText}'.",
+            )
+        )
     }
+
+    private fun Certificate.save() = certificateRepository.save(this)
 }
