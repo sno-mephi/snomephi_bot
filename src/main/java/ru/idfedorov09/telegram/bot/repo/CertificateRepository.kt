@@ -10,6 +10,8 @@ interface CertificateRepository : JpaRepository<Certificate, Long> {
 
     fun findByCertificateOwnerId(certificateOwnerId: Long): Certificate?
 
+    fun findByFullName(fullName: String): Certificate?
+
    @Query(
         """
             SELECT * FROM certificates_table

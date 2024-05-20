@@ -52,7 +52,9 @@ class AddCertificateFetcher(
         }
         val fullName = getFullName(update)
 
-        // TODO: если сертификат на такое ФИО уже есть, то скипаем все остальное
+        certificateRepository.findByFullName(fullName)?.let {
+            return
+        }
 
         val certificate = Certificate(
             fullName = fullName,
