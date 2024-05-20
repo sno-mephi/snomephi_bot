@@ -53,13 +53,18 @@ class SurveyAnswerFetcher (
 
     private fun enterTextAnswer(params: Params) {
         params.apply {
+            val nextQuestion = userActualizedInfo.surveyId?.let { userActualizedInfo.currentSurveyQuestionNumber?.let { it1 ->
+                surveyQuestionRepository.findQuestionByBroadcastAndNumber(it,
+                    it1
+                )
+            } } ?: return
             val text = update.message.text
             surveyAnswerRepository.save(
                 SurveyAnswer(
                     userId = userActualizedInfo.id,
                     answer = text,
-                    broadcastId = userActualizedInfo.bcData?.id,
-                    surveyQuestionId = userActualizedInfo.surveyId,
+                    broadcastId = userActualizedInfo.surveyId,
+                    surveyQuestionId = nextQuestion.id,
                     answerTime =
                         updatesUtil.getDate(update)
                         ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
