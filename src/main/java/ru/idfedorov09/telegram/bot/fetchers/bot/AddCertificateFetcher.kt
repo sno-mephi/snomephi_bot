@@ -79,7 +79,7 @@ class AddCertificateFetcher(
 
     private fun onNotFoundByFullName(params: Params) {
         params.apply {
-            val similarUser = userRepository.findSimilarUserByFullName(certificate.fullName!!, 0.75) ?: run {
+            val similarUser = userRepository.findSimilarUserByFullName(certificate.fullName!!, 0.4) ?: run {
                 onNotFoundByFullNameEvenSimilar(params)
                 return
             }

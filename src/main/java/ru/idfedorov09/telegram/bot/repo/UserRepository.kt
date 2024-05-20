@@ -185,8 +185,8 @@ interface UserRepository : JpaRepository<User, Long> {
             WHERE 1 = 1
                 AND is_deleted = False
                 AND full_name IS NOT NULL 
-                AND similarity(full_name, :fullName) > :threshold
-            ORDER BY similarity(full_name, :fullName) DESC
+                AND similarity(LOWER(full_name), LOWER(:fullName)) > :threshold
+            ORDER BY similarity(LOWER(full_name), LOWER(:fullName)) DESC
             LIMIT 1
         """,
         nativeQuery = true,
