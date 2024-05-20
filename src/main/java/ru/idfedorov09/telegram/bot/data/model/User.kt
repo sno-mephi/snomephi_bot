@@ -68,4 +68,8 @@ data class User(
     /** Было ли выполнено переключение клавиатуры на новую **/
     @Column(name = "is_keyboard_switched", updatable = false)
     val isKeyboardSwitched: Boolean = false,
+    @Column(name = "survey_id")
+    val surveyId: Long? = null,
+    @Column(name = "survey_question_number")
+    val currentSurveyQuestionNumber: Long? = null,
 )

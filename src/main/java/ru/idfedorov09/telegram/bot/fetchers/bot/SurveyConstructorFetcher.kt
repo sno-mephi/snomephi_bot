@@ -336,25 +336,23 @@ class SurveyConstructorFetcher (
                     messageId = bcData?.lastConsoleMessageId
                 )
             )
-            val firstSurveyQuestion = bcData?.id?.let { surveyQuestionRepository.findFirstQuestionByBroadcast(it) } ?: return
             bcData =
                 bcData?.copy(
                     isBuilt = true,
                     startTime = params.updatesUtil.getDate(params.update)
                         ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() },
                     lastConsoleMessageId = null,
-                    text = firstSurveyQuestion.text
+                    text = "Доброго времени суток, предлагаем вам пройти небольшой опрос.\n\n" +
+                    "При нажатии кнопки Начать, диалог будет автоматически завершен!"
                 )
             lastUserActionType = LastUserActionType.DEFAULT
 
-            firstSurveyQuestion.id?.let { surveyAnswerOptionRepository.findAllSurveyAnswerOptionByQuestion(it) }?.forEach {
-                Button(
-                    text = it.optionText,
-                    callbackData = CallbackCommands.SURVEY_USER_ANSWER.data,
-                    authorId = id,
-                    broadcastId = bcData?.id
-                ).save()
-            }
+            Button(
+                text = "Начать",
+                callbackData = CallbackCommands.SURVEY_USER_START.data + "_${bcData?.id}",
+                authorId = id,
+                broadcastId = bcData?.id
+            ).save()
         }
     }
 

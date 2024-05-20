@@ -67,6 +67,8 @@ class UpdateDataFetcher(
                     constructorId = bcData?.id,
                     isDeleted = isDeleted,
                     isBaned = isBaned,
+                    surveyId = surveyId,
+                    currentSurveyQuestionNumber = currentSurveyQuestionNumber,
                 ),
             )
 

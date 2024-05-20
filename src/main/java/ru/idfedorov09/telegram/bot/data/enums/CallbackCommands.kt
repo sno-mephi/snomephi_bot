@@ -107,6 +107,7 @@ enum class CallbackCommands(
     SURVEY_STANDARD_ORDER("survey_standard_order"),
     SURVEY_CHANGE_STANDARD_ORDER("survey_change_standard_order"),
     SURVEY_DO_NOT_CHANGE_STANDARD_ORDER("survey_do_not_change_standard_order"),
+    SURVEY_USER_START("survey_user_start")
     ;
 
     fun format(vararg args: Any?): String {

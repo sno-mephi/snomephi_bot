@@ -115,6 +115,8 @@ class ActualizeUserInfoFetcher(
                 isBaned = isBaned ?: false,
                 banData = banData,
                 surveyQuestionData = surveyQuestionData,
+                surveyId = surveyId,
+                currentSurveyQuestionNumber = currentSurveyQuestionNumber,
             )
         }
     }

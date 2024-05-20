@@ -2,6 +2,7 @@ package ru.idfedorov09.telegram.bot.repo
 
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
+import ru.idfedorov09.telegram.bot.data.model.SurveyAnswer
 import ru.idfedorov09.telegram.bot.data.model.SurveyQuestion
 
 interface SurveyQuestionRepository : JpaRepository<SurveyQuestion, Long> {
@@ -50,4 +51,17 @@ interface SurveyQuestionRepository : JpaRepository<SurveyQuestion, Long> {
         nativeQuery = true
     )
     fun findFirstQuestionByBroadcast(broadcastId: Long): SurveyQuestion?
+
+    @Query(
+        """
+            SELECT qe.*
+            FROM survey_questions_table qe
+            WHERE 1=1
+                AND qe.broadcast_id = :broadcastId
+                AND qe.survey_depth = :surveyDepth
+            LIMIT 1
+        """,
+        nativeQuery = true
+    )
+    fun findQuestionByBroadcastAndNumber(broadcastId: Long, surveyDepth: Long) : SurveyQuestion?
 }

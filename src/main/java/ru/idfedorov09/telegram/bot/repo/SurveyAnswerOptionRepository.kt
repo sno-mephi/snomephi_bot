@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
+import ru.idfedorov09.telegram.bot.data.model.SurveyAnswer
 import ru.idfedorov09.telegram.bot.data.model.SurveyAnswerOption
 import ru.idfedorov09.telegram.bot.data.model.SurveyQuestion
 
