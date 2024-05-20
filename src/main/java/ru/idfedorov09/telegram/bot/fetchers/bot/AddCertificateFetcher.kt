@@ -109,7 +109,8 @@ class AddCertificateFetcher(
             // отмечаем что начали опрос
             certificate.copy(
                 pollStartTime = LocalDateTime.now().atZone(BOT_TIME_ZONE).toLocalDateTime(),
-                pollMessageId = sent.messageId
+                pollMessageId = sent.messageId,
+                candidateOwnerId = similarUser.id,
             ).save()
         }
     }

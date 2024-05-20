@@ -30,7 +30,9 @@ object KeyboardUtil {
                     it.add(TextCommands.USER_SETTING_REPLY())
                 },
 
-                // TODO: получить сертификат
+                KeyboardRow().also {
+                    it.add(TextCommands.GET_CERTIFICATE())
+                },
 
                 KeyboardRow().also {
                     it.add(TextCommands.FEEDBACK_BUTTON())

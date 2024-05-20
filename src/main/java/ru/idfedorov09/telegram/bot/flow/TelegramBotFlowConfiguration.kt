@@ -41,6 +41,7 @@ open class TelegramBotFlowConfiguration(
     private val createExpContainerFetcher: CreateExpContainerFetcher,
     private val gettingFeedbackFetcher: GettingFeedbackFetcher,
     private val addCertificateFetcher: AddCertificateFetcher,
+    private val certificateActionsFetcher: CertificateActionsFetcher,
 ) {
     /**
      * Возвращает построенный граф; выполняется только при запуске приложения
@@ -87,6 +88,7 @@ open class TelegramBotFlowConfiguration(
                     fetch(gettingFeedbackFetcher)
                     fetch(questStartFetcher)
                     fetch(addCertificateFetcher)
+                    fetch(certificateActionsFetcher)
                 }
                 fetch(updateDataFetcher)
             }
