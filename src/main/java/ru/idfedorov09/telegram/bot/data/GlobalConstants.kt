@@ -1,5 +1,7 @@
 package ru.idfedorov09.telegram.bot.data
 
+import org.telegram.telegrambots.meta.api.objects.Update
+import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import java.time.ZoneId
 
 object GlobalConstants {
@@ -28,4 +30,7 @@ object GlobalConstants {
         "731119845",
         "473458128"
     )
+
+    const val DOCTYPE_PDF = "application/pdf"
+    const val TRGM_SIMILARITY_THRESHOLD = 0.4
 }

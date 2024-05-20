@@ -12,6 +12,7 @@ import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.model.*
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
+import ru.idfedorov09.telegram.bot.fetchers.bot.AddCertificateFetcher.Companion.hasCertificate
 import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
 import ru.idfedorov09.telegram.bot.repo.QuestDialogRepository
 import ru.idfedorov09.telegram.bot.repo.QuestMessageRepository
@@ -49,6 +50,12 @@ class QuestStartFetcher(
             }
             // если апдейт из беседы, то игнорим
             if (update.message.chatId.toString() != tui) return
+
+            // если отправил сообщение мэилер и тип полученного документа - pdf, то ничего не делаем;
+            // вероятно, отправили сертификат
+            if (update.hasCertificate(roles)) {
+                return
+            }
         }
 
         ask(update, userActualizedInfo)

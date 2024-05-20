@@ -305,7 +305,9 @@ class RegistrationFetcher(
             params.userActualizedInfo =
                 params.userActualizedInfo.copy(
                     lastUserActionType = LastUserActionType.REGISTRATION_ENTER_GROUP,
-                    fullName = data?.registrationData,
+                    fullName = data?.registrationData
+                        ?.replace("ё", "е")
+                        ?.replace("Ё", "Е"),
                 )
             data?.registrationMessageId = sendMessage.messageId
             data?.registrationData = null

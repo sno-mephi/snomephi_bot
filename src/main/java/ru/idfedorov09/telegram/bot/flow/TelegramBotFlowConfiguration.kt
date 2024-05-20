@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration
 import ru.idfedorov09.telegram.bot.base.service.FlowBuilderService
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUALIFIER_FLOW_TG_BOT
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
+import ru.idfedorov09.telegram.bot.fetchers.bot.AddCertificateFetcher
 import ru.idfedorov09.telegram.bot.fetchers.bot.*
 import ru.idfedorov09.telegram.bot.fetchers.bot.PermissionsFetcher
 import ru.mephi.sno.libs.flow.belly.FlowBuilder
@@ -39,6 +40,8 @@ open class TelegramBotFlowConfiguration(
     private val userSettingFetcher: UserSettingFetcher,
     private val createExpContainerFetcher: CreateExpContainerFetcher,
     private val gettingFeedbackFetcher: GettingFeedbackFetcher,
+    private val addCertificateFetcher: AddCertificateFetcher,
+    private val certificateActionsFetcher: CertificateActionsFetcher,
 ) {
     /**
      * Возвращает построенный граф; выполняется только при запуске приложения
@@ -84,6 +87,8 @@ open class TelegramBotFlowConfiguration(
                     fetch(weeklyEventsFetcher)
                     fetch(gettingFeedbackFetcher)
                     fetch(questStartFetcher)
+                    fetch(addCertificateFetcher)
+                    fetch(certificateActionsFetcher)
                 }
                 fetch(updateDataFetcher)
             }
