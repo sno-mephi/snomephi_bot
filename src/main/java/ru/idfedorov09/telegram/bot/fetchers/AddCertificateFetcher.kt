@@ -42,6 +42,7 @@ class AddCertificateFetcher(
         val certificate = Certificate(
             fullName = fullName,
             issueAuthorId = userActualizedInfo.id,
+            certificateHash = update.message.document.fileId,
         ).save()
 
         val params = Params(

@@ -42,4 +42,10 @@ data class Certificate(
      */
     @Column(name = "candidate_owner_id")
     val candidateOwnerId: Long? = null,
+
+    /**
+     * айди (хэш) файла сертификата в тг
+     */
+    @Column(name = "file_id", columnDefinition = "TEXT")
+    val certificateHash: String? = null,
 )
