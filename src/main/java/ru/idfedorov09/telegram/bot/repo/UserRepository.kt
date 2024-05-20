@@ -128,7 +128,7 @@ interface UserRepository : JpaRepository<User, Long> {
             SELECT *
             FROM users_table
             WHERE 1 = 1
-                and LOWER(full_name) = :fullName
+                and LOWER(full_name) = LOWER(:fullName)
                 and is_deleted = False
             LIMIT 1
         """,

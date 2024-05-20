@@ -63,15 +63,12 @@ class AddCertificateFetcher(
         // TODO: дописать в случае если не нашелся челик - поиск по косинусной близости + сообщение об этом админу
     }
 
-    /**
-     * Возвращает ФИО в нижнем регистре
-     * ВАЖНО: сравнение по ФИО тоже проводить в нижнем регистре
-     */
-    private fun getFullName(update: Update) =
-        update.message.document.fileName
-            .lowercase()
-            .removeSuffix(".pdf")
-            .replace("_", " ")
+    private fun getFullName(update: Update): String {
+        val input = update.message.document.fileName
+        val parts = input.split(".")
+        val textWithoutExtension = if (parts.size > 1) parts.dropLast(1).joinToString(".") else input
+        return textWithoutExtension.replace("_", " ")
+    }
 
     private fun Certificate.save() = certificateRepository.save(this)
 
