@@ -12,7 +12,7 @@ import jakarta.persistence.Table
  */
 @Entity
 @Table(name = "certificates_table")
-data class Certificates(
+data class Certificate(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "certificate_id")
@@ -29,4 +29,17 @@ data class Certificates(
      */
     @Column(name = "issue_author_id")
     val issueAuthorId: Long? = null,
+
+    /**
+     * Айди челика которому должен принадлежать сертификат
+     * если null - значит такой не нашелся
+     */
+    @Column(name = "certificate_owner_id")
+    val certificateOwnerId: Long? = null,
+
+    /**
+     * Айди кандидата на владение сертификатом
+     */
+    @Column(name = "candidate_owner_id")
+    val candidateOwnerId: Long? = null,
 )

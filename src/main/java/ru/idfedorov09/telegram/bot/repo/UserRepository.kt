@@ -114,15 +114,13 @@ interface UserRepository : JpaRepository<User, Long> {
             FROM users_table
             WHERE 1 = 1
                 and full_name = :fullName
-                and study_group = :studyGroup
                 and is_deleted = False
             LIMIT 1
         """,
         nativeQuery = true,
     )
-    fun findByFullNameAndStudyGroup(
+    fun findByFullName(
         fullName: String,
-        studyGroup: String,
     ): User?
 
     @Query(
