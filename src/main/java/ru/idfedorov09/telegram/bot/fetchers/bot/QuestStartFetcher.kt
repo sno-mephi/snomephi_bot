@@ -5,6 +5,7 @@ import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.base.util.UpdatesUtil
+import ru.idfedorov09.telegram.bot.data.GlobalConstants.hasCertificate
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUEST_RESPONDENT_CHAT_ID
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.*
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
@@ -49,6 +50,12 @@ class QuestStartFetcher(
             }
             // если апдейт из беседы, то игнорим
             if (update.message.chatId.toString() != tui) return
+
+            // если отправил сообщение мэилер и тип полученного документа - pdf, то ничего не делаем;
+            // вероятно, отправили сертификат
+            if (update.hasCertificate(roles)) {
+                return
+            }
         }
 
         ask(update, userActualizedInfo)

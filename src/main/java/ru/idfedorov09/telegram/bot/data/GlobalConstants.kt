@@ -1,5 +1,7 @@
 package ru.idfedorov09.telegram.bot.data
 
+import org.telegram.telegrambots.meta.api.objects.Update
+import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import java.time.ZoneId
 
 object GlobalConstants {
@@ -28,4 +30,12 @@ object GlobalConstants {
         "731119845",
         "473458128"
     )
+
+    const val DOCTYPE_PDF = "application/pdf"
+
+    // Проверка на сертификат
+    val hasCertificate: Update.(MutableSet<UserRole>) -> Boolean = { roles ->
+        (roles.contains(UserRole.MAILER) || roles.contains(UserRole.ROOT)) &&
+        this.hasMessage() && this.message.hasDocument() && this.message.document.mimeType == DOCTYPE_PDF
+    }
 }
