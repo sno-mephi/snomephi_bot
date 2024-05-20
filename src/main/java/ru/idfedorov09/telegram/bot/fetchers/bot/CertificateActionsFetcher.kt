@@ -89,7 +89,8 @@ class CertificateActionsFetcher(
         certificate.copy(
             pollStartTime = null,
             pollMessageId = null,
-            certificateOwnerId = userActualizedInfo.id
+            certificateOwnerId = userActualizedInfo.id,
+            candidateOwnerId = null,
         ).save()
 
         messageSenderService.editMessage(
