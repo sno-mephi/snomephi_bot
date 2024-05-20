@@ -50,7 +50,7 @@ class AddCertificateFetcher(
             certificate = certificate,
         )
 
-        val user = userRepository.findByFullName(fullName) ?: run {
+        val user = userRepository.findByLowercaseFullName(fullName) ?: run {
             onNotFoundByFullName(params)
             return
         }

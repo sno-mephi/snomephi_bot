@@ -128,6 +128,21 @@ interface UserRepository : JpaRepository<User, Long> {
             SELECT *
             FROM users_table
             WHERE 1 = 1
+                and LOWER(full_name) = :fullName
+                and is_deleted = False
+            LIMIT 1
+        """,
+        nativeQuery = true,
+    )
+    fun findByLowercaseFullName(
+        fullName: String,
+    ): User?
+
+    @Query(
+        """
+            SELECT *
+            FROM users_table
+            WHERE 1 = 1
                 and id = :userId
                 and is_deleted = False
             LIMIT 1
