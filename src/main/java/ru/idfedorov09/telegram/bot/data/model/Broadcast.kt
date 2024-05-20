@@ -49,6 +49,9 @@ data class Broadcast(
     /** флаг мероприятий недели **/
     @Column(name = "is_weekly")
     val isWeekly: Boolean = false,
+    /** флаг опроса **/
+    @Column(name = "is_survey")
+    val isSurvey: Boolean = false,
     /** последнее сообщение с консолью редактирования (в лс автора) **/
     /** нужно для редактирования рассылки в bc **/
     @Column(name = "last_console_message_id")

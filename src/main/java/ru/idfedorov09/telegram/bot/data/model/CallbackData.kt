@@ -20,6 +20,9 @@ data class CallbackData(
     /** id сообщения кнопки **/
     @Column(name = "msg_id")
     val messageId: String? = null,
+    /** id варианта ответа в опросе **/
+    @Column(name = "survey_answer_option_id")
+    val surveyAnswerOptionId: Long? = null,
     /** информация, хранящаяся в коллбеке **/
     @Column(name = "callback_data", columnDefinition = "TEXT")
     val callbackData: String? = null,

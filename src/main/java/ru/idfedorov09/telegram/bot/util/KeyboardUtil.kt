@@ -56,6 +56,11 @@ object KeyboardUtil {
                     it.add(TextCommands.CATEGORY_CHOOSE_TEXT_ACTION())
                 },
             )
+            keyboards.add(
+                KeyboardRow().also {
+                    it.add(TextCommands.SURVEY_CONSTRUCTOR())
+                },
+            )
         }
         if (UserRole.ROOT in roles) {
             keyboards.add(

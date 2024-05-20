@@ -7,6 +7,7 @@ import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.annotation.FetcherPerms
+import ru.idfedorov09.telegram.bot.base.util.UpdatesUtil
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.BOT_TIME_ZONE
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.MAX_BROADCAST_BUTTONS_COUNT
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
@@ -27,6 +28,7 @@ import ru.idfedorov09.telegram.bot.repo.CategoryRepository
 import ru.idfedorov09.telegram.bot.service.BroadcastSenderService
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -38,6 +40,7 @@ import kotlin.jvm.optionals.getOrNull
  */
 @Component
 class BroadcastConstructorFetcher(
+    private val updatesUtil: UpdatesUtil,
     private val callbackDataRepository: CallbackDataRepository,
     private val categoryRepository: CategoryRepository,
     private val broadcastRepository: BroadcastRepository,
@@ -59,6 +62,7 @@ class BroadcastConstructorFetcher(
             Params(
                 userActualizedInfo,
                 update,
+                updatesUtil
             )
         when {
             update.hasMessage() && update.message.hasText() -> textCommandsHandler(params)
@@ -330,7 +334,8 @@ class BroadcastConstructorFetcher(
             bcData?.startTime ?: run {
                 bcData =
                     bcData?.copy(
-                        startTime = LocalDateTime.now().atZone(BOT_TIME_ZONE).toLocalDateTime(),
+                        startTime = params.updatesUtil.getDate(params.update)
+                            ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() },
                     )
             }
 
@@ -1122,5 +1127,6 @@ class BroadcastConstructorFetcher(
     private data class Params(
         var userActualizedInfo: UserActualizedInfo,
         val update: Update,
+        val updatesUtil: UpdatesUtil,
     )
 }

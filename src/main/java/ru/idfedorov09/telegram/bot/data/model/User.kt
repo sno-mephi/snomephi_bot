@@ -55,6 +55,8 @@ data class User(
     val questDialogId: Long? = null,
     @Column(name = "is_registered")
     val isRegistered: Boolean = false,
+    @Column(name = "is_baned")
+    val isBaned: Boolean = false,
     @Column(name = "last_constructor_id")
     val constructorId: Long? = null,
     @Column(name = "is_deleted")
@@ -66,4 +68,8 @@ data class User(
     /** Было ли выполнено переключение клавиатуры на новую **/
     @Column(name = "is_keyboard_switched", updatable = false)
     val isKeyboardSwitched: Boolean = false,
+    @Column(name = "survey_id")
+    val surveyId: Long? = null,
+    @Column(name = "survey_question_number")
+    val currentSurveyQuestionNumber: Long? = null,
 )

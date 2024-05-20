@@ -11,11 +11,7 @@ import ru.idfedorov09.telegram.bot.data.model.User
 import ru.idfedorov09.telegram.bot.data.model.UserAction
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
-import ru.idfedorov09.telegram.bot.repo.BanRepository
-import ru.idfedorov09.telegram.bot.repo.BroadcastRepository
-import ru.idfedorov09.telegram.bot.repo.QuestDialogRepository
-import ru.idfedorov09.telegram.bot.repo.UserActionRepository
-import ru.idfedorov09.telegram.bot.repo.UserRepository
+import ru.idfedorov09.telegram.bot.repo.*
 import ru.mephi.sno.libs.flow.belly.InjectData
 import java.time.Instant
 import java.time.ZoneId
@@ -33,6 +29,7 @@ class UpdateDataFetcher(
     private val bot: Executor,
     private val updatesUtil: UpdatesUtil,
     private val userActionRepository: UserActionRepository,
+    private val surveyQuestionRepository: SurveyQuestionRepository,
 ) : DefaultFetcher() {
     @InjectData
     fun doFetch(
@@ -69,6 +66,9 @@ class UpdateDataFetcher(
                     isRegistered = isRegistered,
                     constructorId = bcData?.id,
                     isDeleted = isDeleted,
+                    isBaned = isBaned,
+                    surveyId = surveyId,
+                    currentSurveyQuestionNumber = currentSurveyQuestionNumber,
                 ),
             )
 
@@ -78,6 +78,10 @@ class UpdateDataFetcher(
 
             banData?.let {
                 banRepository.save(it)
+            }
+
+            surveyQuestionData?.let {
+                surveyQuestionRepository.save(it)
             }
         }
     }
