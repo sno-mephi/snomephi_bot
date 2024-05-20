@@ -88,7 +88,7 @@ class AddCertificateFetcher(
                 listOf(cancelButton, okButton).map { button ->
                     InlineKeyboardButton().also {
                         it.text = button.metaText!!
-                        it.url = button.metaUrl!!
+                        it.url = button.metaUrl
                         it.callbackData = button.callbackData
                     }
                 }
@@ -97,7 +97,7 @@ class AddCertificateFetcher(
             val sent = messageSenderService.sendMessage(
                 MessageParams(
                     chatId = similarUser.tui!!,
-                    text = "Здравствуйте!\n\nПри подготовке сертификата на ФИО ${certificate.fullName} " +
+                    text = "Здравствуйте!\n\nПри подготовке сертификата на ФИО '<code>${certificate.fullName}</code>' " +
                             "бот не обнаружил пользователей с таким ФИО.\nНаша система обнаружила, " +
                             "что ваше ФИО похоже на указанное.\n\n<i>Если это ваше ФИО, то нажмите на зеленую кнопку, " +
                             "если нет - то нажмите на красную или проигнорируйте это сообщение.</i>",

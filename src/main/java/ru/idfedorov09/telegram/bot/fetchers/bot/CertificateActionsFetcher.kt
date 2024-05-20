@@ -11,15 +11,16 @@ import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
 import ru.idfedorov09.telegram.bot.repo.CertificateRepository
+import ru.idfedorov09.telegram.bot.service.CertificateCheckService
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
-import kotlin.jvm.optionals.getOrNull
 
 @Component
 class CertificateActionsFetcher(
     private val callbackDataRepository: CallbackDataRepository,
     private val certificateRepository: CertificateRepository,
     private val messageSenderService: MessageSenderService,
+    private val certificateCheckService: CertificateCheckService,
 ) : DefaultFetcher() {
 
     @InjectData
@@ -33,11 +34,9 @@ class CertificateActionsFetcher(
     }
 
     private fun callbackQueryHandler(update: Update, userActualizedInfo: UserActualizedInfo) {
-        val callbackId = update.callbackQuery.data?.toLongOrNull()
-        callbackId ?: return
-        val callbackData = callbackDataRepository.findById(callbackId).getOrNull() ?: return
+        val callbackData = update.callbackQuery.data ?: return
 
-        callbackData.callbackData?.apply {
+        callbackData.apply {
             when {
                 startsWith(CallbackCommands.CANCEL_CONFIRM_FULLNAME.data) ->
                     cancelConfirmFullName(update, userActualizedInfo)
@@ -70,17 +69,8 @@ class CertificateActionsFetcher(
 
     private fun cancelConfirmFullName(update: Update, userActualizedInfo: UserActualizedInfo) {
         certificateRepository.findByCandidateOwnerId(userActualizedInfo.id!!)?.let {
-            // TODO: триггер на это действие
-            // триггер должен срабатываться по тому же сценарию, что и по истечению срока действия опроса
-            certificateRepository.delete(it)
+            certificateCheckService.onNotFindCertificateOwner(it)
         }
-
-        messageSenderService.deleteMessage(
-            MessageParams(
-                chatId = userActualizedInfo.tui,
-                messageId = update.callbackQuery.message.messageId
-            )
-        )
     }
 
     private fun approveConfirmFullName(update: Update, userActualizedInfo: UserActualizedInfo) {
