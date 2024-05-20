@@ -79,5 +79,4 @@ class AddCertificateFetcher(
         val userActualizedInfo: UserActualizedInfo,
         var certificate: Certificate,
     )
-
 }
