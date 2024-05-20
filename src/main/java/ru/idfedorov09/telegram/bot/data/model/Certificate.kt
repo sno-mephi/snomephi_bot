@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import java.time.LocalDateTime
 
 /**
  * Таблица с сертификатами
@@ -48,4 +49,16 @@ data class Certificate(
      */
     @Column(name = "file_id", columnDefinition = "TEXT")
     val certificateHash: String? = null,
+
+    /**
+     * Время начала опроса. null, если все хорошо
+     */
+    @Column(name = "poll_start_dttm")
+    val pollStartTime: LocalDateTime? = null,
+
+    /**
+     * id сообщения с вопросом о корректности ФИО
+     */
+    @Column(name = "poll_message_id")
+    val pollMessageId: Int? = null,
 )

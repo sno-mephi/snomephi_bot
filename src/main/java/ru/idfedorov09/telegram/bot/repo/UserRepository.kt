@@ -177,4 +177,19 @@ interface UserRepository : JpaRepository<User, Long> {
         nativeQuery = true,
     )
     fun updateUserCategoriesById(userId: Long)
+
+    @Query(
+        """
+            SELECT *
+            FROM users_table
+            WHERE 1 = 1
+                AND is_deleted = False
+                AND full_name IS NOT NULL 
+                AND similarity(full_name, :fullName) > :threshold
+            ORDER BY similarity(full_name, :fullName) DESC
+            LIMIT 1
+        """,
+        nativeQuery = true,
+    )
+    fun findSimilarUserByFullName(fullName: String, threshold: Double): User?
 }
