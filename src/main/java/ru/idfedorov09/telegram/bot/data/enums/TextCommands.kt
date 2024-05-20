@@ -138,6 +138,14 @@ enum class TextCommands(
         isFullCommand = false,
         allowedRoles = listOf(UserRole.USER),
     ),
+
+    GET_CERTIFICATE(
+        commandText = "Получить сертификат",
+        description = "Получение сертификатов для участников совещания. " +
+                "Если сертификат еще не готов, сообщает об этом участнику, если готов - отправляет его.",
+        isFullCommand = false,
+        allowedRoles = listOf(UserRole.USER)
+    )
     ;
 
     /** Проверяет, является ли текст командой **/
