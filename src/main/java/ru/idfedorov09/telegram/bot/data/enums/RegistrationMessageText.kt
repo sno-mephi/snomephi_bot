@@ -5,7 +5,7 @@ enum class RegistrationMessageText(private val text: String) {
     GroupRequest("Введите название Вашего СНО/СМУС"),
 
     FullNameConfirmation("Вы действительно хотите использовать ФИО %s?"),
-    GroupConfirmation("Вы действительно состоите СНО/СМУС %s?"),
+    GroupConfirmation("Вы действительно состоите в СНО/СМУС %s?"),
     WithoutGroupConfirmation("Вы действительно не из МИФИ?"),
 
     InvalidFullName("Кажется Вы ввели ФИО неправильно. Используйте только символы из кириллицы и пробелы"),
