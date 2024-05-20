@@ -74,7 +74,8 @@ class AddCertificateFetcher(
             return
         }
 
-        certificate.copy(certificateOwnerId = user.id).save()
+        // если сертификат с таким owner уже есть то ниче не делаем
+        certificateRepository.findByCertificateOwnerId(user.id!!) ?: certificate.copy(certificateOwnerId = user.id).save()
     }
 
     private fun onNotFoundByFullName(params: Params) {

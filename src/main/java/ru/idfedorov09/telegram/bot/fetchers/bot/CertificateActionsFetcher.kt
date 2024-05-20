@@ -17,7 +17,6 @@ import ru.mephi.sno.libs.flow.belly.InjectData
 
 @Component
 class CertificateActionsFetcher(
-    private val callbackDataRepository: CallbackDataRepository,
     private val certificateRepository: CertificateRepository,
     private val messageSenderService: MessageSenderService,
     private val certificateCheckService: CertificateCheckService,
@@ -86,12 +85,13 @@ class CertificateActionsFetcher(
             return
         }
 
-        certificate.copy(
-            pollStartTime = null,
-            pollMessageId = null,
-            certificateOwnerId = userActualizedInfo.id,
-            candidateOwnerId = null,
-        ).save()
+        certificateRepository.findByCertificateOwnerId(userActualizedInfo.id)
+            ?: certificate.copy(
+                pollStartTime = null,
+                pollMessageId = null,
+                certificateOwnerId = userActualizedInfo.id,
+                candidateOwnerId = null,
+            ).save()
 
         messageSenderService.editMessage(
             MessageParams(
