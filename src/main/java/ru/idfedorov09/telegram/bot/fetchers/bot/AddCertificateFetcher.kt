@@ -52,8 +52,9 @@ class AddCertificateFetcher(
         }
         val fullName = getFullName(update)
 
+        // если такой уже есть - пересоздаем
         certificateRepository.findByFullName(fullName)?.let {
-            return
+            certificateRepository.delete(it)
         }
 
         val certificate = Certificate(
