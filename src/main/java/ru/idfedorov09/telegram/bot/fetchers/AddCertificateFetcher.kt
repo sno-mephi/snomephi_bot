@@ -39,7 +39,7 @@ class AddCertificateFetcher(
 
         // TODO: если сертификат на такое ФИО уже есть, то скипаем все остальное
 
-        var certificate = Certificate(
+        val certificate = Certificate(
             fullName = fullName,
             issueAuthorId = userActualizedInfo.id,
         ).save()
