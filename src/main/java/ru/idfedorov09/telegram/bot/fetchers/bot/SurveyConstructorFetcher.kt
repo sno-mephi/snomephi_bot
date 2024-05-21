@@ -418,16 +418,6 @@ class SurveyConstructorFetcher (
                 ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
             val sendTime = bcData?.startTime ?: nowTime
             val isScheduled = bcData?.isScheduled ?: false
-            bcData =
-                bcData?.copy(
-                    isBuilt = true,
-                    startTime = sendTime,
-                    isScheduled = isScheduled,
-                    lastConsoleMessageId = null,
-                    text = "Доброго времени суток, предлагаем вам пройти небольшой опрос.\n\n" +
-                            "При нажатии кнопки Начать, диалог будет автоматически завершен!"
-                )
-            lastUserActionType = LastUserActionType.DEFAULT
 
             val msgText = if (isScheduled) {
                 "Отложенный опрос успешно создан"
@@ -441,6 +431,17 @@ class SurveyConstructorFetcher (
                     messageId = bcData?.lastConsoleMessageId
                 )
             )
+
+            bcData =
+                bcData?.copy(
+                    isBuilt = true,
+                    startTime = sendTime,
+                    isScheduled = isScheduled,
+                    lastConsoleMessageId = null,
+                    text = "Доброго времени суток, предлагаем вам пройти небольшой опрос.\n\n" +
+                            "При нажатии кнопки Начать, диалог будет автоматически завершен!"
+                )
+            lastUserActionType = LastUserActionType.DEFAULT
 
             Button(
                 text = "Начать",
