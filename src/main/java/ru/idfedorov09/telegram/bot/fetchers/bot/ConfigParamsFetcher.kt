@@ -1,0 +1,153 @@
+package ru.idfedorov09.telegram.bot.fetchers.bot
+
+import org.springframework.stereotype.Component
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
+import org.telegram.telegrambots.meta.api.objects.Update
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
+import ru.idfedorov09.telegram.bot.base.executor.Executor
+import ru.idfedorov09.telegram.bot.base.util.UpdatesUtil
+import ru.idfedorov09.telegram.bot.data.enums.ConfigParamType
+import ru.idfedorov09.telegram.bot.data.enums.ConfigParams
+import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
+import ru.idfedorov09.telegram.bot.data.enums.TextCommands
+import ru.idfedorov09.telegram.bot.data.model.CallbackData
+import ru.idfedorov09.telegram.bot.data.model.MessageParams
+import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
+import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
+import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
+import ru.idfedorov09.telegram.bot.service.MessageSenderService
+import ru.mephi.sno.libs.flow.belly.InjectData
+import kotlin.jvm.optionals.getOrNull
+
+@Component
+class ConfigParamsFetcher(
+    private val callbackDataRepository: CallbackDataRepository,
+    private val messageSenderService: MessageSenderService,
+    private val updatesUtil: UpdatesUtil,
+    private val bot: Executor,
+) : DefaultFetcher() {
+
+    companion object {
+        private const val SEPARATOR = "04b6c5cb-2519-4d02-bc4b-6c7e3ddf5764"
+        private const val CONFIGURE_PARAM_PREFIX = "configure_parameter"
+    }
+
+    @InjectData
+    fun doFetch(update: Update, userActualizedInfo: UserActualizedInfo) {
+        if (userActualizedInfo.lastUserActionType != LastUserActionType.DEFAULT) return
+
+        if (update.hasMessage() && update.message.hasText() && update.message.text == TextCommands.CONFIG_PARAMS()) {
+            showConfigParams(update, userActualizedInfo)
+        } else if (update.hasCallbackQuery()) callbackQueryHandler(update, userActualizedInfo)
+    }
+
+    private fun callbackQueryHandler(update: Update, userActualizedInfo: UserActualizedInfo) {
+        val callbackId = update.callbackQuery.data?.toLongOrNull()
+        callbackId ?: return
+        val callbackData = callbackDataRepository.findById(callbackId).getOrNull() ?: return
+
+        callbackData.callbackData?.apply {
+            if (startsWith(CONFIGURE_PARAM_PREFIX))
+                configureParameterResolveByType(update, userActualizedInfo, this)
+        }
+    }
+
+    private fun configureParameterResolveByType(
+        update: Update,
+        userActualizedInfo: UserActualizedInfo,
+        callbackData: String
+    ) {
+        val parameter = ConfigParams.getByKey(callbackData.split(SEPARATOR).lastOrNull()) ?: run {
+            val answerCallbackQuery =
+                AnswerCallbackQuery().also {
+                    it.callbackQueryId = update.callbackQuery.id
+                    it.text = "☹\uFE0F Такого параметра не существует."
+                    it.showAlert = true
+                }
+            bot.execute(answerCallbackQuery)
+            messageSenderService.deleteMessage(
+                MessageParams(
+                    chatId = update.callbackQuery.message.chatId.toString(),
+                    messageId = update.callbackQuery.message.messageId,
+                )
+            )
+            return
+        }
+
+        when(parameter.type) {
+            ConfigParamType.INPUT -> processInputParam(update, userActualizedInfo, parameter)
+            ConfigParamType.SELECT_ONE -> processSelectOneParam(update, userActualizedInfo, parameter)
+            ConfigParamType.SELECT_MANY -> processSelectManyParam(update, userActualizedInfo, parameter)
+        }
+    }
+
+    private fun processInputParam(update: Update, userActualizedInfo: UserActualizedInfo, param: ConfigParams) {
+        // TODO
+    }
+
+    // TODO
+    private fun processSelectOneParam(update: Update, userActualizedInfo: UserActualizedInfo, param: ConfigParams) {
+        val answerCallbackQuery =
+            AnswerCallbackQuery().also {
+                it.callbackQueryId = update.callbackQuery.id
+                it.text = "☹\uFE0F Функционал изменения такого типа параметров еще в разработке."
+                it.showAlert = true
+            }
+        bot.execute(answerCallbackQuery)
+    }
+
+    // TODO
+    private fun processSelectManyParam(update: Update, userActualizedInfo: UserActualizedInfo, param: ConfigParams) {
+        val answerCallbackQuery =
+            AnswerCallbackQuery().also {
+                it.callbackQueryId = update.callbackQuery.id
+                it.text = "☹\uFE0F Функционал изменения такого типа параметров еще в разработке."
+                it.showAlert = true
+            }
+        bot.execute(answerCallbackQuery)
+    }
+
+    private fun showConfigParams(update: Update, userActualizedInfo: UserActualizedInfo) {
+        val keyboard = ConfigParams.entries
+            .filter { it.isAllowed(userActualizedInfo) }
+            .map {
+                CallbackData(
+                    callbackData = "$CONFIGURE_PARAM_PREFIX$SEPARATOR${it.key}",
+                    metaText = it.displayName,
+                ).save()
+            }
+
+        val text =
+            if (keyboard.isEmpty())
+                "❌ Нет доступных параметров, которые Вы можете настраивать. Возможно, у Вас недостаточно доступа."
+            else
+                "Выберите параметры, которые Вы хотите настроить"
+
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = updatesUtil.getChatId(update)!!,
+                text = text,
+                replyMarkup = keyboard.createKeyboard(),
+            )
+        )
+
+    }
+
+    private fun List<CallbackData>.createKeyboard() = createKeyboard(*this.toTypedArray())
+
+    private fun createKeyboard(vararg callbackData: CallbackData): InlineKeyboardMarkup {
+        val keyboard =
+            listOf(*callbackData).map { button ->
+                InlineKeyboardButton().also {
+                    it.text = button.metaText!!
+                    it.callbackData = button.id?.toString()
+                    it.url = button.metaUrl
+                }
+            }.map { listOf(it) }
+        return createKeyboard(keyboard)
+    }
+
+    private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
+    private fun CallbackData.save() = callbackDataRepository.save(this)
+}
