@@ -1,0 +1,2 @@
+CREATE DATABASE snomephi_meeting_test_db;
+CREATE DATABASE snomephi_meeting_prod_db;

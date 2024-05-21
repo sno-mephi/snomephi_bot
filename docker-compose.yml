@@ -12,31 +12,17 @@ services:
     networks:
       - backend
 
-  postgres_test:
+  postgres:
     image: postgres:latest
-    container_name: snomepgi_meeting_postgres_test
+    container_name: snomepgi_meeting_postgres
     ports:
       - "55421:5432"
     environment:
       POSTGRES_USER: snomephi_meeting_user
       POSTGRES_PASSWORD: 68g2hffftM96qI5y5HpL
-      POSTGRES_DB: snomephi_meeting_test_db
     volumes:
-      - postgres_data_test:/var/lib/postgresql/data
-    networks:
-      - backend
-
-  postgres_prod:
-    image: postgres:latest
-    container_name: snomepgi_meeting_postgres_prod
-    ports:
-      - "55422:5432"
-    environment:
-      POSTGRES_USER: snomephi_meeting_user
-      POSTGRES_PASSWORD: 68g2hffftM96qI5y5HpL
-      POSTGRES_DB: snomephi_meeting_prod_db
-    volumes:
-      - postgres_data_prod:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
     networks:
       - backend
 
@@ -50,14 +36,12 @@ services:
     networks:
       - backend
     depends_on:
-      - postgres_test
-      - postgres_prod
+      - postgres
       - redis
 
 volumes:
   redis_data:
-  postgres_data_test:
-  postgres_data_prod:
+  postgres_data:
 
 networks:
   backend:
