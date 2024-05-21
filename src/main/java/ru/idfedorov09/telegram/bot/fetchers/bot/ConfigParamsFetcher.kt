@@ -34,30 +34,36 @@ class ConfigParamsFetcher(
     }
 
     @InjectData
-    fun doFetch(update: Update, userActualizedInfo: UserActualizedInfo) {
-        if (userActualizedInfo.lastUserActionType != LastUserActionType.DEFAULT) return
+    fun doFetch(update: Update, userActualizedInfo: UserActualizedInfo): UserActualizedInfo {
+        if (userActualizedInfo.lastUserActionType != LastUserActionType.DEFAULT) return userActualizedInfo
 
         if (update.hasMessage() && update.message.hasText() && update.message.text == TextCommands.CONFIG_PARAMS()) {
-            showConfigParams(update, userActualizedInfo)
-        } else if (update.hasCallbackQuery()) callbackQueryHandler(update, userActualizedInfo)
+            return showConfigParams(update, userActualizedInfo)
+        }
+        if (update.hasCallbackQuery()) return callbackQueryHandler(update, userActualizedInfo)
+        return userActualizedInfo
     }
 
-    private fun callbackQueryHandler(update: Update, userActualizedInfo: UserActualizedInfo) {
+    private fun callbackQueryHandler(
+        update: Update,
+        userActualizedInfo: UserActualizedInfo,
+    ): UserActualizedInfo {
         val callbackId = update.callbackQuery.data?.toLongOrNull()
-        callbackId ?: return
-        val callbackData = callbackDataRepository.findById(callbackId).getOrNull() ?: return
+        callbackId ?: return userActualizedInfo
+        val callbackData = callbackDataRepository.findById(callbackId).getOrNull() ?: return userActualizedInfo
 
         callbackData.callbackData?.apply {
             if (startsWith(CONFIGURE_PARAM_PREFIX))
-                configureParameterResolveByType(update, userActualizedInfo, this)
+                return configureParameterResolveByType(update, userActualizedInfo, this)
         }
+        return userActualizedInfo
     }
 
     private fun configureParameterResolveByType(
         update: Update,
         userActualizedInfo: UserActualizedInfo,
         callbackData: String
-    ) {
+    ): UserActualizedInfo {
         val parameter = ConfigParams.getByKey(callbackData.split(SEPARATOR).lastOrNull()) ?: run {
             val answerCallbackQuery =
                 AnswerCallbackQuery().also {
@@ -72,22 +78,31 @@ class ConfigParamsFetcher(
                     messageId = update.callbackQuery.message.messageId,
                 )
             )
-            return
+            return userActualizedInfo
         }
 
-        when(parameter.type) {
+        return when (parameter.type) {
             ConfigParamType.INPUT -> processInputParam(update, userActualizedInfo, parameter)
             ConfigParamType.SELECT_ONE -> processSelectOneParam(update, userActualizedInfo, parameter)
             ConfigParamType.SELECT_MANY -> processSelectManyParam(update, userActualizedInfo, parameter)
         }
     }
 
-    private fun processInputParam(update: Update, userActualizedInfo: UserActualizedInfo, param: ConfigParams) {
+    private fun processInputParam(
+        update: Update,
+        userActualizedInfo: UserActualizedInfo,
+        param: ConfigParams
+    ): UserActualizedInfo {
         // TODO
+        return userActualizedInfo
     }
 
     // TODO
-    private fun processSelectOneParam(update: Update, userActualizedInfo: UserActualizedInfo, param: ConfigParams) {
+    private fun processSelectOneParam(
+        update: Update,
+        userActualizedInfo: UserActualizedInfo,
+        param: ConfigParams
+    ): UserActualizedInfo {
         val answerCallbackQuery =
             AnswerCallbackQuery().also {
                 it.callbackQueryId = update.callbackQuery.id
@@ -95,10 +110,15 @@ class ConfigParamsFetcher(
                 it.showAlert = true
             }
         bot.execute(answerCallbackQuery)
+        return userActualizedInfo
     }
 
     // TODO
-    private fun processSelectManyParam(update: Update, userActualizedInfo: UserActualizedInfo, param: ConfigParams) {
+    private fun processSelectManyParam(
+        update: Update,
+        userActualizedInfo: UserActualizedInfo,
+        param: ConfigParams
+    ): UserActualizedInfo {
         val answerCallbackQuery =
             AnswerCallbackQuery().also {
                 it.callbackQueryId = update.callbackQuery.id
@@ -106,9 +126,10 @@ class ConfigParamsFetcher(
                 it.showAlert = true
             }
         bot.execute(answerCallbackQuery)
+        return userActualizedInfo
     }
 
-    private fun showConfigParams(update: Update, userActualizedInfo: UserActualizedInfo) {
+    private fun showConfigParams(update: Update, userActualizedInfo: UserActualizedInfo): UserActualizedInfo {
         val keyboard = ConfigParams.entries
             .filter { it.isAllowed(userActualizedInfo) }
             .map {
@@ -128,13 +149,11 @@ class ConfigParamsFetcher(
             MessageParams(
                 chatId = updatesUtil.getChatId(update)!!,
                 text = text,
-                replyMarkup = keyboard.createKeyboard(),
+                replyMarkup = createKeyboard(*keyboard.toTypedArray()),
             )
         )
-
+        return userActualizedInfo
     }
-
-    private fun List<CallbackData>.createKeyboard() = createKeyboard(*this.toTypedArray())
 
     private fun createKeyboard(vararg callbackData: CallbackData): InlineKeyboardMarkup {
         val keyboard =
