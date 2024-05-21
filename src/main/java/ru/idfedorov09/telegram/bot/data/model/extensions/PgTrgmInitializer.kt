@@ -3,7 +3,6 @@ package ru.idfedorov09.telegram.bot.data.model.extensions
 import jakarta.annotation.PostConstruct
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Component
-import ru.idfedorov09.telegram.bot.data.GlobalConstants.DEFAULT_TRGM_SIMILARITY_THRESHOLD
 
 @Component
 class PgTrgmInitializer(private val jdbcTemplate: JdbcTemplate) {
