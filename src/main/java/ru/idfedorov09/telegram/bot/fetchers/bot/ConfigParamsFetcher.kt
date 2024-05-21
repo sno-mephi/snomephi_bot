@@ -2,6 +2,7 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
+import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
@@ -14,8 +15,10 @@ import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.model.CallbackData
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
+import ru.idfedorov09.telegram.bot.data.model.UserData
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
+import ru.idfedorov09.telegram.bot.service.ConfigParamsService.
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
 import kotlin.jvm.optionals.getOrNull
@@ -26,6 +29,7 @@ class ConfigParamsFetcher(
     private val messageSenderService: MessageSenderService,
     private val updatesUtil: UpdatesUtil,
     private val bot: Executor,
+    private val configParamsService: ConfigParamsService,
 ) : DefaultFetcher() {
 
     companion object {
@@ -54,9 +58,9 @@ class ConfigParamsFetcher(
     }
 
     private fun commonTextHandler(update: Update, userActualizedInfo: UserActualizedInfo): UserActualizedInfo {
-        when (userActualizedInfo.lastUserActionType) {
-            LastUserActionType.INPUT_CONFIGURE_PARAMETER_VALUE -> TODO()
-            else -> return userActualizedInfo
+        return when (userActualizedInfo.lastUserActionType) {
+            LastUserActionType.INPUT_CONFIGURE_PARAMETER_VALUE -> changeConfig(update, userActualizedInfo)
+            else -> userActualizedInfo
         }
     }
 
@@ -73,6 +77,28 @@ class ConfigParamsFetcher(
                 return configureParameterResolveByType(update, userActualizedInfo, this)
         }
         return userActualizedInfo
+    }
+
+    private fun changeConfig(update: Update, userActualizedInfo: UserActualizedInfo): UserActualizedInfo {
+        val parameter = ConfigParams.getByKey(userActualizedInfo.data?.configParamKeyToChange)
+            ?: return userActualizedInfo.copy(
+                lastUserActionType = LastUserActionType.DEFAULT
+            )
+
+        val newValue = update.message.text.trim()
+        configParamsService.setValue(parameter, newValue)
+        deleteUpdateMessage()
+        messageSenderService.sendMessage(
+            MessageParams(
+                chatId = updatesUtil.getChatId(update)!!,
+                text = "✅ Значение параметра ${parameter.displayName} успешно изменено на <code>$newValue</code>",
+                parseMode = ParseMode.HTML,
+            )
+        )
+
+        return userActualizedInfo.copy(
+            lastUserActionType = LastUserActionType.DEFAULT,
+        )
     }
 
     private fun configureParameterResolveByType(
@@ -117,9 +143,14 @@ class ConfigParamsFetcher(
             )
         )
 
-        return userActualizedInfo.copy(
-            lastUserActionType = LastUserActionType.INPUT_CONFIGURE_PARAMETER_VALUE
-        )
+        userActualizedInfo.apply {
+            return copy(
+                lastUserActionType = LastUserActionType.INPUT_CONFIGURE_PARAMETER_VALUE,
+                data = data?.let { it.copy(configParamKeyToChange = param.key) } ?: UserData(
+                    configParamKeyToChange = param.key
+                )
+            )
+        }
     }
 
     // TODO

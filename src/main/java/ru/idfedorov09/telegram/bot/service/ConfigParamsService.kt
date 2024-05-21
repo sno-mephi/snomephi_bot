@@ -16,16 +16,16 @@ class ConfigParamsService(
 
     private operator fun ConfigParams.invoke() = "$REDIS_PREFIX#${this.key}"
 
-    private fun ConfigParams.getValues() =
-        listOf(redisService.getSafe(this()) ?: this.defaultValues.getOrNull(0))
+    fun getValues(configParams: ConfigParams) =
+        listOf(redisService.getSafe(configParams()) ?: configParams.defaultValues.getOrNull(0))
 
     /**
      * Устанавливает значение для параметра типа INPUT
      */
-    private fun ConfigParams.setValue(value: String) {
-        if (this.type != ConfigParamType.INPUT)
+    fun setValue(configParams: ConfigParams, value: String) {
+        if (configParams.type != ConfigParamType.INPUT)
             throw IllegalStateException("Неверный тип параметра.")
 
-        redisService.setValue(this(), value)
+        redisService.setValue(configParams(), value)
     }
 }

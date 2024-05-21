@@ -27,4 +27,6 @@ data class UserData(
     var surveyQuestionChangedId: Long? = null,
     /** id сообщения с вопросом у юзера **/
     var surveyUserQuestionMessageId: Int? = null,
+    /** Параметр для редактирования **/
+    var configParamKeyToChange: String? = null,
 )
