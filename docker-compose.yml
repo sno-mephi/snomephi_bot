@@ -32,9 +32,12 @@ services:
       dockerfile: Dockerfile
     container_name: java_app_container
     ports:
-      - "8080:8080" # Пример, если ваше Java-приложение слушает порт 8080
+      - "8080:8080"
     networks:
       - backend
+    depends_on:
+      - postgres
+      - redis
 
 volumes:
   redis_data:
