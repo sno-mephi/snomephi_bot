@@ -11,10 +11,6 @@ object GlobalConstants {
 
     val BOT_TIME_ZONE = ZoneId.of("Europe/Moscow")
 
-    // id админского чата
-    // TODO: поменять на айдишники (возможность делать несколько админских чатов!)
-    const val QUEST_RESPONDENT_CHAT_ID = "-1002057270905"
-
     const val MAX_BROADCAST_BUTTONS_COUNT = 5
 
     val ROOT_LIST: List<String> = listOf(

@@ -16,8 +16,8 @@ class ConfigParamsService(
 
     private operator fun ConfigParams.invoke() = "$REDIS_PREFIX#${this.key}"
 
-    fun getValues(configParams: ConfigParams) =
-        listOf(redisService.getSafe(configParams()) ?: configParams.defaultValues.getOrNull(0))
+    fun getValue(configParams: ConfigParams) =
+        redisService.getSafe(configParams()) ?: configParams.defaultValues.getOrNull(0)
 
     /**
      * Устанавливает значение для параметра типа INPUT

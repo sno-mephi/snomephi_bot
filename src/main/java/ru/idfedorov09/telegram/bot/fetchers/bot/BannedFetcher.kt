@@ -14,6 +14,7 @@ import ru.idfedorov09.telegram.bot.data.enums.*
 import ru.idfedorov09.telegram.bot.data.model.*
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.*
+import ru.idfedorov09.telegram.bot.service.ConfigParamsService
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
@@ -33,6 +34,7 @@ class BannedFetcher(
     private val bot: Executor,
     private val questDialogRepository: QuestDialogRepository,
     private val questSegmentRepository: QuestSegmentRepository,
+    private val configParamsService: ConfigParamsService,
 ) : DefaultFetcher() {
     companion object {
         private val FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
@@ -367,7 +369,7 @@ class BannedFetcher(
             }."
             messageSenderService.editMessage(
                 MessageParams(
-                    chatId = GlobalConstants.QUEST_RESPONDENT_CHAT_ID,
+                    chatId = configParamsService.getValue(ConfigParams.ADMIN_CHAT_ID)!!,
                     messageId = questDialog.consoleMessageId?.toInt(),
                     text = newText,
                 ),

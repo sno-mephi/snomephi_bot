@@ -5,8 +5,8 @@ import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.base.util.UpdatesUtil
-import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUEST_RESPONDENT_CHAT_ID
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.*
+import ru.idfedorov09.telegram.bot.data.enums.ConfigParams
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
@@ -16,6 +16,7 @@ import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
 import ru.idfedorov09.telegram.bot.repo.QuestDialogRepository
 import ru.idfedorov09.telegram.bot.repo.QuestMessageRepository
 import ru.idfedorov09.telegram.bot.repo.QuestSegmentRepository
+import ru.idfedorov09.telegram.bot.service.ConfigParamsService
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
@@ -30,6 +31,7 @@ class QuestStartFetcher(
     private val questMessageRepository: QuestMessageRepository,
     private val messageSenderService: MessageSenderService,
     private val callbackDataRepository: CallbackDataRepository,
+    private val configParamsService: ConfigParamsService,
 ) : DefaultFetcher() {
     @InjectData
     fun doFetch(
@@ -130,7 +132,7 @@ class QuestStartFetcher(
         // TODO: добавить время обращения
         messageSenderService.sendMessage(
             MessageParams(
-                chatId = QUEST_RESPONDENT_CHAT_ID,
+                chatId = configParamsService.getValue(ConfigParams.ADMIN_CHAT_ID)!!,
                 text =
                     "\uD83D\uDCE5 Получен вопрос #${questDialog.id} " +
                         "от ${MessageSenderUtil.userName(userActualizedInfo.lastTgNick, userActualizedInfo.fullName)}",
@@ -139,7 +141,7 @@ class QuestStartFetcher(
 
         messageSenderService.sendMessage(
             MessageParams(
-                chatId = QUEST_RESPONDENT_CHAT_ID,
+                chatId = configParamsService.getValue(ConfigParams.ADMIN_CHAT_ID)!!,
                 fromChatId = updatesUtil.getChatId(update).toString(),
                 messageId = update.message.messageId,
             ),
@@ -164,7 +166,7 @@ class QuestStartFetcher(
         val sentMessage =
             messageSenderService.sendMessage(
                 MessageParams(
-                    chatId = QUEST_RESPONDENT_CHAT_ID,
+                    chatId = configParamsService.getValue(ConfigParams.ADMIN_CHAT_ID)!!,
                     text = "Выберите действие:",
                     replyMarkup = createChooseKeyboard(answerButton, banButton, ignoreButton),
                 ),
