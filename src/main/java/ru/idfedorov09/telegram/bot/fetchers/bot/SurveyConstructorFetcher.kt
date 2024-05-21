@@ -7,6 +7,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.annotation.FetcherPerms
 import ru.idfedorov09.telegram.bot.base.util.UpdatesUtil
+import ru.idfedorov09.telegram.bot.data.GlobalConstants
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
@@ -17,7 +18,9 @@ import ru.idfedorov09.telegram.bot.repo.*
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
 import java.time.Instant
+import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import kotlin.jvm.optionals.getOrNull
 
 @Component
@@ -30,6 +33,10 @@ class SurveyConstructorFetcher (
     private val updatesUtil: UpdatesUtil,
     private val buttonRepository: ButtonRepository,
 ) : DefaultFetcher() {
+
+    companion object {
+        private val FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
+    }
     @InjectData
     @FetcherPerms(UserRole.MAILER)
     fun doFetch(
@@ -119,8 +126,47 @@ class SurveyConstructorFetcher (
             LastUserActionType.SURVEY_QUESTION_CHANGE_TEXT -> enterChangeQuestionText(params)
             LastUserActionType.SURVEY_QUESTION_CHANGE_ANSWER_OPTIONS -> enterChangeAnswerOption(params)
             LastUserActionType.SURVEY_CHANGE_STANDARD_ORDER_QUESTIONS -> enterChangedStandardOrder(params)
+            LastUserActionType.SURVEY_CHANGE_START_TIME -> changeStartTime(params)
             else -> return
         }
+    }
+
+    private fun changeStartTime(params: Params) {
+        params.userActualizedInfo.apply {
+            val msgText = params.update.message.text.trim()
+            val startTime =
+                when {
+                    msgText.matches(Regex("\\d{2}.\\d{2}.\\d{4} \\d{2}:\\d{2}")) -> resolveFullDate(msgText)
+                    msgText.matches(Regex("\\d{2}:\\d{2}")) -> resolveShortDate(msgText)
+                    else -> null
+                } ?: run {
+                    scheduleMessage(params, prefix = "Неверный формат даты и времени")
+                    return
+                }
+            bcData =
+                bcData?.copy(
+                    startTime = startTime,
+                    isScheduled = true,
+                )
+
+            lastUserActionType = LastUserActionType.DEFAULT
+            deleteUpdateMessage()
+            buildSurvey(params)
+        }
+    }
+
+    private fun resolveFullDate(fullDateText: String) =
+        LocalDateTime.parse(fullDateText, FORMATTER)
+            .atZone(GlobalConstants.BOT_TIME_ZONE).toLocalDateTime()
+
+    /**
+     * Возвращает по сообщению формата HH:mm текущую дату с таким временем в LocalDateTime
+     */
+    private fun resolveShortDate(timeText: String): LocalDateTime {
+        val nowDttm = LocalDateTime.now().atZone(GlobalConstants.BOT_TIME_ZONE).toLocalDateTime()
+        val currentDate = nowDttm.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+        val formatString = "$currentDate $timeText"
+        return LocalDateTime.parse(formatString, FORMATTER)
     }
 
     private fun enterChangedStandardOrder(params: Params) {
@@ -154,7 +200,7 @@ class SurveyConstructorFetcher (
                         )
                     )
                 }
-                buildSurvey(params)
+                sendStartTimeMessage(params)
             }
 
             deleteUpdateMessage()
@@ -323,29 +369,78 @@ class SurveyConstructorFetcher (
                 startsWith(CallbackCommands.SURVEY_STANDARD_ORDER.data) -> standardOrder(params)
                 startsWith(CallbackCommands.SURVEY_DO_NOT_CHANGE_STANDARD_ORDER.data) -> standardDoNotChangeOrderConfirm(params)
                 startsWith(CallbackCommands.SURVEY_CHANGE_STANDARD_ORDER.data) -> standardChangeOrder(params)
+                startsWith(CallbackCommands.SURVEY_START_NOW.data) -> buildSurvey(params)
+                startsWith(CallbackCommands.SURVEY_SCHEDULE_SENDING.data) -> scheduleMessage(params)
             }
+        }
+    }
+
+    private fun scheduleMessage(params: Params, prefix: String? = null) {
+        params.userActualizedInfo.apply {
+            val msgStart = prefix?.let { "$prefix\n" } ?: ""
+            val msgText = msgStart  +
+                    "\uD83D\uDD57 Отправь время запуска рассылки в формате <b><i>ДД.ММ.ГГГГ ЧЧ:ММ</i></b>" +
+                        " или напиши время рассыли в формате <b><i>ЧЧ:ММ</i></b>, " +
+                        "если хочешь разослать <b><i><u>сегодня</u></i></b>\n\n" +
+                        "Например, если ты отправишь\n<pre>24.06.2077 19:25</pre>\nто рассылка начнется " +
+                        "24 июня 2077 года в 19:25, а если \n<pre>23:50</pre>\nто рассылка начнется <u>сегодня</u> в 23:50"
+            messageSenderService.editMessage(
+                MessageParams(
+                    chatId = tui,
+                    text = msgText,
+                    parseMode = ParseMode.HTML,
+                    messageId = bcData?.lastConsoleMessageId
+                ),
+            )
+            lastUserActionType = LastUserActionType.SURVEY_CHANGE_START_TIME
+        }
+    }
+
+    private fun sendStartTimeMessage(params: Params){
+        params.userActualizedInfo.apply {
+            val startNow = CallbackData(callbackData = CallbackCommands.SURVEY_START_NOW.data, metaText = "Отправить сейчас").save()
+            val scheduleSending = CallbackData(callbackData = CallbackCommands.SURVEY_SCHEDULE_SENDING.data, metaText = "Отложить отправку").save()
+            messageSenderService.editMessage(
+                MessageParams(
+                    chatId = tui,
+                    text = "Опрос успешно создан! Выберите дальнейшее действие",
+                    messageId = bcData?.lastConsoleMessageId,
+                    replyMarkup = createKeyboard(startNow, scheduleSending),
+                )
+            )
+            lastUserActionType = LastUserActionType.DEFAULT
         }
     }
 
     private fun buildSurvey(params: Params){
         params.userActualizedInfo.apply {
-            messageSenderService.editMessage(
-                MessageParams(
-                    chatId = tui,
-                    text = "Опрос успешно создан, начинается рассылка...",
-                    messageId = bcData?.lastConsoleMessageId
-                )
-            )
+            val nowTime = params.updatesUtil.getDate(params.update)
+                ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() }
+            val sendTime = bcData?.startTime ?: nowTime
+            val isScheduled = bcData?.isScheduled ?: false
             bcData =
                 bcData?.copy(
                     isBuilt = true,
-                    startTime = params.updatesUtil.getDate(params.update)
-                        ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() },
+                    startTime = sendTime,
+                    isScheduled = isScheduled,
                     lastConsoleMessageId = null,
                     text = "Доброго времени суток, предлагаем вам пройти небольшой опрос.\n\n" +
-                    "При нажатии кнопки Начать, диалог будет автоматически завершен!"
+                            "При нажатии кнопки Начать, диалог будет автоматически завершен!"
                 )
             lastUserActionType = LastUserActionType.DEFAULT
+
+            val msgText = if (isScheduled) {
+                "Отложенный опрос успешно создан"
+            } else {
+                "Опрос успешно создан, начинается рассылка..."
+            }
+            messageSenderService.editMessage(
+                MessageParams(
+                    chatId = tui,
+                    text = msgText,
+                    messageId = bcData?.lastConsoleMessageId
+                )
+            )
 
             Button(
                 text = "Начать",
@@ -369,7 +464,7 @@ class SurveyConstructorFetcher (
                         )
                     )
                 }
-            buildSurvey(params)
+            sendStartTimeMessage(params)
         }
     }
 

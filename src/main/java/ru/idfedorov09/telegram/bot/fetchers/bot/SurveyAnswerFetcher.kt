@@ -169,7 +169,7 @@ class SurveyAnswerFetcher (
                 MessageParams(
                     messageId = data?.surveyUserQuestionMessageId,
                     chatId = tui,
-                    text = "Спасибо, что приняли участие в опрсое!",
+                    text = "Спасибо, что приняли участие в опросе!",
                 )
             )
             surveyId = null
