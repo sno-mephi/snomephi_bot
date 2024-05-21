@@ -123,12 +123,6 @@ enum class TextCommands(
             ),
     ),
 
-    USER_SETTING(
-        commandText = "/setting",
-        description = "Настройки пользователя",
-        allowedRoles = listOf(UserRole.USER),
-    ),
-
     USER_SETTING_REPLY(
         commandText = "Проверка данных",
         description = "Настройки пользователя",
