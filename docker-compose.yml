@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:latest
+    container_name: redis_meeting_sno
+    ports:
+      - "6752:6379"
+    command: ["redis-server", "--requirepass", "V4legV0rIJwugq6AuNPa"]
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+
+  postgres:
+    image: postgres:latest
+    container_name: snomepgi_meeting_postgres_test
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: snomephi_meeting_user
+      POSTGRES_PASSWORD: 68g2hffftM96qI5y5HpL
+      POSTGRES_DB: snomephi_meeting_test_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  java_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: java_app_container
+    ports:
+      - "8080:8080" # Пример, если ваше Java-приложение слушает порт 8080
+    networks:
+      - backend
+
+volumes:
+  redis_data:
+  postgres-data:
+
+networks:
+  backend:
