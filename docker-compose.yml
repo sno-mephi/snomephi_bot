@@ -16,7 +16,7 @@ services:
     image: postgres:latest
     container_name: snomepgi_meeting_postgres_test
     ports:
-      - "5432:5432"
+      - "55421:5432"
     environment:
       POSTGRES_USER: snomephi_meeting_user
       POSTGRES_PASSWORD: 68g2hffftM96qI5y5HpL
