@@ -11,6 +11,6 @@ class PgTrgmInitializer(private val jdbcTemplate: JdbcTemplate) {
     @PostConstruct
     fun init() {
         jdbcTemplate.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm")
-        jdbcTemplate.execute("SET pg_trgm.similarity_threshold TO $DEFAULT_TRGM_SIMILARITY_THRESHOLD")
+        jdbcTemplate.execute("SET pg_trgm.similarity_threshold TO 0.00")
     }
 }

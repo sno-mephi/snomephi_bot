@@ -22,5 +22,4 @@ object GlobalConstants {
     )
 
     const val DOCTYPE_PDF = "application/pdf"
-    const val DEFAULT_TRGM_SIMILARITY_THRESHOLD = 0.25
 }
