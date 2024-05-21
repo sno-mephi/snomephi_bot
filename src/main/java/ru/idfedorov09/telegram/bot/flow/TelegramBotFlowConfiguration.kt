@@ -42,6 +42,7 @@ open class TelegramBotFlowConfiguration(
     private val surveyConstructorFetcher: SurveyConstructorFetcher,
     private val surveyAnswerFetcher: SurveyAnswerFetcher,
     private val configParamsFetcher: ConfigParamsFetcher,
+    private val whereBotFetcher: WhereBotFetcher,
 ) {
     /**
      * Возвращает построенный граф; выполняется только при запуске приложения
@@ -89,6 +90,7 @@ open class TelegramBotFlowConfiguration(
                     fetch(helpCommandFetcher)
                     fetch(weeklyEventsFetcher)
                     fetch(questStartFetcher)
+                    fetch(whereBotFetcher)
                 }
                 fetch(updateDataFetcher)
             }

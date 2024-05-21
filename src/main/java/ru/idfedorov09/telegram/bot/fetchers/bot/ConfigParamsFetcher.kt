@@ -137,7 +137,8 @@ class ConfigParamsFetcher(
     ): UserActualizedInfo {
         messageSenderService.editMessage(
             MessageParams(
-                text = "Введите новое значение параметра ${param.displayName}",
+                text = "Введите новое значение параметра ${param.displayName}. " +
+                        "Текущее значение: ${configParamsService.getValue(param)}.",
                 messageId = update.callbackQuery.message.messageId,
                 chatId = update.callbackQuery.message.chatId.toString(),
             )

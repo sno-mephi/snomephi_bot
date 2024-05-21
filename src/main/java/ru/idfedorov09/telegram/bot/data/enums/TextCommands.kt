@@ -141,6 +141,12 @@ enum class TextCommands(
         commandText = "/config",
         description = "Конфигурация параметров бота",
         allowedRoles = listOf(UserRole.USER),
+    ),
+
+    WHERE_BOT(
+        commandText = "/where_bot",
+        description = "Показывает информацию о чате, в котором находится бот",
+        allowedRoles = listOf(UserRole.ROOT),
     )
     ;
 
