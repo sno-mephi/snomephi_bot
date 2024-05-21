@@ -18,7 +18,7 @@ import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.data.model.UserData
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
-import ru.idfedorov09.telegram.bot.service.ConfigParamsService.
+import ru.idfedorov09.telegram.bot.service.ConfigParamsService
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
 import kotlin.jvm.optionals.getOrNull
