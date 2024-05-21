@@ -1,5 +1,6 @@
 package ru.idfedorov09.telegram.bot.data.enums
 
+import ru.idfedorov09.telegram.bot.data.model.User
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 
 enum class TextCommands(
@@ -134,6 +135,18 @@ enum class TextCommands(
             UserRole.MAILER,
             UserRole.ROOT,
         ),
+    ),
+
+    CONFIG_PARAMS(
+        commandText = "/config",
+        description = "Конфигурация параметров бота",
+        allowedRoles = listOf(UserRole.USER),
+    ),
+
+    WHERE_BOT(
+        commandText = "/where_bot",
+        description = "Показывает информацию о чате, в котором находится бот",
+        allowedRoles = listOf(UserRole.ROOT),
     )
     ;
 
@@ -142,9 +155,12 @@ enum class TextCommands(
         fun isTextCommand(text: String?) = entries.map { it.commandText }.any { text?.startsWith(it) ?: false }
     }
 
-    fun isAllowed(user: UserActualizedInfo): Boolean {
-        if (user.roles.contains(UserRole.ROOT)) return true
-        return user.roles.map { this.allowedRoles.contains(it) }.firstOrNull { it } ?: false
+    fun isAllowed(user: UserActualizedInfo) = isAllowed(user.roles)
+    fun isAllowed(user: User) = isAllowed(user.roles)
+
+    private fun isAllowed(roles: Set<UserRole>): Boolean {
+        if (roles.contains(UserRole.ROOT)) return true
+        return roles.map { this.allowedRoles.contains(it) }.firstOrNull { it } ?: false
     }
 
     operator fun invoke() = commandText
