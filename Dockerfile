@@ -1,5 +1,7 @@
 FROM openjdk:17-jdk-slim
 
+ENV TZ=Europe/Moscow
+
 ARG HOST_USER_UID=1000
 ARG HOST_USER_GID=1000
 
