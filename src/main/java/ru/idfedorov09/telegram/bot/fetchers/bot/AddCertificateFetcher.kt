@@ -9,6 +9,7 @@ import ru.idfedorov09.telegram.bot.base.util.UpdatesUtil
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.BOT_TIME_ZONE
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.DOCTYPE_PDF
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
+import ru.idfedorov09.telegram.bot.data.enums.ConfigParams
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.data.model.CallbackData
@@ -19,6 +20,7 @@ import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
 import ru.idfedorov09.telegram.bot.repo.CertificateRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
+import ru.idfedorov09.telegram.bot.service.ConfigParamsService
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
 import java.time.LocalDateTime
@@ -30,6 +32,7 @@ class AddCertificateFetcher(
     private val updatesUtil: UpdatesUtil,
     private val messageSenderService: MessageSenderService,
     private val callbackDataRepository: CallbackDataRepository,
+    private val configParamsService: ConfigParamsService,
 ) : DefaultFetcher() {
 
     companion object {
@@ -79,8 +82,13 @@ class AddCertificateFetcher(
     }
 
     private fun onNotFoundByFullName(params: Params) {
+        val treshold = configParamsService.getValue(
+            ConfigParams.SIMILARITY_THRESHOLD
+        )?.toDoubleOrNull()
         params.apply {
-            val similarUser = userRepository.findSimilarUserByFullName(certificate.fullName!!, 0.4) ?: run {
+            val similarUser = treshold
+                ?.let { userRepository.findSimilarUserByFullName(certificate.fullName!!, it) }
+                ?: run {
                 onNotFoundByFullNameEvenSimilar(params)
                 return
             }
