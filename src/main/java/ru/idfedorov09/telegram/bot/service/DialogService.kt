@@ -7,6 +7,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.data.GlobalConstants
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
+import ru.idfedorov09.telegram.bot.data.enums.ConfigParams
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
@@ -31,6 +32,7 @@ class DialogService(
     private val switchKeyboardService: SwitchKeyboardService,
     private val messageSenderService: MessageSenderService,
     private val callbackDataRepository: CallbackDataRepository,
+    private val configParamsService: ConfigParamsService,
 ) {
 
     companion object {
@@ -123,7 +125,7 @@ class DialogService(
 
         messageSenderService.editMessage(
             MessageParams(
-                chatId = GlobalConstants.QUEST_RESPONDENT_CHAT_ID,
+                chatId = configParamsService.getValue(ConfigParams.ADMIN_CHAT_ID)!!,
                 messageId = questDialog.consoleMessageId!!.toInt(),
                 text = closeDialogMessages.consoleResultText
                     ?: "✅ ${MessageSenderUtil.userName(responder.lastTgNick, responder.fullName)} пообщался(-ась)",

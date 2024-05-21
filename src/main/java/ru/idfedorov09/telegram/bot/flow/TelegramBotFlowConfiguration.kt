@@ -45,6 +45,8 @@ open class TelegramBotFlowConfiguration(
     private val certificateActionsFetcher: CertificateActionsFetcher,
     private val surveyConstructorFetcher: SurveyConstructorFetcher,
     private val surveyAnswerFetcher: SurveyAnswerFetcher,
+    private val configParamsFetcher: ConfigParamsFetcher,
+    private val whereBotFetcher: WhereBotFetcher,
 ) {
     /**
      * Возвращает построенный граф; выполняется только при запуске приложения
@@ -84,6 +86,7 @@ open class TelegramBotFlowConfiguration(
                         fetch(permissionsFetcher)
                         fetch(userSettingFetcher)
                         fetch(bannedFetcher)
+                        fetch(configParamsFetcher)
                     }
 
                     fetch(roleDescriptionFetcher)
@@ -92,6 +95,7 @@ open class TelegramBotFlowConfiguration(
                     fetch(weeklyEventsFetcher)
                     fetch(gettingFeedbackFetcher)
                     fetch(questStartFetcher)
+                    fetch(whereBotFetcher)
                     fetch(addCertificateFetcher)
                     fetch(certificateActionsFetcher)
                 }

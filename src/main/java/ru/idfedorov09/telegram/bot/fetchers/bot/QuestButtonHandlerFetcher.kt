@@ -8,7 +8,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.base.executor.Executor
 import ru.idfedorov09.telegram.bot.base.util.UpdatesUtil
-import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUEST_RESPONDENT_CHAT_ID
 import ru.idfedorov09.telegram.bot.data.enums.*
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_ANSWER
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_IGNORE
@@ -23,6 +22,7 @@ import ru.idfedorov09.telegram.bot.data.model.QuestSegment
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.*
+import ru.idfedorov09.telegram.bot.service.ConfigParamsService
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.service.SwitchKeyboardService
 import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
@@ -46,6 +46,7 @@ class QuestButtonHandlerFetcher(
     private val questMessageRepository: QuestMessageRepository,
     private val switchKeyboardService: SwitchKeyboardService,
     private val callbackDataRepository: CallbackDataRepository,
+    private val configParamsService: ConfigParamsService,
 ) : DefaultFetcher() {
     // TODO: обработать случай когда бот не может написать пользователю!
     // TODO: нельзя отвечать самому себе
@@ -149,7 +150,7 @@ class QuestButtonHandlerFetcher(
 
         messageSenderService.editMessage(
             MessageParams(
-                chatId = QUEST_RESPONDENT_CHAT_ID,
+                chatId = configParamsService.getValue(ConfigParams.ADMIN_CHAT_ID)!!,
                 messageId = quest.consoleMessageId!!.toInt(),
                 text =
                 "✏\uFE0F ${MessageSenderUtil.userName(params.userActualizedInfo.lastTgNick, params.userActualizedInfo.fullName)} " +
@@ -194,7 +195,7 @@ class QuestButtonHandlerFetcher(
             ).save()
         messageSenderService.editMessage(
             MessageParams(
-                chatId = QUEST_RESPONDENT_CHAT_ID,
+                chatId = configParamsService.getValue(ConfigParams.ADMIN_CHAT_ID)!!,
                 messageId = params.questDialog.consoleMessageId?.toInt(),
                 text = newText,
                 replyMarkup = createKeyboard(recreateDialog)
@@ -376,7 +377,7 @@ class QuestButtonHandlerFetcher(
 
             messageSenderService.editMessage(
                 MessageParams(
-                    chatId = QUEST_RESPONDENT_CHAT_ID,
+                    chatId = configParamsService.getValue(ConfigParams.ADMIN_CHAT_ID)!!,
                     messageId = questDialog.consoleMessageId!!.toInt(),
                     text =
                     "✏\uFE0F ${MessageSenderUtil.userName(userActualizedInfo.lastTgNick, userActualizedInfo.fullName)} " +
