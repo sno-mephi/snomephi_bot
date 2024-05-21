@@ -4,6 +4,7 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import ru.idfedorov09.telegram.bot.data.GlobalConstants
+import ru.idfedorov09.telegram.bot.data.enums.ConfigParams
 import ru.idfedorov09.telegram.bot.data.model.Certificate
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.repo.CertificateRepository
@@ -15,6 +16,7 @@ class CertificateCheckService(
     private val certificateRepository: CertificateRepository,
     private val messageSenderService: MessageSenderService,
     private val userRepository: UserRepository,
+    private val configParamsService: ConfigParamsService,
 ) {
 
     @Scheduled(fixedDelay = 5 * 1000)
@@ -26,7 +28,7 @@ class CertificateCheckService(
     fun onNotFindCertificateOwner(certificate: Certificate) {
         messageSenderService.sendMessage(
             MessageParams(
-                chatId = GlobalConstants.QUEST_RESPONDENT_CHAT_ID,
+                chatId = configParamsService.getValue(ConfigParams.ADMIN_CHAT_ID)!!,
                 text = "\uD83D\uDE2D\uD83D\uDE2D\uD83D\uDE2D Я не смог найти человека " +
                         "с ФИО <code>${certificate.fullName}</code> для отправки сертификата",
                 parseMode = ParseMode.HTML,
