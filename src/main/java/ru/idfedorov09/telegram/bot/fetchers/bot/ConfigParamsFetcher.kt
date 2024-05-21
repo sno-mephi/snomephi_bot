@@ -35,13 +35,29 @@ class ConfigParamsFetcher(
 
     @InjectData
     fun doFetch(update: Update, userActualizedInfo: UserActualizedInfo): UserActualizedInfo {
-        if (userActualizedInfo.lastUserActionType != LastUserActionType.DEFAULT) return userActualizedInfo
-
-        if (update.hasMessage() && update.message.hasText() && update.message.text == TextCommands.CONFIG_PARAMS()) {
-            return showConfigParams(update, userActualizedInfo)
+        return when {
+            update.hasMessage() && update.message.hasText() -> textCommandsHandler(update, userActualizedInfo)
+            update.hasCallbackQuery() -> callbackQueryHandler(update, userActualizedInfo)
+            else -> userActualizedInfo
         }
-        if (update.hasCallbackQuery()) return callbackQueryHandler(update, userActualizedInfo)
-        return userActualizedInfo
+    }
+
+    private fun textCommandsHandler(update: Update, userActualizedInfo: UserActualizedInfo): UserActualizedInfo {
+        val text = update.message.text
+
+        text.apply {
+            return when {
+                startsWith(TextCommands.CONFIG_PARAMS()) -> showConfigParams(update, userActualizedInfo)
+                else -> commonTextHandler(update, userActualizedInfo)
+            }
+        }
+    }
+
+    private fun commonTextHandler(update: Update, userActualizedInfo: UserActualizedInfo): UserActualizedInfo {
+        when (userActualizedInfo.lastUserActionType) {
+            LastUserActionType.INPUT_CONFIGURE_PARAMETER_VALUE -> TODO()
+            else -> return userActualizedInfo
+        }
     }
 
     private fun callbackQueryHandler(
@@ -93,8 +109,17 @@ class ConfigParamsFetcher(
         userActualizedInfo: UserActualizedInfo,
         param: ConfigParams
     ): UserActualizedInfo {
-        // TODO
-        return userActualizedInfo
+        messageSenderService.editMessage(
+            MessageParams(
+                text = "Введите новое значение параметра ${param.displayName}",
+                messageId = update.callbackQuery.message.messageId,
+                chatId = update.callbackQuery.message.chatId.toString(),
+            )
+        )
+
+        return userActualizedInfo.copy(
+            lastUserActionType = LastUserActionType.INPUT_CONFIGURE_PARAMETER_VALUE
+        )
     }
 
     // TODO
@@ -130,6 +155,8 @@ class ConfigParamsFetcher(
     }
 
     private fun showConfigParams(update: Update, userActualizedInfo: UserActualizedInfo): UserActualizedInfo {
+        if (userActualizedInfo.lastUserActionType != LastUserActionType.DEFAULT) return userActualizedInfo
+
         val keyboard = ConfigParams.entries
             .filter { it.isAllowed(userActualizedInfo) }
             .map {
