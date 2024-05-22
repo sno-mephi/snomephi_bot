@@ -1,14 +1,14 @@
 package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
-import ru.idfedorov09.telegram.bot.annotation.FetcherPerms
+import ru.idfedorov09.telegram.bot.base.executor.Executor
 import ru.idfedorov09.telegram.bot.base.util.UpdatesUtil
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
-import ru.idfedorov09.telegram.bot.data.enums.UserRole
 import ru.idfedorov09.telegram.bot.data.model.*
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.*
@@ -30,6 +30,7 @@ class SurveyAnswerFetcher (
     private val userRepository: UserRepository,
     private val messageSenderService: MessageSenderService,
     private val surveyAnswerOptionRepository: SurveyAnswerOptionRepository,
+    private val bot: Executor,
 ) : DefaultFetcher() {
     @InjectData
     fun doFetch(
@@ -118,6 +119,40 @@ class SurveyAnswerFetcher (
 
     private fun userStartSurvey(params: Params, callbackData: String) {
         params.userActualizedInfo.apply {
+            if (surveyId != null) {
+                val callbackAnswer =
+                    AnswerCallbackQuery().also {
+                        it.text = "Пожалуйста, пройдите предыдущий опрос перед тем, как начать новый.\n" +
+                                "Бот уже отправил Вам последний вопрос еще раз."
+                        it.callbackQueryId = params.update.callbackQuery.id
+                        it.showAlert = true
+                    }
+                 bot.execute(callbackAnswer)
+
+                messageSenderService.deleteMessage(
+                    MessageParams(
+                        chatId = tui,
+                        messageId = data?.surveyUserQuestionMessageId
+                    )
+                )
+                val sent = messageSenderService.sendMessage(
+                    MessageParams(
+                        chatId = tui,
+                        text = "Пожалуйста, подождите...",
+                    )
+                )
+
+                data?.surveyUserQuestionMessageId = sent.messageId
+                val lastSurvey = data?.lastSurveyQuestionId?.let {
+                    surveyQuestionRepository.findById(it).getOrNull()
+                } ?: run {
+                    // TODO: log error
+                    return
+                }
+
+                sendQuestion(lastSurvey, params)
+                return
+            }
             surveyId = callbackData.split("_").last().toLong()
             lastUserActionType = LastUserActionType.SURVEY_START_ANSWER
             currentSurveyQuestionNumber = 0
@@ -139,8 +174,14 @@ class SurveyAnswerFetcher (
                 return
             }
 
-            val callbackDataList = if (nextQuestion.isMultiplyChoiceQuestion == true){
-                nextQuestion.id?.let {
+            sendQuestion(nextQuestion, params)
+        }
+    }
+
+    private fun sendQuestion(question: SurveyQuestion, params: Params) {
+        params.userActualizedInfo.apply {
+            val callbackDataList = if (question.isMultiplyChoiceQuestion == true){
+                question.id?.let {
                     surveyAnswerOptionRepository.findAllSurveyAnswerOptionByQuestion(surveyQuestionId = it)
                 }?.map {
                     it.id?.let { id -> callbackDataRepository.findBySurveyAnswerOptionId(id) } ?: return
@@ -152,10 +193,13 @@ class SurveyAnswerFetcher (
                 listOf()
             }
 
+            data ?: run { data = UserData() }
+            data?.lastSurveyQuestionId = question.id
+
             messageSenderService.editMessage(
                 MessageParams(
                     chatId = tui,
-                    text = nextQuestion.text,
+                    text = question.text,
                     messageId = data?.surveyUserQuestionMessageId,
                     replyMarkup = createKeyboard(*callbackDataList.toTypedArray())
                 )
