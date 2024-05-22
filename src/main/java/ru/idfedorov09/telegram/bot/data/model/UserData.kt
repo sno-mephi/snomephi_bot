@@ -29,4 +29,6 @@ data class UserData(
     var surveyUserQuestionMessageId: Int? = null,
     /** Параметр для редактирования **/
     var configParamKeyToChange: String? = null,
+    /** id последнего вопроса на который отвечает (отвечал) пользователь **/
+    var lastSurveyQuestionId: Long? = null,
 )
