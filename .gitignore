@@ -44,3 +44,4 @@ out/
 .DS_STORE
 /gradlew.bat
 /logs/
+/docker_volumes

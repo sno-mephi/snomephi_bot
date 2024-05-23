@@ -8,7 +8,7 @@ services:
       - "6752:6379"
     command: ["redis-server", "--requirepass", "V4legV0rIJwugq6AuNPa"]
     volumes:
-      - redis_data:/data
+      - ./docker_volumes/redis_data:/data
     networks:
       - backend
 
@@ -21,7 +21,7 @@ services:
       POSTGRES_USER: snomephi_meeting_user
       POSTGRES_PASSWORD: 68g2hffftM96qI5y5HpL
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./docker_volumes/postgres_data:/var/lib/postgresql/data
       - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
     networks:
       - backend
@@ -32,16 +32,12 @@ services:
       dockerfile: Dockerfile
     container_name: java_app_container
     ports:
-      - "8080:8080"
+      - "5004:5004"
     networks:
       - backend
     depends_on:
       - postgres
       - redis
-
-volumes:
-  redis_data:
-  postgres_data:
 
 networks:
   backend:
