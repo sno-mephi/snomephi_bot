@@ -68,7 +68,7 @@ dependencies {
 	implementation('com.github.sno-mephi:flow-library:2.0.3-stable') {
 		exclude group: 'org.slf4j', module: 'slf4j-simple'
 	}
-	implementation project(':BaseTelegramBot')
+	implementation project(':ru.tgb.base.core')
 }
 
 jar {
