@@ -45,3 +45,4 @@ out/
 /gradlew.bat
 /logs/
 /docker_volumes
+.env

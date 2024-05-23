@@ -5,8 +5,8 @@ services:
     image: redis:latest
     container_name: redis_meeting_sno
     ports:
-      - "6752:6379"
-    command: ["redis-server", "--requirepass", "V4legV0rIJwugq6AuNPa"]
+      - "${REDIS_PORT}:6379"
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
     volumes:
       - ./docker_volumes/redis_data:/data
     networks:
@@ -16,10 +16,10 @@ services:
     image: postgres:latest
     container_name: snomepgi_meeting_postgres
     ports:
-      - "55421:5432"
+      - "${PG_PORT}:5432"
     environment:
-      POSTGRES_USER: snomephi_meeting_user
-      POSTGRES_PASSWORD: 68g2hffftM96qI5y5HpL
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PS_PASSWORD}
     volumes:
       - ./docker_volumes/postgres_data:/var/lib/postgresql/data
       - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
