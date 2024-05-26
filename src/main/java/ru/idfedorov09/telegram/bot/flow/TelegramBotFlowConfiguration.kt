@@ -1,23 +1,18 @@
 package ru.idfedorov09.telegram.bot.flow
 
-import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import ru.idfedorov09.telegram.bot.base.service.FlowBuilderService
-import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUALIFIER_FLOW_TG_BOT
-import ru.idfedorov09.telegram.bot.data.model.SurveyAnswer
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.fetchers.bot.*
 import ru.idfedorov09.telegram.bot.fetchers.bot.PermissionsFetcher
 import ru.mephi.sno.libs.flow.belly.FlowBuilder
 import ru.mephi.sno.libs.flow.belly.FlowContext
+import ru.mephi.sno.libs.flow.config.BaseFlowConfiguration
 
 /**
  * Основной класс, в котором строится последовательность вычислений (граф) для бота
  */
 @Configuration
 open class TelegramBotFlowConfiguration(
-    private val flowBuilderService: FlowBuilderService,
-
     private val actualizeUserInfoFetcher: ActualizeUserInfoFetcher,
     private val weeklyEventsFetcher: WeeklyEventsFetcher,
     private val questStartFetcher: QuestStartFetcher,
@@ -43,19 +38,9 @@ open class TelegramBotFlowConfiguration(
     private val surveyAnswerFetcher: SurveyAnswerFetcher,
     private val configParamsFetcher: ConfigParamsFetcher,
     private val whereBotFetcher: WhereBotFetcher,
-) {
-    /**
-     * Возвращает построенный граф; выполняется только при запуске приложения
-     */
-    @Bean(QUALIFIER_FLOW_TG_BOT)
-    open fun flowBuilder(): FlowBuilder {
-        val flowBuilder = FlowBuilder()
-        flowBuilder.buildFlow()
-        flowBuilderService.register(QUALIFIER_FLOW_TG_BOT, flowBuilder)
-        return flowBuilder
-    }
+): BaseFlowConfiguration(TelegramBotFlowConfiguration::class) {
 
-    private fun FlowBuilder.buildFlow() {
+    override fun FlowBuilder.buildFlow() {
         sequence {
             fetch(createExpContainerFetcher)
             fetch(actualizeUserInfoFetcher)

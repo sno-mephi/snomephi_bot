@@ -1,6 +1,6 @@
 package ru.idfedorov09.telegram.bot.data.enums
 
-import ru.idfedorov09.telegram.bot.data.model.CallbackData
+import ru.idfedorov09.telegram.bot.data.model.ECallbackData
 import ru.idfedorov09.telegram.bot.data.model.User
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 
@@ -14,7 +14,7 @@ enum class ConfigParams(
     /** Тип параметра **/
     val type: ConfigParamType,
     /** Кнопки для выбора из нескольких вариантов ответа **/
-    val selectList: List<CallbackData> = listOf(),
+    val selectList: List<ECallbackData> = listOf(),
     val allowedRoles: List<UserRole> = listOf()
 ) {
     /** айди чата админов **/

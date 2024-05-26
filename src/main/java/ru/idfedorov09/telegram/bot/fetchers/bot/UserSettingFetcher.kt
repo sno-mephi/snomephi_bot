@@ -7,18 +7,18 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
-import ru.idfedorov09.telegram.bot.data.model.CallbackData
+import ru.idfedorov09.telegram.bot.data.model.ECallbackData
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
-import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
+import ru.idfedorov09.telegram.bot.repo.ECallbackDataRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
 import kotlin.jvm.optionals.getOrNull
 
 @Component
 class UserSettingFetcher(
-    private val callbackDataRepository: CallbackDataRepository,
+    private val ECallbackDataRepository: ECallbackDataRepository,
     private val messageSenderService: MessageSenderService,
 ) : DefaultFetcher() {
     @InjectData
@@ -60,12 +60,12 @@ class UserSettingFetcher(
                     "Ваша Группа ${userActualizedInfo.studyGroup ?: "\uFE0F ИНФОРМАЦИЯ НЕ НАЙДЕНА"}\n" +
                     "Если эта информация неверна или не актуальна, то вы можете ее изменить!"
             val changeFullName =
-                CallbackData(
+                ECallbackData(
                     callbackData = CallbackCommands.SETTING_USER_CHANGE_FULL_NAME.data,
                     metaText = "Обновить ФИО",
                 ).save()
             val changeStudyGroup =
-                CallbackData(
+                ECallbackData(
                     callbackData = CallbackCommands.SETTING_USER_CHANGE_STUDY_GROUP.data,
                     metaText = "Обновить учебную группу",
                 ).save()
@@ -95,12 +95,12 @@ class UserSettingFetcher(
             val msgText = update.message.text
             if (msgText.isValidFullName()) {
                 val repeat =
-                    CallbackData(
+                    ECallbackData(
                         callbackData = CallbackCommands.SETTING_USER_CHANGE_FULL_NAME.data,
                         metaText = "Изменить ФИО снова",
                     ).save()
                 val back =
-                    CallbackData(
+                    ECallbackData(
                         callbackData = CallbackCommands.SETTING_USER_BACK_TO_CONSOLE.data,
                         metaText = "Вернуться назад",
                     ).save()
@@ -136,12 +136,12 @@ class UserSettingFetcher(
             val msgText = update.message.text
             if (msgText.isValidGroup()) {
                 val repeat =
-                    CallbackData(
+                    ECallbackData(
                         callbackData = CallbackCommands.SETTING_USER_CHANGE_FULL_NAME.data,
                         metaText = "Изменить номер группы снова",
                     ).save()
                 val back =
-                    CallbackData(
+                    ECallbackData(
                         callbackData = CallbackCommands.SETTING_USER_BACK_TO_CONSOLE.data,
                         metaText = "Вернуться назад",
                     ).save()
@@ -160,7 +160,7 @@ class UserSettingFetcher(
                     )
             } else {
                 val withoutGroup =
-                    CallbackData(
+                    ECallbackData(
                         metaText = "👾Я не из МИФИ",
                         callbackData = CallbackCommands.SETTING_USER_WITHOUT_STUDY_GROUP.data,
                     ).save()
@@ -181,7 +181,7 @@ class UserSettingFetcher(
     private fun callbackQueryHandler(params: Params): UserActualizedInfo {
         val callbackId = params.update.callbackQuery.data?.toLongOrNull()
         callbackId ?: return params.userActualizedInfo
-        val callbackData = callbackDataRepository.findById(callbackId).getOrNull() ?: return params.userActualizedInfo
+        val callbackData = ECallbackDataRepository.findById(callbackId).getOrNull() ?: return params.userActualizedInfo
 
         return callbackData.callbackData?.run {
             when {
@@ -197,12 +197,12 @@ class UserSettingFetcher(
     private fun withoutStudyGroup(params: Params): UserActualizedInfo {
         params.apply {
             val repeat =
-                CallbackData(
+                ECallbackData(
                     callbackData = CallbackCommands.SETTING_USER_CHANGE_FULL_NAME.data,
                     metaText = "Изменить номер группы снова",
                 ).save()
             val back =
-                CallbackData(
+                ECallbackData(
                     callbackData = CallbackCommands.SETTING_USER_BACK_TO_CONSOLE.data,
                     metaText = "Вернуться назад",
                 ).save()
@@ -227,7 +227,7 @@ class UserSettingFetcher(
         params.apply {
             val text = "Введите свой номер группы"
             val withoutGroup =
-                CallbackData(
+                ECallbackData(
                     metaText = "👾Я не из МИФИ",
                     callbackData = CallbackCommands.SETTING_USER_WITHOUT_STUDY_GROUP.data,
                 ).save()
@@ -259,9 +259,9 @@ class UserSettingFetcher(
         }
     }
 
-    private fun createKeyboard(vararg callbackData: CallbackData): InlineKeyboardMarkup {
+    private fun createKeyboard(vararg ECallbackData: ECallbackData): InlineKeyboardMarkup {
         val keyboard =
-            listOf(*callbackData).map { button ->
+            listOf(*ECallbackData).map { button ->
                 InlineKeyboardButton().also {
                     it.text = button.metaText!!
                     it.callbackData = button.id?.toString()
@@ -282,7 +282,7 @@ class UserSettingFetcher(
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
 
-    private fun CallbackData.save() = callbackDataRepository.save(this)
+    private fun ECallbackData.save() = ECallbackDataRepository.save(this)
 
     private data class Params(
         var userActualizedInfo: UserActualizedInfo,
