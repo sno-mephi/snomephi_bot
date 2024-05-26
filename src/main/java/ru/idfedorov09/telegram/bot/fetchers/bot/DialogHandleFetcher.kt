@@ -1,21 +1,17 @@
 package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
-import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.base.util.UpdatesUtil
-import ru.idfedorov09.telegram.bot.data.GlobalConstants
 import ru.idfedorov09.telegram.bot.data.enums.*
 import ru.idfedorov09.telegram.bot.data.model.*
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
 import ru.idfedorov09.telegram.bot.repo.*
 import ru.idfedorov09.telegram.bot.service.DialogService
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
-import ru.idfedorov09.telegram.bot.service.SwitchKeyboardService
-import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
 import ru.mephi.sno.libs.flow.belly.InjectData
 import java.time.Instant
 import java.time.LocalDateTime
@@ -33,7 +29,7 @@ class DialogHandleFetcher(
     private val questMessageRepository: QuestMessageRepository,
     private val userRepository: UserRepository,
     private val dialogService: DialogService,
-    private val callbackDataRepository: CallbackDataRepository,
+    private val ECallbackDataRepository: ECallbackDataRepository,
 ) : DefaultFetcher() {
     @InjectData
     fun doFetch(
@@ -380,9 +376,9 @@ class DialogHandleFetcher(
         )
     }
 
-    private fun createKeyboard(vararg callbackData: CallbackData): InlineKeyboardMarkup {
+    private fun createKeyboard(vararg ECallbackData: ECallbackData): InlineKeyboardMarkup {
         val keyboard =
-            listOf(*callbackData).map { button ->
+            listOf(*ECallbackData).map { button ->
                 InlineKeyboardButton().also {
                     it.text = button.metaText!!
                     it.callbackData = button.id?.toString()
@@ -393,7 +389,7 @@ class DialogHandleFetcher(
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
 
-    private fun CallbackData.save() = callbackDataRepository.save(this)
+    private fun ECallbackData.save() = ECallbackDataRepository.save(this)
 
     /**
      * Вспомогательный класс для передачи параметров

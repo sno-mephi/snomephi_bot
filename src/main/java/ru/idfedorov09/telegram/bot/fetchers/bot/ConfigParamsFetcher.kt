@@ -12,12 +12,12 @@ import ru.idfedorov09.telegram.bot.data.enums.ConfigParamType
 import ru.idfedorov09.telegram.bot.data.enums.ConfigParams
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
-import ru.idfedorov09.telegram.bot.data.model.CallbackData
+import ru.idfedorov09.telegram.bot.data.model.ECallbackData
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.data.model.UserData
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
-import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
+import ru.idfedorov09.telegram.bot.repo.ECallbackDataRepository
 import ru.idfedorov09.telegram.bot.service.ConfigParamsService
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.mephi.sno.libs.flow.belly.InjectData
@@ -25,7 +25,7 @@ import kotlin.jvm.optionals.getOrNull
 
 @Component
 class ConfigParamsFetcher(
-    private val callbackDataRepository: CallbackDataRepository,
+    private val ECallbackDataRepository: ECallbackDataRepository,
     private val messageSenderService: MessageSenderService,
     private val updatesUtil: UpdatesUtil,
     private val bot: Executor,
@@ -70,7 +70,7 @@ class ConfigParamsFetcher(
     ): UserActualizedInfo {
         val callbackId = update.callbackQuery.data?.toLongOrNull()
         callbackId ?: return userActualizedInfo
-        val callbackData = callbackDataRepository.findById(callbackId).getOrNull() ?: return userActualizedInfo
+        val callbackData = ECallbackDataRepository.findById(callbackId).getOrNull() ?: return userActualizedInfo
 
         callbackData.callbackData?.apply {
             if (startsWith(CONFIGURE_PARAM_PREFIX))
@@ -192,7 +192,7 @@ class ConfigParamsFetcher(
         val keyboard = ConfigParams.entries
             .filter { it.isAllowed(userActualizedInfo) }
             .map {
-                CallbackData(
+                ECallbackData(
                     callbackData = "$CONFIGURE_PARAM_PREFIX$SEPARATOR${it.key}",
                     metaText = it.displayName,
                 ).save()
@@ -214,9 +214,9 @@ class ConfigParamsFetcher(
         return userActualizedInfo
     }
 
-    private fun createKeyboard(vararg callbackData: CallbackData): InlineKeyboardMarkup {
+    private fun createKeyboard(vararg ECallbackData: ECallbackData): InlineKeyboardMarkup {
         val keyboard =
-            listOf(*callbackData).map { button ->
+            listOf(*ECallbackData).map { button ->
                 InlineKeyboardButton().also {
                     it.text = button.metaText!!
                     it.callbackData = button.id?.toString()
@@ -227,5 +227,5 @@ class ConfigParamsFetcher(
     }
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
-    private fun CallbackData.save() = callbackDataRepository.save(this)
+    private fun ECallbackData.save() = ECallbackDataRepository.save(this)
 }

@@ -8,7 +8,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import ru.idfedorov09.telegram.bot.annotation.FetcherPerms
 import ru.idfedorov09.telegram.bot.base.executor.Executor
 import ru.idfedorov09.telegram.bot.base.util.UpdatesUtil
-import ru.idfedorov09.telegram.bot.data.GlobalConstants
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.BOT_TIME_ZONE
 import ru.idfedorov09.telegram.bot.data.enums.*
 import ru.idfedorov09.telegram.bot.data.model.*
@@ -28,7 +27,7 @@ import kotlin.jvm.optionals.getOrNull
 class BannedFetcher(
     private val updatesUtil: UpdatesUtil,
     private val messageSenderService: MessageSenderService,
-    private val callbackDataRepository: CallbackDataRepository,
+    private val ECallbackDataRepository: ECallbackDataRepository,
     private val userRepository: UserRepository,
     private val banRepository: BanRepository,
     private val bot: Executor,
@@ -82,7 +81,7 @@ class BannedFetcher(
         params.userActualizedInfo.apply {
             val text = "Следующим сообщением напиши мне Telegram User Id человека, которого ты хочешь забанить/разбанить"
             val cancel =
-                CallbackData(
+                ECallbackData(
                     callbackData = CallbackCommands.BANNED_CANCEL.data,
                     metaText = "отмена",
                 ).save()
@@ -116,7 +115,7 @@ class BannedFetcher(
     ) {
         params.apply {
             val cancel =
-                CallbackData(
+                ECallbackData(
                     callbackData = CallbackCommands.BANNED_CANCEL.data,
                     metaText = "отмена",
                 ).save()
@@ -178,7 +177,7 @@ class BannedFetcher(
                 userActualizedInfo.lastUserActionType = LastUserActionType.BANNED_ENTER_REASON
             } else {
                 val confirm =
-                    CallbackData(
+                    ECallbackData(
                         callbackData = CallbackCommands.UNBANNED_CONFIRM.format(tui),
                         metaText = "подтвердите разблокировку",
                     ).save()
@@ -202,12 +201,12 @@ class BannedFetcher(
     ) {
         params.apply {
             val cancel =
-                CallbackData(
+                ECallbackData(
                     callbackData = CallbackCommands.BANNED_CANCEL.data,
                     metaText = "отмена",
                 ).save()
             val permaBan =
-                CallbackData(
+                ECallbackData(
                     callbackData = CallbackCommands.BANNED_PERMANENT.data,
                     metaText = "забанить навсегда",
                 ).save()
@@ -266,12 +265,12 @@ class BannedFetcher(
                     finishTime = finishTime,
                 )
             val cancel =
-                CallbackData(
+                ECallbackData(
                     callbackData = CallbackCommands.BANNED_CANCEL.data,
                     metaText = "отмена",
                 ).save()
             val confirm =
-                CallbackData(
+                ECallbackData(
                     callbackData = CallbackCommands.BANNED_CONFIRM.data,
                     metaText = "подтвердите бан",
                 ).save()
@@ -304,7 +303,7 @@ class BannedFetcher(
                             ?.let { Instant.ofEpochSecond(it).atZone(ZoneId.of("Europe/Moscow")).toLocalDateTime() },
                 )
             val unBan =
-                CallbackData(
+                ECallbackData(
                     callbackData = banData?.userTui?.let { CallbackCommands.UNBANNED_USER.format(it.toLong()) },
                     metaText = "разблокировать",
                 ).save()
@@ -398,7 +397,7 @@ class BannedFetcher(
     private fun callbackQueryHandler(params: Params) {
         val callbackId = params.update.callbackQuery.data?.toLongOrNull()
         callbackId ?: return
-        val callbackData = callbackDataRepository.findById(callbackId).getOrNull() ?: return
+        val callbackData = ECallbackDataRepository.findById(callbackId).getOrNull() ?: return
 
         callbackData.callbackData?.apply {
             when {
@@ -421,7 +420,7 @@ class BannedFetcher(
             val tui = callbackData.split("|").last()
             val user = userRepository.findByTui(tui) ?: return
             val cancel =
-                CallbackData(
+                ECallbackData(
                     callbackData = CallbackCommands.BANNED_CANCEL.data,
                     metaText = "отмена",
                 ).save()
@@ -464,7 +463,7 @@ class BannedFetcher(
             } else {
                 val text = "Нашел пользователя ${user.fullName}.\nПодтвердите разблокировку."
                 val confirm =
-                    CallbackData(
+                    ECallbackData(
                         callbackData = CallbackCommands.UNBANNED_CONFIRM.format(tui.toLong()),
                         metaText = "подтвердить разблокировку",
                     ).save()
@@ -515,9 +514,9 @@ class BannedFetcher(
         }
     }
 
-    private fun createKeyboard(vararg callbackData: CallbackData): InlineKeyboardMarkup {
+    private fun createKeyboard(vararg ECallbackData: ECallbackData): InlineKeyboardMarkup {
         val keyboard =
-            listOf(*callbackData).map { button ->
+            listOf(*ECallbackData).map { button ->
                 InlineKeyboardButton().also {
                     it.text = button.metaText!!
                     it.callbackData = button.id?.toString()
@@ -528,7 +527,7 @@ class BannedFetcher(
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
 
-    private fun CallbackData.save() = callbackDataRepository.save(this)
+    private fun ECallbackData.save() = ECallbackDataRepository.save(this)
 
     private data class Params(
         var userActualizedInfo: UserActualizedInfo,

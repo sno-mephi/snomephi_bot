@@ -5,19 +5,18 @@ import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
-import ru.idfedorov09.telegram.bot.data.GlobalConstants
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.ConfigParams
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
-import ru.idfedorov09.telegram.bot.data.model.CallbackData
+import ru.idfedorov09.telegram.bot.data.model.ECallbackData
 import ru.idfedorov09.telegram.bot.data.model.CloseDialogMessages
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.QuestDialog
 import ru.idfedorov09.telegram.bot.data.model.User
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
-import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
+import ru.idfedorov09.telegram.bot.repo.ECallbackDataRepository
 import ru.idfedorov09.telegram.bot.repo.QuestDialogRepository
 import ru.idfedorov09.telegram.bot.repo.QuestSegmentRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
@@ -31,7 +30,7 @@ class DialogService(
     private val userRepository: UserRepository,
     private val switchKeyboardService: SwitchKeyboardService,
     private val messageSenderService: MessageSenderService,
-    private val callbackDataRepository: CallbackDataRepository,
+    private val ECallbackDataRepository: ECallbackDataRepository,
     private val configParamsService: ConfigParamsService,
 ) {
 
@@ -118,7 +117,7 @@ class DialogService(
         }
 
         val recreateDialog =
-            CallbackData(
+            ECallbackData(
                 callbackData = CallbackCommands.QUEST_RECREATE.format(questDialog.id),
                 metaText = "\uD83D\uDD01 Переоткрыть диалог",
             ).save()
@@ -139,9 +138,9 @@ class DialogService(
         )
     }
 
-    private fun createKeyboard(vararg callbackData: CallbackData): InlineKeyboardMarkup {
+    private fun createKeyboard(vararg ECallbackData: ECallbackData): InlineKeyboardMarkup {
         val keyboard =
-            listOf(*callbackData).map { button ->
+            listOf(*ECallbackData).map { button ->
                 InlineKeyboardButton().also {
                     it.text = button.metaText!!
                     it.callbackData = button.id?.toString()
@@ -152,5 +151,5 @@ class DialogService(
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
 
-    private fun CallbackData.save() = callbackDataRepository.save(this)
+    private fun ECallbackData.save() = ECallbackDataRepository.save(this)
 }

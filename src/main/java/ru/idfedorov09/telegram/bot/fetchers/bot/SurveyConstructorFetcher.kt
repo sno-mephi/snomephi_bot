@@ -25,7 +25,7 @@ import kotlin.jvm.optionals.getOrNull
 
 @Component
 class SurveyConstructorFetcher (
-    private val callbackDataRepository: CallbackDataRepository,
+    private val ECallbackDataRepository: ECallbackDataRepository,
     private val broadcastRepository: BroadcastRepository,
     private val messageSenderService: MessageSenderService,
     private val surveyQuestionRepository: SurveyQuestionRepository,
@@ -78,11 +78,11 @@ class SurveyConstructorFetcher (
         params.userActualizedInfo.apply {
             val messageText = "Вы можете изменить этот вопрос"
 
-            val changeText = CallbackData(callbackData = CallbackCommands.SURVEY_CHANGE_TEXT.data , metaText = "Изменить текст вопроса").save()
-            val changeType = CallbackData(callbackData = CallbackCommands.SURVEY_CHANGE_TYPE.data , metaText = "Изменить тип вопроса").save()
-            val changeAnswerOption = CallbackData(callbackData = CallbackCommands.SURVEY_CHANGE_ANSWER_OPTION.data, metaText = "Изменить варианты ответа").save()
-            val deleteQuestion = CallbackData(callbackData = CallbackCommands.SURVEY_DELETE_QUESTION.data, metaText = "Удалить вопрос").save()
-            val backToConsole = CallbackData(callbackData = CallbackCommands.SURVEY_BACK_TO_CONSOLE.data, metaText = "Назад").save()
+            val changeText = ECallbackData(callbackData = CallbackCommands.SURVEY_CHANGE_TEXT.data , metaText = "Изменить текст вопроса").save()
+            val changeType = ECallbackData(callbackData = CallbackCommands.SURVEY_CHANGE_TYPE.data , metaText = "Изменить тип вопроса").save()
+            val changeAnswerOption = ECallbackData(callbackData = CallbackCommands.SURVEY_CHANGE_ANSWER_OPTION.data, metaText = "Изменить варианты ответа").save()
+            val deleteQuestion = ECallbackData(callbackData = CallbackCommands.SURVEY_DELETE_QUESTION.data, metaText = "Удалить вопрос").save()
+            val backToConsole = ECallbackData(callbackData = CallbackCommands.SURVEY_BACK_TO_CONSOLE.data, metaText = "Назад").save()
 
             val callbackDataList = mutableListOf(changeText, changeType)
             if (surveyQuestion.isMultiplyChoiceQuestion == true) callbackDataList.add(changeAnswerOption)
@@ -180,7 +180,7 @@ class SurveyConstructorFetcher (
 
             if (surveyQuestionsId.toSet() != surveyQuestionsIdInDataBase.toSet()) {
                 val msgText = "Ошибка! Введите корректный порядок вопросов!"
-                val back = CallbackData(callbackData = CallbackCommands.SURVEY_CHANGE_STANDARD_ORDER.data, metaText = "назад").save()
+                val back = ECallbackData(callbackData = CallbackCommands.SURVEY_CHANGE_STANDARD_ORDER.data, metaText = "назад").save()
                 messageSenderService.editMessage(
                     MessageParams(
                         chatId = userActualizedInfo.tui,
@@ -237,7 +237,7 @@ class SurveyConstructorFetcher (
                     broadcastId = userActualizedInfo.bcData?.id,
                     surveyQuestionId = surveyQuestion.id
                 ).save()
-                CallbackData(
+                ECallbackData(
                     callbackData = CallbackCommands.SURVEY_USER_ANSWER.data,
                     metaText = it,
                     surveyAnswerOptionId = surveyAnswerOption.id
@@ -259,7 +259,7 @@ class SurveyConstructorFetcher (
                     broadcastId = userActualizedInfo.bcData?.id,
                     surveyQuestionId = userActualizedInfo.surveyQuestionData?.id
                 ).save()
-                CallbackData(
+                ECallbackData(
                     callbackData = CallbackCommands.SURVEY_USER_ANSWER.data,
                     metaText = it,
                     surveyAnswerOptionId = surveyAnswerOption.id
@@ -278,7 +278,7 @@ class SurveyConstructorFetcher (
             surveyQuestion.id?.let {
                 surveyAnswerOptionRepository.findAllSurveyAnswerOptionByQuestion(surveyQuestionId = it)
             }?.map {
-                it.id?.let { id -> callbackDataRepository.findBySurveyAnswerOptionId(id) } ?: return
+                it.id?.let { id -> ECallbackDataRepository.findBySurveyAnswerOptionId(id) } ?: return
             } ?: run {
                 //TODO: log
                 return
@@ -324,8 +324,8 @@ class SurveyConstructorFetcher (
         params.apply {
             val messageText = "Выберите тип опроса"
 
-            val textQuestion = CallbackData(callbackData = CallbackCommands.SURVEY_TEXT_QUESTION.data, metaText = "текстовый вопрос").save()
-            val multiplyChoiceQuestion = CallbackData(callbackData = CallbackCommands.SURVEY_MULTIPLY_CHOICE_QUESTION.data, metaText = "вопрос с выбором ответа").save()
+            val textQuestion = ECallbackData(callbackData = CallbackCommands.SURVEY_TEXT_QUESTION.data, metaText = "текстовый вопрос").save()
+            val multiplyChoiceQuestion = ECallbackData(callbackData = CallbackCommands.SURVEY_MULTIPLY_CHOICE_QUESTION.data, metaText = "вопрос с выбором ответа").save()
             messageSenderService.editMessage(
                 MessageParams(
                     messageId = userActualizedInfo.bcData?.lastConsoleMessageId,
@@ -346,7 +346,7 @@ class SurveyConstructorFetcher (
     private fun callbackQueryHandler(params: Params) {
         val callbackId = params.update.callbackQuery.data?.toLongOrNull()
         callbackId ?: return
-        val callbackData = callbackDataRepository.findById(callbackId).getOrNull() ?: return
+        val callbackData = ECallbackDataRepository.findById(callbackId).getOrNull() ?: return
 
         callbackData.callbackData?.apply {
             when {
@@ -398,8 +398,8 @@ class SurveyConstructorFetcher (
 
     private fun sendStartTimeMessage(params: Params){
         params.userActualizedInfo.apply {
-            val startNow = CallbackData(callbackData = CallbackCommands.SURVEY_START_NOW.data, metaText = "Отправить сейчас").save()
-            val scheduleSending = CallbackData(callbackData = CallbackCommands.SURVEY_SCHEDULE_SENDING.data, metaText = "Отложить отправку").save()
+            val startNow = ECallbackData(callbackData = CallbackCommands.SURVEY_START_NOW.data, metaText = "Отправить сейчас").save()
+            val scheduleSending = ECallbackData(callbackData = CallbackCommands.SURVEY_SCHEDULE_SENDING.data, metaText = "Отложить отправку").save()
             messageSenderService.editMessage(
                 MessageParams(
                     chatId = tui,
@@ -478,7 +478,7 @@ class SurveyConstructorFetcher (
                     "В суффиксе каждого вопроса указан его уникальный номер\n"+
                     "Пожалуйста, перечислите через запятую порядок этих вопросов\n\n\n"+
                     "$allQuestion"
-            val backToConsole = CallbackData(callbackData = CallbackCommands.SURVEY_BACK_TO_CONSOLE.data, metaText = "вернуться").save()
+            val backToConsole = ECallbackData(callbackData = CallbackCommands.SURVEY_BACK_TO_CONSOLE.data, metaText = "вернуться").save()
 
             messageSenderService.editMessage(
                 MessageParams(
@@ -497,11 +497,11 @@ class SurveyConstructorFetcher (
     private fun standardOrder(params: Params) {
         params.userActualizedInfo.apply {
             val msgText = "Вы можете настроить порядок вопрос или отправить их в том порядке, в каком вы их добавляли"
-            val custom = CallbackData(callbackData = CallbackCommands.SURVEY_CHANGE_STANDARD_ORDER.data, metaText = "Настроить порядок").save()
+            val custom = ECallbackData(callbackData = CallbackCommands.SURVEY_CHANGE_STANDARD_ORDER.data, metaText = "Настроить порядок").save()
 
             //TODO: Проверка, отложка?
-            val standard = CallbackData(callbackData = CallbackCommands.SURVEY_DO_NOT_CHANGE_STANDARD_ORDER.data, metaText = "Оставить порядок").save()
-            val back = CallbackData(callbackData = CallbackCommands.SURVEY_BACK_TO_CONSOLE.data, metaText = "Назад").save()
+            val standard = ECallbackData(callbackData = CallbackCommands.SURVEY_DO_NOT_CHANGE_STANDARD_ORDER.data, metaText = "Оставить порядок").save()
+            val back = ECallbackData(callbackData = CallbackCommands.SURVEY_BACK_TO_CONSOLE.data, metaText = "Назад").save()
 
             messageSenderService.editMessage(
                 MessageParams(
@@ -519,11 +519,11 @@ class SurveyConstructorFetcher (
             if (checkValidateSurvey(params) == true) {
                 val msgText = "Выберите тип порядка вопросов"
 
-                val standard = CallbackData(callbackData = CallbackCommands.SURVEY_STANDARD_ORDER.data, metaText = "Последовательный").save()
+                val standard = ECallbackData(callbackData = CallbackCommands.SURVEY_STANDARD_ORDER.data, metaText = "Последовательный").save()
 
                 //TODO: нужно сделать кастомные вопросы
-                val custom = CallbackData(callbackData = CallbackCommands.SURVEY_CUSTOM_ORDER.data, metaText = "Кастомный (не работает)").save()
-                val back = CallbackData(callbackData = CallbackCommands.SURVEY_BACK_TO_CONSOLE.data, metaText = "Назад").save()
+                val custom = ECallbackData(callbackData = CallbackCommands.SURVEY_CUSTOM_ORDER.data, metaText = "Кастомный (не работает)").save()
+                val back = ECallbackData(callbackData = CallbackCommands.SURVEY_BACK_TO_CONSOLE.data, metaText = "Назад").save()
 
                 messageSenderService.editMessage(
                     MessageParams(
@@ -535,7 +535,7 @@ class SurveyConstructorFetcher (
                 )
             } else {
                 val msgText = "Сначала добавте хотя бы один вопрос!"
-                val back = CallbackData(callbackData = CallbackCommands.SURVEY_BACK_TO_CONSOLE.data, metaText = "Назад").save()
+                val back = ECallbackData(callbackData = CallbackCommands.SURVEY_BACK_TO_CONSOLE.data, metaText = "Назад").save()
                 messageSenderService.editMessage(
                     MessageParams(
                         chatId = tui,
@@ -579,8 +579,8 @@ class SurveyConstructorFetcher (
             } else {
                 "Запишите одним сообщение варианты ответов, разделяя их новой строкой"
             }
-            val keyboard = mutableListOf<CallbackData>()
-            if (flg) keyboard.add(CallbackData(callbackData = CallbackCommands.SURVEY_SHOW_QUESTION_CONSOLE.data, metaText = "назад").save())
+            val keyboard = mutableListOf<ECallbackData>()
+            if (flg) keyboard.add(ECallbackData(callbackData = CallbackCommands.SURVEY_SHOW_QUESTION_CONSOLE.data, metaText = "назад").save())
 
             messageSenderService.editMessage(
                 MessageParams(
@@ -637,7 +637,7 @@ class SurveyConstructorFetcher (
                 it.text + " /show_question_" + it.id.toString()
             }?.joinToString(separator = "\n\n") { it }
             val mailText = "<b>Список вопросов в опросе:</b>\n\n$allQuestion"
-            val backToConsole = CallbackData(callbackData = CallbackCommands.SURVEY_BACK_TO_CONSOLE.data, metaText = "вернуться").save()
+            val backToConsole = ECallbackData(callbackData = CallbackCommands.SURVEY_BACK_TO_CONSOLE.data, metaText = "вернуться").save()
             messageSenderService.editMessage(
                 MessageParams(
                     messageId = bcData?.lastConsoleMessageId,
@@ -732,10 +732,10 @@ class SurveyConstructorFetcher (
         params.userActualizedInfo.apply {
             val messageText = "<b>Конструктор рассылки</b>\n\nВыберите дальнейшее действие"
 
-            val createNewQuestion = CallbackData(callbackData = CallbackCommands.SURVEY_NEW_QUESTION.data, metaText = "Добавить новый вопрос").save()
-            val showQuestions = CallbackData(callbackData = CallbackCommands.SURVEY_SHOW_QUESTIONS.data, metaText = "Показать список вопросов").save()
-            val orderQuestions = CallbackData(callbackData = CallbackCommands.SURVEY_ORDER_QUESTION.data, metaText = "Выбрать порядок вопросов").save()
-            val cancelButton = CallbackData(callbackData = CallbackCommands.SURVEY_CANCEL.data, metaText = "Отмена").save()
+            val createNewQuestion = ECallbackData(callbackData = CallbackCommands.SURVEY_NEW_QUESTION.data, metaText = "Добавить новый вопрос").save()
+            val showQuestions = ECallbackData(callbackData = CallbackCommands.SURVEY_SHOW_QUESTIONS.data, metaText = "Показать список вопросов").save()
+            val orderQuestions = ECallbackData(callbackData = CallbackCommands.SURVEY_ORDER_QUESTION.data, metaText = "Выбрать порядок вопросов").save()
+            val cancelButton = ECallbackData(callbackData = CallbackCommands.SURVEY_CANCEL.data, metaText = "Отмена").save()
 
             return MessageParams(
                 text = messageText,
@@ -756,9 +756,9 @@ class SurveyConstructorFetcher (
 
     }
 
-    private fun createKeyboard(vararg callbackData: CallbackData): InlineKeyboardMarkup {
+    private fun createKeyboard(vararg ECallbackData: ECallbackData): InlineKeyboardMarkup {
         val keyboard =
-            listOf(*callbackData).map { button ->
+            listOf(*ECallbackData).map { button ->
                 InlineKeyboardButton().also {
                     it.text = button.metaText!!
                     it.callbackData = button.id?.toString()
@@ -771,7 +771,7 @@ class SurveyConstructorFetcher (
 
     private fun SurveyAnswerOption.save() = surveyAnswerOptionRepository.save(this)
 
-    private fun CallbackData.save() = callbackDataRepository.save(this)
+    private fun ECallbackData.save() = ECallbackDataRepository.save(this)
 
     private fun Button.save() = buttonRepository.save(this)
 

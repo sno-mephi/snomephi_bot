@@ -23,7 +23,7 @@ import kotlin.jvm.optionals.getOrNull
 class SurveyAnswerFetcher (
     private val questSegmentRepository: QuestSegmentRepository,
     private val updatesUtil: UpdatesUtil,
-    private val callbackDataRepository: CallbackDataRepository,
+    private val ECallbackDataRepository: ECallbackDataRepository,
     private val surveyAnswerRepository: SurveyAnswerRepository,
     private val surveyQuestionRepository: SurveyQuestionRepository,
     private val dialogService: DialogService,
@@ -80,7 +80,7 @@ class SurveyAnswerFetcher (
     private fun callbackQueryHandler(params: Params) {
         val callbackId = params.update.callbackQuery.data?.toLongOrNull()
         callbackId ?: return
-        val callbackData = callbackDataRepository.findById(callbackId).getOrNull() ?: return
+        val callbackData = ECallbackDataRepository.findById(callbackId).getOrNull() ?: return
 
         callbackData.callbackData?.apply {
             when {
@@ -90,9 +90,9 @@ class SurveyAnswerFetcher (
         }
     }
 
-    private fun userClickButton(params: Params, callbackData: CallbackData) {
+    private fun userClickButton(params: Params, ECallbackData: ECallbackData) {
         params.userActualizedInfo.apply {
-            val answer = callbackData.surveyAnswerOptionId?.let { surveyAnswerOptionRepository.findById(it).get().optionText }
+            val answer = ECallbackData.surveyAnswerOptionId?.let { surveyAnswerOptionRepository.findById(it).get().optionText }
 
             val nextQuestion = surveyId?.let { currentSurveyQuestionNumber?.let { it1 ->
                 surveyQuestionRepository.findQuestionByBroadcastAndNumber(it,
@@ -184,7 +184,7 @@ class SurveyAnswerFetcher (
                 question.id?.let {
                     surveyAnswerOptionRepository.findAllSurveyAnswerOptionByQuestion(surveyQuestionId = it)
                 }?.map {
-                    it.id?.let { id -> callbackDataRepository.findBySurveyAnswerOptionId(id) } ?: return
+                    it.id?.let { id -> ECallbackDataRepository.findBySurveyAnswerOptionId(id) } ?: return
                 } ?: run {
                     //TODO: log
                     return
@@ -248,9 +248,9 @@ class SurveyAnswerFetcher (
         }
     }
 
-    private fun createKeyboard(vararg callbackData: CallbackData): InlineKeyboardMarkup {
+    private fun createKeyboard(vararg ECallbackData: ECallbackData): InlineKeyboardMarkup {
         val keyboard =
-            listOf(*callbackData).map { button ->
+            listOf(*ECallbackData).map { button ->
                 InlineKeyboardButton().also {
                     it.text = button.metaText!!
                     it.callbackData = button.id?.toString()

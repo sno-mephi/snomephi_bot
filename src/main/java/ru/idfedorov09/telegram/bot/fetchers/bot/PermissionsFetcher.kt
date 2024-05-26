@@ -8,11 +8,11 @@ import ru.idfedorov09.telegram.bot.annotation.FetcherPerms
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.enums.UserRole
-import ru.idfedorov09.telegram.bot.data.model.CallbackData
+import ru.idfedorov09.telegram.bot.data.model.ECallbackData
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
-import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
+import ru.idfedorov09.telegram.bot.repo.ECallbackDataRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.service.SwitchKeyboardService
@@ -24,7 +24,7 @@ import kotlin.jvm.optionals.getOrNull
  */
 @Component
 class PermissionsFetcher(
-    private val callbackDataRepository: CallbackDataRepository,
+    private val ECallbackDataRepository: ECallbackDataRepository,
     private val messageSenderService: MessageSenderService,
     private val userRepository: UserRepository,
     private val switchKeyboardService: SwitchKeyboardService,
@@ -68,7 +68,7 @@ class PermissionsFetcher(
     private fun callbackQueryHandler(params: Params): UserActualizedInfo {
         val callbackId = params.update.callbackQuery.data?.toLongOrNull()
         callbackId ?: return params.userActualizedInfo
-        val callbackData = callbackDataRepository.findById(callbackId).getOrNull() ?: return params.userActualizedInfo
+        val callbackData = ECallbackDataRepository.findById(callbackId).getOrNull() ?: return params.userActualizedInfo
 
         return callbackData.callbackData?.run {
             when {
@@ -98,7 +98,7 @@ class PermissionsFetcher(
             val roles = user.roles
 
             val cancel =
-                CallbackData(
+                ECallbackData(
                     callbackData = "#perms_cancel",
                     metaText = "отмена",
                 ).save()
@@ -106,7 +106,7 @@ class PermissionsFetcher(
             val text = "Выбери роль, которую хочешь отозвать:"
             val buttons =
                 roles.map {
-                    CallbackData(
+                    ECallbackData(
                         callbackData = "#perms_perm_remove$SEPARATOR${userId}$SEPARATOR${it.name}",
                         metaText = it.name,
                     ).save()
@@ -212,7 +212,7 @@ class PermissionsFetcher(
             val roles = UserRole.entries - user.roles
 
             val cancel =
-                CallbackData(
+                ECallbackData(
                     callbackData = "#perms_cancel",
                     metaText = "отмена",
                 ).save()
@@ -220,7 +220,7 @@ class PermissionsFetcher(
             val text = "Выбери роль, которую хочешь назначить:"
             val buttons =
                 roles.map {
-                    CallbackData(
+                    ECallbackData(
                         callbackData = "#perms_perm_add$SEPARATOR${userId}$SEPARATOR${it.name}",
                         metaText = it.name,
                     ).save()
@@ -243,7 +243,7 @@ class PermissionsFetcher(
     private fun handleTui(params: Params): UserActualizedInfo {
         params.apply {
             val cancel =
-                CallbackData(
+                ECallbackData(
                     callbackData = "#perms_cancel",
                     metaText = "отмена",
                 ).save()
@@ -286,7 +286,7 @@ class PermissionsFetcher(
     private fun entryUserTui(params: Params): UserActualizedInfo {
         val text = "Следующим сообщением напиши мне Telegram User Id человека, с ролями которого собираешься рофлить"
         val cancel =
-            CallbackData(
+            ECallbackData(
                 callbackData = "#perms_cancel",
                 metaText = "отмена",
             ).save()
@@ -313,19 +313,19 @@ class PermissionsFetcher(
     ): UserActualizedInfo {
         val text = "$prefix\nВыбери дальнейшее действие:"
         val addRole =
-            CallbackData(
+            ECallbackData(
                 callbackData = "#perm_add_role$SEPARATOR$userId",
                 metaText = "➕ Выдать роль",
             ).save()
 
         val removeRole =
-            CallbackData(
+            ECallbackData(
                 callbackData = "#perm_remove_role$SEPARATOR$userId",
                 metaText = "➖ Отозвать роль",
             ).save()
 
         val cancel =
-            CallbackData(
+            ECallbackData(
                 callbackData = "#perms_cancel",
                 metaText = "отмена",
             ).save()
@@ -345,9 +345,9 @@ class PermissionsFetcher(
         )
     }
 
-    private fun createKeyboard(vararg callbackData: CallbackData): InlineKeyboardMarkup {
+    private fun createKeyboard(vararg ECallbackData: ECallbackData): InlineKeyboardMarkup {
         val keyboard =
-            listOf(*callbackData).map { button ->
+            listOf(*ECallbackData).map { button ->
                 InlineKeyboardButton().also {
                     it.text = button.metaText!!
                     it.callbackData = button.id?.toString()
@@ -358,7 +358,7 @@ class PermissionsFetcher(
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
 
-    private fun CallbackData.save() = callbackDataRepository.save(this)
+    private fun ECallbackData.save() = ECallbackDataRepository.save(this)
 
     private data class Params(
         var userActualizedInfo: UserActualizedInfo,

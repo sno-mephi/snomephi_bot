@@ -15,7 +15,7 @@ import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_RECREATE
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_RECREATE_START_DIALOG
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_SHOW_HISTORY
 import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands.QUEST_START_DIALOG
-import ru.idfedorov09.telegram.bot.data.model.CallbackData
+import ru.idfedorov09.telegram.bot.data.model.ECallbackData
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.QuestDialog
 import ru.idfedorov09.telegram.bot.data.model.QuestSegment
@@ -45,7 +45,7 @@ class QuestButtonHandlerFetcher(
     private val userRepository: UserRepository,
     private val questMessageRepository: QuestMessageRepository,
     private val switchKeyboardService: SwitchKeyboardService,
-    private val callbackDataRepository: CallbackDataRepository,
+    private val ECallbackDataRepository: ECallbackDataRepository,
     private val configParamsService: ConfigParamsService,
 ) : DefaultFetcher() {
     // TODO: обработать случай когда бот не может написать пользователю!
@@ -59,7 +59,7 @@ class QuestButtonHandlerFetcher(
 
         val callbackId = update.callbackQuery.data?.toLongOrNull()
         callbackId ?: userActualizedInfo
-        val callbackData = callbackId?.let { callbackDataRepository.findById(it).getOrNull() } ?: return userActualizedInfo
+        val callbackData = callbackId?.let { ECallbackDataRepository.findById(it).getOrNull() } ?: return userActualizedInfo
 
         if (!callbackData.callbackData?.let { Regex("^.*\\|\\d+$").matches(it) }!! ||
             !userActualizedInfo.isRegistered
@@ -67,7 +67,7 @@ class QuestButtonHandlerFetcher(
             return userActualizedInfo
         }
 
-        val questByCallbackData = getQuestByCallbackData(callbackData.callbackData) ?: return userActualizedInfo
+        val questByCallbackData = getQuestByCallbackData(callbackData.callbackData!!) ?: return userActualizedInfo
         val segment = questByCallbackData.lastQuestSegmentId?.let { questSegmentRepository.findById(it).get() }
 
         val params =
@@ -78,11 +78,11 @@ class QuestButtonHandlerFetcher(
                 update,
             )
         return when {
-            QUEST_ANSWER.isMatch(callbackData.callbackData) -> clickAnswer(params)
-            QUEST_IGNORE.isMatch(callbackData.callbackData) -> clickIgnore(params)
-            QUEST_START_DIALOG.isMatch(callbackData.callbackData) -> clickStartDialog(params)
-            QUEST_RECREATE.isMatch(callbackData.callbackData) -> clickRecreate(params)
-            QUEST_RECREATE_START_DIALOG.isMatch(callbackData.callbackData) -> clickRecreateStartDialog(params)
+            QUEST_ANSWER.isMatch(callbackData.callbackData!!) -> clickAnswer(params)
+            QUEST_IGNORE.isMatch(callbackData.callbackData!!) -> clickIgnore(params)
+            QUEST_START_DIALOG.isMatch(callbackData.callbackData!!) -> clickStartDialog(params)
+            QUEST_RECREATE.isMatch(callbackData.callbackData!!) -> clickRecreate(params)
+            QUEST_RECREATE_START_DIALOG.isMatch(callbackData.callbackData!!) -> clickRecreateStartDialog(params)
             else -> userActualizedInfo
         }
     }
@@ -189,7 +189,7 @@ class QuestButtonHandlerFetcher(
             params.userActualizedInfo.fullName,
         )}."
         val recreateDialog =
-            CallbackData(
+            ECallbackData(
                 callbackData = QUEST_RECREATE.format(params.questDialog.id),
                 metaText = "Переоткрыть диалог",
             ).save()
@@ -239,7 +239,7 @@ class QuestButtonHandlerFetcher(
             ),
         )
 
-        val startDialog = CallbackData(
+        val startDialog = ECallbackData(
             callbackData = QUEST_START_DIALOG.format(params.questDialog.id),
             metaText = "\uD83D\uDCAC Начать диалог"
         ).save()
@@ -294,12 +294,12 @@ class QuestButtonHandlerFetcher(
                 ),
             )
             val recreateStartDialog =
-                CallbackData(
+                ECallbackData(
                     callbackData = QUEST_RECREATE_START_DIALOG.format(questDialog.id),
                     metaText = "Начать диалог",
                 ).save()
             val showHistory =
-                CallbackData(
+                ECallbackData(
                     callbackData = QUEST_SHOW_HISTORY.format(questDialog.id),
                     metaText = "\uD83D\uDCAC Посмотреть историю (не паботает)"
                 ).save()
@@ -391,9 +391,9 @@ class QuestButtonHandlerFetcher(
         }
     }
 
-    private fun createKeyboard(vararg callbackData: CallbackData): InlineKeyboardMarkup {
+    private fun createKeyboard(vararg ECallbackData: ECallbackData): InlineKeyboardMarkup {
         val keyboard =
-            listOf(*callbackData).map { button ->
+            listOf(*ECallbackData).map { button ->
                 InlineKeyboardButton().also {
                     it.text = button.metaText!!
                     it.callbackData = button.id?.toString()
@@ -404,7 +404,7 @@ class QuestButtonHandlerFetcher(
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
 
-    private fun CallbackData.save() = callbackDataRepository.save(this)
+    private fun ECallbackData.save() = ECallbackDataRepository.save(this)
 
     private fun getQuestByCallbackData(callbackData: String): QuestDialog? {
         val questId = parseQuestId(callbackData)

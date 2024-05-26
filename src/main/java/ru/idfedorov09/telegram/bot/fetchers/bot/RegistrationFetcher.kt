@@ -8,11 +8,11 @@ import ru.idfedorov09.telegram.bot.data.enums.CallbackCommands
 import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
 import ru.idfedorov09.telegram.bot.data.enums.RegistrationMessageText
 import ru.idfedorov09.telegram.bot.data.enums.UserKeyboardType
-import ru.idfedorov09.telegram.bot.data.model.CallbackData
+import ru.idfedorov09.telegram.bot.data.model.ECallbackData
 import ru.idfedorov09.telegram.bot.data.model.MessageParams
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
-import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
+import ru.idfedorov09.telegram.bot.repo.ECallbackDataRepository
 import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.MessageSenderService
 import ru.idfedorov09.telegram.bot.service.SwitchKeyboardService
@@ -21,7 +21,7 @@ import kotlin.jvm.optionals.getOrNull
 
 @Component
 class RegistrationFetcher(
-    private val callbackDataRepository: CallbackDataRepository,
+    private val ECallbackDataRepository: ECallbackDataRepository,
     private val messageSenderService: MessageSenderService,
     private val userRepository: UserRepository,
     private val switchKeyboardService: SwitchKeyboardService,
@@ -89,12 +89,13 @@ class RegistrationFetcher(
 
             if (params.update.message?.text.isValidFullName()) {
                 val confirm =
-                    CallbackData(
+                    ECallbackData(
                         metaText = "✅ Подтвердить",
                         callbackData = CallbackCommands.REGISTRATION_CONFIRM_FULL_NAME.data,
+                        surveyAnswerOptionId = 666,
                     ).save()
                 val cancel =
-                    CallbackData(
+                    ECallbackData(
                         metaText = "❌ Отменить",
                         callbackData = CallbackCommands.REGISTRATION_DECLINE_FULL_NAME.data,
                     ).save()
@@ -140,12 +141,12 @@ class RegistrationFetcher(
 
             if (params.update.message.text.isValidGroup()) {
                 val confirm =
-                    CallbackData(
+                    ECallbackData(
                         metaText = "✅ Подтвердить",
                         callbackData = CallbackCommands.REGISTRATION_CONFIRM_STUDY_GROUP.data,
                     ).save()
                 val cancel =
-                    CallbackData(
+                    ECallbackData(
                         metaText = "❌ Отменить",
                         callbackData = CallbackCommands.REGISTRATION_DECLINE_STUDY_GROUP.data,
                     ).save()
@@ -161,7 +162,7 @@ class RegistrationFetcher(
                 data?.registrationData = params.update.message.text.uppercase()
             } else {
                 val withoutGroup =
-                    CallbackData(
+                    ECallbackData(
                         metaText = "👾Я не из МИФИ",
                         callbackData = CallbackCommands.REGISTRATION_WITHOUT_STUDY_GROUP.data,
                     ).save()
@@ -183,7 +184,7 @@ class RegistrationFetcher(
         params.apply {
             val callbackId = update.callbackQuery.data?.toLongOrNull()
             callbackId ?: return params.userActualizedInfo
-            val callbackData = callbackDataRepository.findById(callbackId).getOrNull() ?: return params.userActualizedInfo
+            val callbackData = ECallbackDataRepository.findById(callbackId).getOrNull() ?: return params.userActualizedInfo
 
             return callbackData.callbackData?.run {
                 when {
@@ -201,12 +202,12 @@ class RegistrationFetcher(
     private fun withoutStudyGroup(params: Params): UserActualizedInfo {
         params.userActualizedInfo.apply {
             val confirm =
-                CallbackData(
+                ECallbackData(
                     metaText = "✅ Подтвердить",
                     callbackData = CallbackCommands.REGISTRATION_CONFIRM_STUDY_GROUP.data,
                 ).save()
             val cancel =
-                CallbackData(
+                ECallbackData(
                     metaText = "❌ Отменить",
                     callbackData = CallbackCommands.REGISTRATION_DECLINE_STUDY_GROUP.data,
                 ).save()
@@ -232,7 +233,7 @@ class RegistrationFetcher(
     private fun declineStudyGroup(params: Params): UserActualizedInfo {
         params.userActualizedInfo.apply {
             val withoutGroup =
-                CallbackData(
+                ECallbackData(
                     metaText = "👾Я не из МИФИ",
                     callbackData = CallbackCommands.REGISTRATION_WITHOUT_STUDY_GROUP.data,
                 ).save()
@@ -314,7 +315,7 @@ class RegistrationFetcher(
     private fun confirmFullName(params: Params): UserActualizedInfo {
         params.userActualizedInfo.apply {
             val withoutGroup =
-                CallbackData(
+                ECallbackData(
                     metaText = "👾Я не из МИФИ",
                     callbackData = CallbackCommands.REGISTRATION_WITHOUT_STUDY_GROUP.data,
                 ).save()
@@ -355,33 +356,33 @@ class RegistrationFetcher(
         } ?: false
 
     private fun createActionsKeyboard(
-        firstCallbackData: CallbackData,
-        secondCallbackData: CallbackData,
+        firstECallbackData: ECallbackData,
+        secondECallbackData: ECallbackData,
     ) = InlineKeyboardMarkup(
         listOf(
             listOf(
-                InlineKeyboardButton(firstCallbackData.metaText!!).also {
-                    it.callbackData = firstCallbackData.id.toString()
+                InlineKeyboardButton(firstECallbackData.metaText!!).also {
+                    it.callbackData = firstECallbackData.id.toString()
                 },
-                InlineKeyboardButton(secondCallbackData.metaText!!).also {
-                    it.callbackData = secondCallbackData.id.toString()
+                InlineKeyboardButton(secondECallbackData.metaText!!).also {
+                    it.callbackData = secondECallbackData.id.toString()
                 },
             ),
         ),
     )
 
-    private fun createActionsKeyboard(callbackData: CallbackData) =
+    private fun createActionsKeyboard(ECallbackData: ECallbackData) =
         InlineKeyboardMarkup(
             listOf(
                 listOf(
-                    InlineKeyboardButton(callbackData.metaText!!).also {
-                        it.callbackData = callbackData.id.toString()
+                    InlineKeyboardButton(ECallbackData.metaText!!).also {
+                        it.callbackData = ECallbackData.id.toString()
                     },
                 ),
             ),
         )
 
-    private fun CallbackData.save() = callbackDataRepository.save(this)
+    private fun ECallbackData.save() = ECallbackDataRepository.save(this)
 
     private data class Params(
         var userActualizedInfo: UserActualizedInfo,

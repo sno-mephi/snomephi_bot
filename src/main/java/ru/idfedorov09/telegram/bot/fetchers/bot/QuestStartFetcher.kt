@@ -12,7 +12,7 @@ import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.model.*
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
-import ru.idfedorov09.telegram.bot.repo.CallbackDataRepository
+import ru.idfedorov09.telegram.bot.repo.ECallbackDataRepository
 import ru.idfedorov09.telegram.bot.repo.QuestDialogRepository
 import ru.idfedorov09.telegram.bot.repo.QuestMessageRepository
 import ru.idfedorov09.telegram.bot.repo.QuestSegmentRepository
@@ -30,7 +30,7 @@ class QuestStartFetcher(
     private val questSegmentRepository: QuestSegmentRepository,
     private val questMessageRepository: QuestMessageRepository,
     private val messageSenderService: MessageSenderService,
-    private val callbackDataRepository: CallbackDataRepository,
+    private val ECallbackDataRepository: ECallbackDataRepository,
     private val configParamsService: ConfigParamsService,
 ) : DefaultFetcher() {
     @InjectData
@@ -148,17 +148,17 @@ class QuestStartFetcher(
         )
 
         val answerButton =
-            CallbackData(
+            ECallbackData(
                 callbackData = QUEST_ANSWER.format(questDialog.id),
                 metaText = "\uD83D\uDCAC Ответ",
             ).save()
         val banButton =
-            CallbackData(
+            ECallbackData(
                 callbackData = QUEST_IGNORE.format(questDialog.id),
                 metaText = "\uD83D\uDD07 Игнор",
             ).save()
         val ignoreButton =
-            CallbackData(
+            ECallbackData(
                 callbackData = BANNED_USER.format(questDialog.id, userActualizedInfo.tui.toLong()),
                 metaText = "\uD83D\uDEAF Бан",
             ).save()
@@ -179,8 +179,8 @@ class QuestStartFetcher(
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
 
-    private fun createChooseKeyboard(vararg callbackData: CallbackData): InlineKeyboardMarkup {
-        val (first, rest) = callbackData.withIndex().partition { it.index == 0 }
+    private fun createChooseKeyboard(vararg ECallbackData: ECallbackData): InlineKeyboardMarkup {
+        val (first, rest) = ECallbackData.withIndex().partition { it.index == 0 }
         val firstList =
             first.map { it.value }.map { button ->
                 InlineKeyboardButton().also {
@@ -198,5 +198,5 @@ class QuestStartFetcher(
         return createKeyboard(listOf(firstList, secondList))
     }
 
-    private fun CallbackData.save() = callbackDataRepository.save(this)
+    private fun ECallbackData.save() = ECallbackDataRepository.save(this)
 }

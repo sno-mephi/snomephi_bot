@@ -6,8 +6,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import ru.idfedorov09.telegram.bot.base.executor.Executor
 import ru.idfedorov09.telegram.bot.base.util.UpdatesUtil
-import ru.idfedorov09.telegram.bot.data.enums.LastUserActionType
-import ru.idfedorov09.telegram.bot.data.enums.QuestionStatus
 import ru.idfedorov09.telegram.bot.data.enums.TextCommands
 import ru.idfedorov09.telegram.bot.data.model.*
 import ru.idfedorov09.telegram.bot.fetchers.DefaultFetcher
@@ -20,7 +18,6 @@ import ru.idfedorov09.telegram.bot.repo.UserRepository
 import ru.idfedorov09.telegram.bot.service.DialogService
 import ru.idfedorov09.telegram.bot.util.MessageSenderUtil
 import java.time.Instant
-import java.time.LocalDateTime
 import java.time.ZoneId
 /**
  фетчер для реализации команды  /reset (мягкое удаление пользователя)
@@ -28,7 +25,7 @@ import java.time.ZoneId
 @Component
 class DeleteUserFetcher(
     private val updatesUtil: UpdatesUtil,
-    private val callbackDataRepository: CallbackDataRepository,
+    private val ECallbackDataRepository: ECallbackDataRepository,
     private val messageSenderService: MessageSenderService,
     private val updateDataFetcher: UpdateDataFetcher,
     private val questSegmentRepository: QuestSegmentRepository,
@@ -60,13 +57,13 @@ class DeleteUserFetcher(
 
     private fun textCommandResetHandler(params: Params): UserActualizedInfo {
         val confirmDel =
-            CallbackData(
+            ECallbackData(
                 callbackData = "#confirm_delete",
                 metaText = "Да, хочу удалить аккаунт",
             ).save()
 
         val cancelDel =
-            CallbackData(
+            ECallbackData(
                 callbackData = "#cancel_delete",
                 metaText = "Отмена",
             ).save()
@@ -94,7 +91,7 @@ class DeleteUserFetcher(
     private fun callbackCommandResetHandler(params: Params): UserActualizedInfo {
         val callbackId = params.update.callbackQuery.data?.toLongOrNull()
         callbackId ?: return params.userActualizedInfo
-        val callbackData = callbackDataRepository.findById(callbackId).getOrNull() ?: return params.userActualizedInfo
+        val callbackData = ECallbackDataRepository.findById(callbackId).getOrNull() ?: return params.userActualizedInfo
 
         callbackData.callbackData?.apply {
             return when {
@@ -188,7 +185,7 @@ class DeleteUserFetcher(
 
     private fun createKeyboard(keyboard: List<List<InlineKeyboardButton>>) = InlineKeyboardMarkup().also { it.keyboard = keyboard }
 
-    private fun CallbackData.save() = callbackDataRepository.save(this)
+    private fun ECallbackData.save() = ECallbackDataRepository.save(this)
 
     private data class Params(
         val bot: Executor,
