@@ -4,6 +4,7 @@ import ru.idfedorov09.telegram.bot.data.model.ECallbackData
 import ru.idfedorov09.telegram.bot.data.model.User
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
 
+// TODO: вынести в base.core
 enum class ConfigParams(
     /** Название отображаемое на кнопке **/
     val displayName: String,
