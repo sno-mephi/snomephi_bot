@@ -123,9 +123,29 @@ enum class TextCommands(
             ),
     ),
 
-    USER_SETTING(
-        commandText = "/setting",
+    USER_SETTING_REPLY(
+        commandText = "Проверка данных",
         description = "Настройки пользователя",
+        allowedRoles = listOf(UserRole.USER),
+    ),
+
+    FEEDBACK_CONSTRUCTOR(
+        commandText = "Настройка обратной связи",
+        description = "Настройка обратной связи",
+        allowedRoles = listOf(UserRole.MAILER),
+    ),
+
+    FEEDBACK_BUTTON(
+        commandText = "Обратная связь",
+        description = "Присылает актуальную информацию о странице обратной связи",
+        allowedRoles = listOf(UserRole.USER),
+    ),
+
+    GET_CERTIFICATE(
+        commandText = "Получить сертификат",
+        description = "Получение сертификатов для участников совещания. " +
+                "Если сертификат еще не готов, сообщает об этом участнику, если готов - отправляет его.",
+        allowedRoles = listOf(UserRole.USER)
     ),
 
     SURVEY_QUESTION(

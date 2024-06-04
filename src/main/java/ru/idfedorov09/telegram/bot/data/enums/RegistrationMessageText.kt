@@ -2,15 +2,13 @@ package ru.idfedorov09.telegram.bot.data.enums
 
 enum class RegistrationMessageText(private val text: String) {
     FullNameRequest("Пожалуйста, введите свое ФИО"),
-    GroupRequest("Введите свою группу"),
+    GroupRequest("Введите название Вашего СНО/СМУС"),
 
     FullNameConfirmation("Вы действительно хотите использовать ФИО %s?"),
-    GroupConfirmation("Вы действительно состоите в группе %s?"),
+    GroupConfirmation("Вы действительно состоите в СНО/СМУС %s?"),
     WithoutGroupConfirmation("Вы действительно не из МИФИ?"),
 
-    InvalidGroup("Такой группы не существует, пожалуйста, введите свою группу заново"),
     InvalidFullName("Кажется Вы ввели ФИО неправильно. Используйте только символы из кириллицы и пробелы"),
-    AlreadyExists("Такой пользователь уже зарегистрирован под юзернеймом @%s"),
 
     RegistrationComplete("Регистрация прошла успено. " +
             "\nВ боте есть команда /help, которая содержит список актуальных команд." +

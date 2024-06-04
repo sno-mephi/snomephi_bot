@@ -114,15 +114,28 @@ interface UserRepository : JpaRepository<User, Long> {
             FROM users_table
             WHERE 1 = 1
                 and full_name = :fullName
-                and study_group = :studyGroup
                 and is_deleted = False
             LIMIT 1
         """,
         nativeQuery = true,
     )
-    fun findByFullNameAndStudyGroup(
+    fun findByFullName(
         fullName: String,
-        studyGroup: String,
+    ): User?
+
+    @Query(
+        """
+            SELECT *
+            FROM users_table
+            WHERE 1 = 1
+                and LOWER(full_name) = LOWER(:fullName)
+                and is_deleted = False
+            LIMIT 1
+        """,
+        nativeQuery = true,
+    )
+    fun findByLowercaseFullName(
+        fullName: String,
     ): User?
 
     @Query(
@@ -164,4 +177,19 @@ interface UserRepository : JpaRepository<User, Long> {
         nativeQuery = true,
     )
     fun updateUserCategoriesById(userId: Long)
+
+    @Query(
+        """
+            SELECT *
+            FROM users_table
+            WHERE 1 = 1
+                AND is_deleted = False
+                AND full_name IS NOT NULL 
+                AND similarity(LOWER(full_name), LOWER(:fullName)) > :threshold
+            ORDER BY similarity(LOWER(full_name), LOWER(:fullName)) DESC
+            LIMIT 1
+        """,
+        nativeQuery = true,
+    )
+    fun findSimilarUserByFullName(fullName: String, threshold: Double): User?
 }

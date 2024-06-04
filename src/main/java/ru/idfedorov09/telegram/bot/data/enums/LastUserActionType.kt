@@ -88,7 +88,7 @@ enum class LastUserActionType {
     /** ввод измененного ФИО **/
     SETTING_USER_ENTER_FULL_NAME,
 
-    /** ввод измененной группы **/
+    /** ввод измененной СНО/СМУС **/
     SETTING_USER_ENTER_STUDY_GROUP,
 
     /** начал создание вопроса в рассылке**/

@@ -45,4 +45,19 @@ interface BroadcastRepository : JpaRepository<Broadcast, Long> {
         nativeQuery = true,
     )
     fun findFirstActiveWeeklyBroadcast(): Broadcast?
+
+    @Query(
+        """
+            SELECT * 
+            FROM broadcast_table
+            WHERE 1=1
+                AND is_feedback IS true
+                AND is_built IS true 
+                AND is_deleted IS false
+            ORDER BY broadcast_start_dttm DESC
+            LIMIT 1
+        """,
+        nativeQuery = true,
+    )
+    fun findFeedbackPage(): Broadcast?
 }

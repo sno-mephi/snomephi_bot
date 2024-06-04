@@ -27,16 +27,26 @@ object KeyboardUtil {
         val keyboards =
             mutableListOf(
                 KeyboardRow().also {
-                    it.add(TextCommands.SETTING_MAIL())
+                    it.add(TextCommands.USER_SETTING_REPLY())
                 },
+
                 KeyboardRow().also {
-                    it.add(TextCommands.WEEKLY_EVENTS())
+                    it.add(TextCommands.GET_CERTIFICATE())
+                },
+
+                KeyboardRow().also {
+                    it.add(TextCommands.FEEDBACK_BUTTON())
                 },
             )
         if (UserRole.ROOT in roles || UserRole.MAILER in roles) {
             keyboards.add(
                 KeyboardRow().also {
                     it.add(TextCommands.BROADCAST_CONSTRUCTOR())
+                },
+            )
+            keyboards.add(
+                KeyboardRow().also {
+                    it.add(TextCommands.FEEDBACK_CONSTRUCTOR())
                 },
             )
         }

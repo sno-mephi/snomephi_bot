@@ -23,7 +23,14 @@ enum class ConfigParams(
         defaultValues = listOf("-1002057270905"),
         key = "admin_chat_id",
         type = ConfigParamType.INPUT,
-    )
+    ),
+
+    SIMILARITY_THRESHOLD(
+        displayName = "similarity threshold",
+        defaultValues = listOf("0.3"),
+        key = "similarity_threshold",
+        type = ConfigParamType.INPUT,
+    ),
     ;
 
     companion object {

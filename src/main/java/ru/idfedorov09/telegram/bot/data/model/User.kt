@@ -32,9 +32,9 @@ data class User(
     /** ФИО **/
     @Column(name = "full_name")
     val fullName: String? = null,
-    /** учебная группа **/
-    @Column(name = "study_group")
-    val studyGroup: String? = null,
+    /** СНО/СМУС **/
+    @Column(name = "sno_name")
+    val snoName: String? = null,
     /** id рассылок, на которые подписан юзер **/
     @Column(name = "categories", updatable = false)
     val categories: MutableSet<Long> = mutableSetOf(),

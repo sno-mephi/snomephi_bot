@@ -6,6 +6,7 @@ import ru.idfedorov09.telegram.bot.base.service.FlowBuilderService
 import ru.idfedorov09.telegram.bot.data.GlobalConstants.QUALIFIER_FLOW_TG_BOT
 import ru.idfedorov09.telegram.bot.data.model.SurveyAnswer
 import ru.idfedorov09.telegram.bot.data.model.UserActualizedInfo
+import ru.idfedorov09.telegram.bot.fetchers.bot.AddCertificateFetcher
 import ru.idfedorov09.telegram.bot.fetchers.bot.*
 import ru.idfedorov09.telegram.bot.fetchers.bot.PermissionsFetcher
 import ru.mephi.sno.libs.flow.belly.FlowBuilder
@@ -39,6 +40,9 @@ open class TelegramBotFlowConfiguration(
     private val bannedFetcher: BannedFetcher,
     private val userSettingFetcher: UserSettingFetcher,
     private val createExpContainerFetcher: CreateExpContainerFetcher,
+    private val gettingFeedbackFetcher: GettingFeedbackFetcher,
+    private val addCertificateFetcher: AddCertificateFetcher,
+    private val certificateActionsFetcher: CertificateActionsFetcher,
     private val surveyConstructorFetcher: SurveyConstructorFetcher,
     private val surveyAnswerFetcher: SurveyAnswerFetcher,
     private val configParamsFetcher: ConfigParamsFetcher,
@@ -89,8 +93,11 @@ open class TelegramBotFlowConfiguration(
                     fetch(userInfoCommandFetcher)
                     fetch(helpCommandFetcher)
                     fetch(weeklyEventsFetcher)
+                    fetch(gettingFeedbackFetcher)
                     fetch(questStartFetcher)
                     fetch(whereBotFetcher)
+                    fetch(addCertificateFetcher)
+                    fetch(certificateActionsFetcher)
                 }
                 fetch(updateDataFetcher)
             }

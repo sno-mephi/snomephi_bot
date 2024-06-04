@@ -88,6 +88,9 @@ enum class CallbackCommands(
     SETTING_USER_WITHOUT_STUDY_GROUP("setting_user_without_study_group"),
     SETTING_USER_BACK_TO_CONSOLE("setting_user_back_to_console"),
 
+    CANCEL_CONFIRM_FULLNAME("#canc_conf_fio"),
+    APPROVE_CONFIRM_FULLNAME("#ok_conf_fio"),
+
     /** Блок конструктора опроса **/
 
     SURVEY_NEW_QUESTION("survey_new_question"),
