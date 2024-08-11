@@ -90,6 +90,7 @@ open class BroadcastSenderService(
                 parseMode = ParseMode.HTML,
                 photo = broadcast.imageHash?.let { InputFile(it) },
                 disableWebPagePreview = !broadcast.shouldShowWebPreview,
+                document = broadcast.fileHash?.let { InputFile(it) },
             ),
         )
 

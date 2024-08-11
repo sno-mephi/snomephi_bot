@@ -2,6 +2,7 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
+import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
@@ -196,22 +197,35 @@ class SurveyAnswerFetcher (
             data ?: run { data = UserData() }
             data?.lastSurveyQuestionId = question.id
 
-            messageSenderService.editMessage(
+            messageSenderService.deleteMessage(
+                MessageParams(
+                    chatId = tui,
+                    messageId = data?.surveyUserQuestionMessageId,
+                )
+            )
+
+            val sent = messageSenderService.sendMessage(
                 MessageParams(
                     chatId = tui,
                     text = question.text,
-                    messageId = data?.surveyUserQuestionMessageId,
+                    document = question.fileHash?.let { InputFile(it) },
                     replyMarkup = createKeyboard(*callbackDataList.toTypedArray())
                 )
             )
+            data?.surveyUserQuestionMessageId = sent.messageId
         }
     }
 
     private fun completeSurvey(params: Params) {
         params.userActualizedInfo.apply {
-            messageSenderService.editMessage(
+            messageSenderService.deleteMessage(
                 MessageParams(
+                    chatId = tui,
                     messageId = data?.surveyUserQuestionMessageId,
+                )
+            )
+            messageSenderService.sendMessage(
+                MessageParams(
                     chatId = tui,
                     text = "Спасибо, что приняли участие в опросе!",
                 )

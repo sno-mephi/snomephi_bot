@@ -27,4 +27,7 @@ data class SurveyQuestion(
     val isBuilt: Boolean = false,
     @Column(name = "is_deleted")
     val isDeleted: Boolean = false,
+    /** файл **/
+    @Column(name = "broadcast_file", columnDefinition = "TEXT")
+    val fileHash: String? = null,
 )

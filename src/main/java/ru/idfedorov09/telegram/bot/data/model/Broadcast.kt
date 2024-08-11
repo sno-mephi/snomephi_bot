@@ -63,4 +63,7 @@ data class Broadcast(
     /** Нужно ли web preview **/
     @Column(name = "should_show_web_preview")
     val shouldShowWebPreview: Boolean = false,
+    /** файл **/
+    @Column(name = "broadcast_file", columnDefinition = "TEXT")
+    val fileHash: String? = null,
 )

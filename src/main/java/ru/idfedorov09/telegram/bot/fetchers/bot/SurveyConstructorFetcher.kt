@@ -2,6 +2,7 @@ package ru.idfedorov09.telegram.bot.fetchers.bot
 
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.ParseMode
+import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
@@ -47,6 +48,14 @@ class SurveyConstructorFetcher (
         when {
             update.hasMessage() && update.message.hasText() -> textCommandsHandler(params)
             update.hasCallbackQuery() -> callbackQueryHandler(params)
+            update.hasMessage() && update.message.hasDocument() -> documentHandler(params)
+            else -> return
+        }
+    }
+
+    private fun documentHandler(params: Params) {
+        when (params.userActualizedInfo.lastUserActionType) {
+            LastUserActionType.SURVEY_CREATE_QUESTION -> enterQuestionText(params, true)
             else -> return
         }
     }
@@ -298,6 +307,7 @@ class SurveyConstructorFetcher (
                     chatId = tui,
                     text = surveyQuestion.text,
                     replyMarkup = keyboard,
+                    document = surveyQuestion.fileHash?.let { InputFile(it) }
                 )
             )
             data?.surveyQuestionMessageId = sent.messageId
@@ -320,7 +330,7 @@ class SurveyConstructorFetcher (
         }
     }
 
-    private fun enterQuestionText(params: Params) {
+    private fun enterQuestionText(params: Params, hasFile: Boolean = false) {
         params.apply {
             val messageText = "Выберите тип опроса"
 
@@ -335,9 +345,13 @@ class SurveyConstructorFetcher (
                 )
             )
 
+            val caption = listOfNotNull(
+                update.message.text, update.message.caption
+            )
             userActualizedInfo.surveyQuestionData =
                 userActualizedInfo.surveyQuestionData?.copy(
-                    text = update.message.text
+                    text = caption.first(),
+                    fileHash = if (!hasFile) null else update.message.document.fileId
                 )
             deleteUpdateMessage()
         }
