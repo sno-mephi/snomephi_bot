@@ -13,9 +13,11 @@ object GlobalConstants {
 
     const val MAX_BROADCAST_BUTTONS_COUNT = 5
 
-    val ROOT_LIST: List<String> = listOf(
-        "920061911",
+    private val adminId: String? = System.getenv("BOT_ADMIN_ID")
+
+    val ROOT_LIST: List<String> = listOfNotNull(
         "731119845",
-        "473458128"
+        "473458128",
+        adminId,
     )
 }
