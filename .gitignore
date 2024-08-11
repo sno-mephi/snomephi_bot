@@ -37,10 +37,6 @@ out/
 .vscode/
 
 
-
-
-/src/main/resources/application.properties
-
 .DS_STORE
 /gradlew.bat
 /logs/
