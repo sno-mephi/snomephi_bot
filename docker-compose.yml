@@ -14,12 +14,12 @@ services:
 
   postgres:
     image: postgres:latest
-    container_name: snomepgi_meeting_postgres
+    container_name: snomephi_meeting_postgres
     ports:
       - "${PG_PORT}:5432"
     environment:
       POSTGRES_USER: ${PG_USER}
-      POSTGRES_PASSWORD: ${PS_PASSWORD}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
     volumes:
       - ./docker_volumes/postgres_data:/var/lib/postgresql/data
       - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
